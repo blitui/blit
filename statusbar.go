@@ -44,8 +44,7 @@ func (s *StatusBar) View() string {
 	}
 
 	style := lipgloss.NewStyle().
-		Background(lipgloss.Color(s.theme.Border)).
-		Foreground(lipgloss.Color(s.theme.Text)).
+		Foreground(lipgloss.Color(s.theme.Muted)).
 		Width(s.width)
 
 	gap := s.width - lipgloss.Width(left) - lipgloss.Width(right)

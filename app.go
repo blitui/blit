@@ -175,7 +175,7 @@ func (a *appModel) setup() {
 	// Built-in global bindings
 	globals := []KeyBind{
 		{Key: "q", Label: "Quit", Group: "OTHER"},
-		{Key: "tab", Label: "Cycle focus", Group: "OTHER"},
+		{Key: "tab/←/→", Label: "Switch focus", Group: "OTHER"},
 	}
 	if a.helpEnabled {
 		globals = append(globals, KeyBind{Key: "?", Label: "Help", Group: "OTHER"})
@@ -367,7 +367,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			a.overlays.push(a.help)
 			return a, nil
 		}
-	case "tab":
+	case "tab", "left", "right":
 		a.cycleFocus()
 		return a, nil
 	}
@@ -405,15 +405,25 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
+// Activatable is implemented by overlays that can be explicitly activated.
+type Activatable interface {
+	SetActive(bool)
+}
+
 // openOverlay activates and pushes an overlay onto the stack.
 func (a *appModel) openOverlay(o Overlay) {
 	o.SetSize(a.width, a.height)
-	// Activate the overlay via its concrete type
-	switch ov := o.(type) {
-	case *ConfigEditor:
-		ov.active = true
-	case *Help:
-		ov.active = true
+	// Activate the overlay
+	if act, ok := o.(Activatable); ok {
+		act.SetActive(true)
+	} else {
+		// Fall back to known built-in types
+		switch ov := o.(type) {
+		case *ConfigEditor:
+			ov.active = true
+		case *Help:
+			ov.active = true
+		}
 	}
 	a.overlays.push(o)
 }
@@ -518,6 +528,13 @@ func (a *App) Run() error {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 	}
 	return err
+}
+
+// AddKeyBind adds a global keybinding after construction.
+// The binding appears in the help screen and its Handler is called on key press.
+func (a *App) AddKeyBind(kb KeyBind) {
+	a.model.globalBindings = append(a.model.globalBindings, kb)
+	a.model.registry.addBindings("global", []KeyBind{kb})
 }
 
 // Send sends a message to the running App from outside the Bubble Tea event loop.
