@@ -242,7 +242,7 @@ type UpdateConfig struct {
 	BinaryName string        // Binary name in release assets (e.g. "cryptstream")
 	Version    string        // Current version (set via ldflags; "dev" or "" skips check)
 	Mode       UpdateMode    // UpdateNotify or UpdateBlocking
-	CacheTTL   time.Duration // How long to cache the check result (default: 24h)
+	CacheTTL   time.Duration // How long to cache the check result (default: 1h)
 	CacheDir   string        // Override cache directory (default: os.UserConfigDir()/<BinaryName>)
 
 	// OnProgress is called during binary asset download with bytes received and total bytes.
@@ -293,7 +293,7 @@ func (c UpdateConfig) cachePath() string {
 
 func (c UpdateConfig) ttl() time.Duration {
 	if c.CacheTTL <= 0 {
-		return 24 * time.Hour
+		return 1 * time.Hour
 	}
 	return c.CacheTTL
 }
