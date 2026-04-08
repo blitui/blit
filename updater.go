@@ -3,6 +3,8 @@ package tuikit
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -115,4 +117,66 @@ func WriteCache(path string, cache UpdateCache) error {
 		return fmt.Errorf("marshaling cache: %w", err)
 	}
 	return os.WriteFile(path, data, 0o644)
+}
+
+// ReleaseAsset represents a single asset in a GitHub release.
+type ReleaseAsset struct {
+	Name        string `json:"name"`
+	DownloadURL string `json:"browser_download_url"`
+}
+
+// Release represents a GitHub release.
+type Release struct {
+	TagName string         `json:"tag_name"`
+	HTMLURL string         `json:"html_url"`
+	Body    string         `json:"body"`
+	Assets  []ReleaseAsset `json:"assets"`
+}
+
+// FetchLatestRelease fetches the latest release from GitHub.
+// baseURL is the API base (e.g. "https://api.github.com" or a test server URL).
+func FetchLatestRelease(baseURL, owner, repo string) (*Release, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", baseURL, owner, repo)
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("fetching release: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("GitHub API returned %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading response: %w", err)
+	}
+
+	var rel Release
+	if err := json.Unmarshal(body, &rel); err != nil {
+		return nil, fmt.Errorf("parsing release: %w", err)
+	}
+	return &rel, nil
+}
+
+// MatchAsset finds the release asset matching the given binary name, OS, and architecture.
+func MatchAsset(assets []ReleaseAsset, binaryName, goos, goarch string) (ReleaseAsset, error) {
+	suffix := fmt.Sprintf("_%s_%s.", goos, goarch)
+	for _, a := range assets {
+		if strings.Contains(a.Name, suffix) && strings.HasPrefix(a.Name, binaryName+"_") {
+			return a, nil
+		}
+	}
+	return ReleaseAsset{}, fmt.Errorf("no asset found for %s/%s", goos, goarch)
+}
+
+// MatchChecksumAsset finds the checksums.txt asset in a release.
+func MatchChecksumAsset(assets []ReleaseAsset) (ReleaseAsset, error) {
+	for _, a := range assets {
+		if strings.EqualFold(a.Name, "checksums.txt") {
+			return a, nil
+		}
+	}
+	return ReleaseAsset{}, fmt.Errorf("no checksums.txt asset found")
 }
