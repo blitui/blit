@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -299,13 +300,38 @@ type UpdateResult struct {
 	InstallMethod  InstallMethod
 }
 
+// versionFromBuildInfo reads the module version embedded by go install.
+// Returns "" if unavailable or if the version is "(devel)".
+func versionFromBuildInfo() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return ""
+	}
+	// go install sets Main.Version to the module version (e.g. "v0.6.0").
+	// Local builds set it to "(devel)".
+	v := info.Main.Version
+	if v == "" || v == "(devel)" {
+		return ""
+	}
+	return v
+}
+
 // CheckForUpdate checks GitHub Releases for a newer version.
-// Returns a zero-value UpdateResult (Available=false) if the version is "dev" or empty.
+// If the version is "dev" or empty, it attempts to read the module version
+// from Go's embedded build info (set by go install). Returns a zero-value
+// UpdateResult (Available=false) if no version can be determined.
 // Network/API errors return a zero-value result with no error (fail-silent).
 func CheckForUpdate(cfg UpdateConfig) (*UpdateResult, error) {
+	// Resolve version from build info when not set via ldflags
+	if cfg.Version == "" || cfg.Version == "dev" {
+		if v := versionFromBuildInfo(); v != "" {
+			cfg.Version = v
+		}
+	}
+
 	result := &UpdateResult{CurrentVersion: cfg.Version}
 
-	// Skip for dev builds
+	// Skip if still no usable version
 	if cfg.Version == "" || cfg.Version == "dev" {
 		return result, nil
 	}
