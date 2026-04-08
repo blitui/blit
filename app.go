@@ -108,6 +108,8 @@ type appModel struct {
 	height         int
 	notifyMsg      string
 	notifyExpiry   time.Time
+	updateConfig  *UpdateConfig
+	pendingNotify string
 }
 
 // newAppModel creates an appModel for testing (does not start tea.Program).
@@ -277,6 +279,10 @@ func (a *appModel) Init() tea.Cmd {
 	}
 	if cmd := a.tickCmd(); cmd != nil {
 		cmds = append(cmds, cmd)
+	}
+	if a.pendingNotify != "" {
+		cmds = append(cmds, NotifyCmd(a.pendingNotify, 5*time.Second))
+		a.pendingNotify = ""
 	}
 	return tea.Batch(cmds...)
 }
@@ -656,12 +662,73 @@ func NewApp(opts ...Option) *App {
 
 // Run starts the TUI application. It blocks until the user quits.
 func (a *App) Run() error {
+	// Auto-update check (before TUI starts)
+	if a.model.updateConfig != nil {
+		a.runUpdateCheck()
+	}
+
 	a.program = tea.NewProgram(a.model, a.opts...)
 	_, err := a.program.Run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 	}
 	return err
+}
+
+// runUpdateCheck performs the update check based on configured mode.
+func (a *App) runUpdateCheck() {
+	// Clean up leftover .old binary from a previous self-update
+	CleanupOldBinary()
+
+	cfg := a.model.updateConfig
+	result, err := CheckForUpdate(*cfg)
+	if err != nil || !result.Available {
+		return
+	}
+
+	// Detect install method
+	exePath, exeErr := os.Executable()
+	if exeErr == nil {
+		result.InstallMethod = DetectInstallMethod(exePath)
+	}
+
+	upgradeHint := a.upgradeHint(result)
+
+	switch cfg.Mode {
+	case UpdateBlocking:
+		fmt.Printf("Update available: %s → %s\n", result.CurrentVersion, result.LatestVersion)
+		if result.InstallMethod != InstallManual {
+			// Package manager users get the upgrade command, no self-replace
+			fmt.Println(upgradeHint)
+			return
+		}
+		fmt.Print("Update now? [y/n]: ")
+		var answer string
+		fmt.Scanln(&answer)
+		if strings.ToLower(strings.TrimSpace(answer)) == "y" {
+			if err := SelfUpdate(*cfg); err != nil {
+				fmt.Fprintf(os.Stderr, "Update failed: %v\n", err)
+				return
+			}
+			fmt.Printf("Updated to %s. Please restart.\n", result.LatestVersion)
+			os.Exit(0)
+		}
+
+	case UpdateNotify:
+		// Queue a notification for after the TUI starts
+		a.model.pendingNotify = fmt.Sprintf("Update available: %s → %s  %s", result.CurrentVersion, result.LatestVersion, upgradeHint)
+	}
+}
+
+func (a *App) upgradeHint(result *UpdateResult) string {
+	switch result.InstallMethod {
+	case InstallHomebrew:
+		return fmt.Sprintf("Run: brew upgrade %s", a.model.updateConfig.BinaryName)
+	case InstallScoop:
+		return fmt.Sprintf("Run: scoop update %s", a.model.updateConfig.BinaryName)
+	default:
+		return result.ReleaseURL
+	}
 }
 
 // AddKeyBind adds a global keybinding after construction.
