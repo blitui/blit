@@ -106,6 +106,8 @@ type appModel struct {
 	focusIdx       int
 	width          int
 	height         int
+	notifyMsg      string
+	notifyExpiry   time.Time
 }
 
 // newAppModel creates an appModel for testing (does not start tea.Program).
@@ -295,6 +297,16 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case TickMsg:
 		return a.handleTick(msg)
+
+	case NotifyMsg:
+		a.notifyMsg = msg.Text
+		dur := msg.Duration
+		if dur <= 0 {
+			dur = 2 * time.Second
+		}
+		a.notifyExpiry = time.Now().Add(dur)
+		a.resize()
+		return a, nil
 	}
 
 	// Forward unknown messages to all components (for custom app messages)
@@ -323,6 +335,11 @@ func (a *appModel) broadcastMsg(msg tea.Msg) tea.Cmd {
 }
 
 func (a *appModel) handleTick(msg TickMsg) (tea.Model, tea.Cmd) {
+	if a.notifyMsg != "" && time.Now().After(a.notifyExpiry) {
+		a.notifyMsg = ""
+		a.resize()
+	}
+
 	var cmds []tea.Cmd
 	cmds = append(cmds, a.broadcastMsg(msg))
 	if cmd := a.tickCmd(); cmd != nil {
@@ -437,6 +454,10 @@ func (a *appModel) resize() {
 		a.statusBar.SetSize(a.width, 1)
 	}
 
+	if a.notifyMsg != "" {
+		contentHeight--
+	}
+
 	compHeight := contentHeight
 	if a.showBadges() {
 		compHeight--
@@ -538,8 +559,20 @@ func (a *appModel) View() string {
 		content = lipgloss.JoinVertical(lipgloss.Left, views...)
 	}
 
+	var bottom []string
+	if a.notifyMsg != "" {
+		notiStyle := lipgloss.NewStyle().
+			Foreground(lipgloss.Color(a.theme.TextInverse)).
+			Background(lipgloss.Color(a.theme.Flash)).
+			Width(a.width).
+			Padding(0, 1)
+		bottom = append(bottom, notiStyle.Render(a.notifyMsg))
+	}
 	if a.statusBar != nil {
-		return lipgloss.JoinVertical(lipgloss.Left, content, a.statusBar.View())
+		bottom = append(bottom, a.statusBar.View())
+	}
+	if len(bottom) > 0 {
+		return lipgloss.JoinVertical(lipgloss.Left, content, strings.Join(bottom, "\n"))
 	}
 	return content
 }
@@ -590,6 +623,13 @@ func (a *App) Run() error {
 func (a *App) AddKeyBind(kb KeyBind) {
 	a.model.globalBindings = append(a.model.globalBindings, kb)
 	a.model.registry.addBindings("global", []KeyBind{kb})
+}
+
+// Notify displays a timed notification. If duration is 0, defaults to 2 seconds.
+func (a *App) Notify(msg string, duration time.Duration) {
+	if a.program != nil {
+		a.program.Send(NotifyMsg{Text: msg, Duration: duration})
+	}
 }
 
 // Send sends a message to the running App from outside the Bubble Tea event loop.

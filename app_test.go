@@ -1,6 +1,7 @@
 package tuikit
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -206,5 +207,87 @@ func TestAppUnknownMessageForwarding(t *testing.T) {
 		t.Errorf("component should receive custom msg, got %T", c.lastMsg)
 	} else if msg.data != "hello" {
 		t.Errorf("expected data 'hello', got '%s'", msg.data)
+	}
+}
+
+func TestAppNotifySetAndExpire(t *testing.T) {
+	a := newAppModel(
+		WithTheme(DefaultTheme()),
+		WithTickInterval(100*time.Millisecond),
+	)
+	a.width = 80
+	a.height = 24
+	a.resize()
+
+	// Send a NotifyMsg
+	a.Update(NotifyMsg{Text: "hello", Duration: 50 * time.Millisecond})
+
+	if a.notifyMsg != "hello" {
+		t.Errorf("expected notify msg 'hello', got '%s'", a.notifyMsg)
+	}
+
+	// Simulate expiry
+	time.Sleep(60 * time.Millisecond)
+	a.Update(TickMsg{Time: time.Now()})
+
+	if a.notifyMsg != "" {
+		t.Errorf("notify msg should be cleared after expiry, got '%s'", a.notifyMsg)
+	}
+}
+
+func TestAppNotifyDefaultDuration(t *testing.T) {
+	a := newAppModel(WithTheme(DefaultTheme()))
+
+	a.Update(NotifyMsg{Text: "test"})
+
+	if a.notifyMsg != "test" {
+		t.Errorf("expected 'test', got '%s'", a.notifyMsg)
+	}
+	if a.notifyExpiry.IsZero() {
+		t.Error("expiry should be set even with zero duration (default 2s)")
+	}
+}
+
+func TestAppNotifyReplace(t *testing.T) {
+	a := newAppModel(WithTheme(DefaultTheme()))
+
+	a.Update(NotifyMsg{Text: "first", Duration: 5 * time.Second})
+	a.Update(NotifyMsg{Text: "second", Duration: 5 * time.Second})
+
+	if a.notifyMsg != "second" {
+		t.Errorf("expected 'second', got '%s'", a.notifyMsg)
+	}
+}
+
+func TestAppNotifyRendersInView(t *testing.T) {
+	c := &stubComponent{name: "main"}
+	a := newAppModel(
+		WithTheme(DefaultTheme()),
+		WithComponent("main", c),
+	)
+	a.width = 80
+	a.height = 24
+	a.resize()
+
+	a.Update(NotifyMsg{Text: "notification!", Duration: 5 * time.Second})
+
+	view := a.View()
+	if !strings.Contains(view, "notification!") {
+		t.Error("view should contain the notification text")
+	}
+}
+
+func TestNotifyCmd(t *testing.T) {
+	cmd := NotifyCmd("test", 2*time.Second)
+	msg := cmd()
+	nm, ok := msg.(NotifyMsg)
+	if !ok {
+		t.Fatalf("expected NotifyMsg, got %T", msg)
+	}
+	if nm.Text != "test" {
+		t.Errorf("expected 'test', got '%s'", nm.Text)
+	}
+	if nm.Duration != 2*time.Second {
+		t.Errorf("expected 2s, got %v", nm.Duration)
 	}
 }
