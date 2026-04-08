@@ -2,6 +2,7 @@ package tuikit_test
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
@@ -470,6 +471,43 @@ func TestExtractBinaryFromTarGzMissing(t *testing.T) {
 	archive := createTestTarGz(t, "other", []byte("content"))
 
 	_, err := tuikit.ExtractBinary(archive, "myapp", "tar.gz")
+	if err == nil {
+		t.Error("expected error for missing binary")
+	}
+}
+
+func createTestZip(t *testing.T, binaryName string, content []byte) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	fw, err := zw.Create(binaryName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := fw.Write(content); err != nil {
+		t.Fatal(err)
+	}
+	zw.Close()
+	return buf.Bytes()
+}
+
+func TestExtractBinaryFromZip(t *testing.T) {
+	content := []byte("windows binary content")
+	archive := createTestZip(t, "myapp.exe", content)
+
+	got, err := tuikit.ExtractBinary(archive, "myapp", "zip")
+	if err != nil {
+		t.Fatalf("ExtractBinary: %v", err)
+	}
+	if !bytes.Equal(got, content) {
+		t.Errorf("extracted content mismatch")
+	}
+}
+
+func TestExtractBinaryFromZipMissing(t *testing.T) {
+	archive := createTestZip(t, "other.exe", []byte("content"))
+
+	_, err := tuikit.ExtractBinary(archive, "myapp", "zip")
 	if err == nil {
 		t.Error("expected error for missing binary")
 	}

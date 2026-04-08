@@ -677,6 +677,9 @@ func (a *App) Run() error {
 
 // runUpdateCheck performs the update check based on configured mode.
 func (a *App) runUpdateCheck() {
+	// Clean up leftover .old binary from a previous self-update
+	CleanupOldBinary()
+
 	cfg := a.model.updateConfig
 	result, err := CheckForUpdate(*cfg)
 	if err != nil || !result.Available {
@@ -695,11 +698,8 @@ func (a *App) runUpdateCheck() {
 	case UpdateBlocking:
 		fmt.Printf("Update available: %s → %s\n", result.CurrentVersion, result.LatestVersion)
 		if result.InstallMethod != InstallManual {
+			// Package manager users get the upgrade command, no self-replace
 			fmt.Println(upgradeHint)
-			fmt.Print("Update now? [y/n]: ")
-			var answer string
-			fmt.Scanln(&answer)
-			// Package manager users just get the hint
 			return
 		}
 		fmt.Print("Update now? [y/n]: ")
