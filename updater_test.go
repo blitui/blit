@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -430,6 +432,206 @@ func TestCheckForUpdate(t *testing.T) {
 			t.Errorf("LatestVersion = %q, want %q (from cache)", result.LatestVersion, "v0.6.0")
 		}
 	})
+}
+
+func TestValidateConfig(t *testing.T) {
+	tests := []struct {
+		name    string
+		cfg     tuikit.UpdateConfig
+		wantErr string
+	}{
+		{
+			name: "valid config",
+			cfg: tuikit.UpdateConfig{
+				Owner:      "owner",
+				Repo:       "repo",
+				BinaryName: "myapp",
+				Version:    "v1.0.0",
+			},
+		},
+		{
+			name:    "missing owner",
+			cfg:     tuikit.UpdateConfig{Repo: "repo", BinaryName: "myapp", Version: "v1.0.0"},
+			wantErr: "Owner",
+		},
+		{
+			name:    "missing repo",
+			cfg:     tuikit.UpdateConfig{Owner: "owner", BinaryName: "myapp", Version: "v1.0.0"},
+			wantErr: "Repo",
+		},
+		{
+			name:    "missing binary name",
+			cfg:     tuikit.UpdateConfig{Owner: "owner", Repo: "repo", Version: "v1.0.0"},
+			wantErr: "BinaryName",
+		},
+		{
+			name:    "missing version",
+			cfg:     tuikit.UpdateConfig{Owner: "owner", Repo: "repo", BinaryName: "myapp"},
+			wantErr: "Version",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tuikit.ValidateConfig(tt.cfg)
+			if tt.wantErr == "" {
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
+			if err == nil {
+				t.Fatalf("expected error containing %q, got nil", tt.wantErr)
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("error %q does not contain %q", err.Error(), tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestCheckForUpdateValidatesConfig(t *testing.T) {
+	// Version is non-empty and non-dev, so ValidateConfig runs. Missing Owner should error.
+	cfg := tuikit.UpdateConfig{
+		Version:    "v1.0.0",
+		Repo:       "repo",
+		BinaryName: "myapp",
+	}
+	_, err := tuikit.CheckForUpdate(cfg)
+	if err == nil {
+		t.Fatal("expected error for missing Owner, got nil")
+	}
+}
+
+func TestSelfUpdateValidatesConfig(t *testing.T) {
+	cfg := tuikit.UpdateConfig{
+		Version:    "v1.0.0",
+		Repo:       "repo",
+		BinaryName: "myapp",
+		// Owner missing
+	}
+	err := tuikit.SelfUpdate(cfg)
+	if err == nil {
+		t.Fatal("expected error for missing Owner, got nil")
+	}
+	if !strings.Contains(err.Error(), "Owner") {
+		t.Errorf("error %q should mention Owner", err.Error())
+	}
+}
+
+func TestProgressFuncCalledDuringDownload(t *testing.T) {
+	binaryContent := []byte("fake binary content for progress test")
+
+	// Build archive matching the current OS/arch so MatchAsset succeeds.
+	ext := "tar.gz"
+	if runtime.GOOS == "windows" {
+		ext = "zip"
+	}
+	assetName := fmt.Sprintf("myapp_1.0.0_%s_%s.%s", runtime.GOOS, runtime.GOARCH, ext)
+
+	var archive []byte
+	if ext == "zip" {
+		archive = createTestZip(t, "myapp.exe", binaryContent)
+	} else {
+		archive = createTestTarGz(t, "myapp", binaryContent)
+	}
+
+	hash := sha256.Sum256(archive)
+	checksumFile := fmt.Sprintf("%x  %s\n", hash, assetName)
+
+	// srvURL is set after the server starts; the handler closure captures the pointer.
+	var srvURL string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/repos/owner/repo/releases/latest":
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{
+				"tag_name": "v1.0.0",
+				"html_url": "https://github.com/owner/repo/releases/tag/v1.0.0",
+				"body": "",
+				"assets": [
+					{"name": %q, "browser_download_url": %q},
+					{"name": "checksums.txt", "browser_download_url": %q}
+				]
+			}`,
+				assetName,
+				srvURL+"/download/asset",
+				srvURL+"/download/checksums",
+			)
+		case "/download/asset":
+			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(archive)))
+			w.Write(archive)
+		case "/download/checksums":
+			w.Write([]byte(checksumFile))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+	srvURL = srv.URL
+
+	var calls []struct{ received, total int64 }
+	cfg := tuikit.UpdateConfig{
+		Owner:      "owner",
+		Repo:       "repo",
+		BinaryName: "myapp",
+		Version:    "v0.9.0",
+		CacheDir:   t.TempDir(),
+		APIBaseURL: srv.URL,
+		OnProgress: func(received, total int64) {
+			calls = append(calls, struct{ received, total int64 }{received, total})
+		},
+	}
+
+	// SelfUpdate will fail at replaceBinary (no real exe path in tests), but
+	// progress must have been called before that point.
+	_ = tuikit.SelfUpdate(cfg)
+
+	if len(calls) == 0 {
+		t.Fatal("OnProgress was never called")
+	}
+	// Final call should report full size received.
+	last := calls[len(calls)-1]
+	if last.received != int64(len(archive)) {
+		t.Errorf("final received = %d, want %d", last.received, len(archive))
+	}
+	if last.total != int64(len(archive)) {
+		t.Errorf("final total = %d, want %d", last.total, len(archive))
+	}
+	// Progress should be monotonically non-decreasing.
+	for i := 1; i < len(calls); i++ {
+		if calls[i].received < calls[i-1].received {
+			t.Errorf("progress went backwards at call %d: %d < %d", i, calls[i].received, calls[i-1].received)
+		}
+	}
+}
+
+func TestProgressFuncNilIsNoOp(t *testing.T) {
+	// Ensure nil OnProgress does not panic — covered by existing SelfUpdate tests,
+	// but we explicitly verify downloadURL (which calls downloadURLWithProgress(nil)) here.
+	content := []byte("data")
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(content)
+	}))
+	defer srv.Close()
+
+	// Use CheckForUpdate path which internally uses downloadURL (no progress).
+	// This is a compile+runtime sanity check that nil progress doesn't panic.
+	cfg := tuikit.UpdateConfig{
+		Owner:      "owner",
+		Repo:       "repo",
+		BinaryName: "myapp",
+		Version:    "v0.1.0",
+		CacheDir:   t.TempDir(),
+		APIBaseURL: srv.URL,
+		// OnProgress deliberately nil
+	}
+	// Server returns invalid JSON — result will be silently ignored. We just want no panic.
+	result, err := tuikit.CheckForUpdate(cfg)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	_ = result
 }
 
 func createTestTarGz(t *testing.T, binaryName string, content []byte) []byte {

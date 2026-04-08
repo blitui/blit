@@ -222,6 +222,10 @@ const (
 	UpdateBlocking
 )
 
+// ProgressFunc is called during download with bytes received and total bytes.
+// If total is -1, the content length is unknown.
+type ProgressFunc func(received, total int64)
+
 // UpdateConfig configures the auto-update system.
 type UpdateConfig struct {
 	Owner      string        // GitHub repo owner
@@ -232,9 +236,31 @@ type UpdateConfig struct {
 	CacheTTL   time.Duration // How long to cache the check result (default: 24h)
 	CacheDir   string        // Override cache directory (default: os.UserConfigDir()/<BinaryName>)
 
+	// OnProgress is called during binary asset download with bytes received and total bytes.
+	// If nil, no progress reporting occurs.
+	OnProgress ProgressFunc
+
 	// APIBaseURL overrides the GitHub API URL. Leave empty for production.
 	// Exported for testing; not intended for consumer use.
 	APIBaseURL string
+}
+
+// ValidateConfig checks that cfg has all required fields set.
+// Returns a descriptive error if any required field is missing.
+func ValidateConfig(cfg UpdateConfig) error {
+	if cfg.Owner == "" {
+		return fmt.Errorf("UpdateConfig.Owner is required")
+	}
+	if cfg.Repo == "" {
+		return fmt.Errorf("UpdateConfig.Repo is required")
+	}
+	if cfg.BinaryName == "" {
+		return fmt.Errorf("UpdateConfig.BinaryName is required")
+	}
+	if cfg.Version == "" {
+		return fmt.Errorf("UpdateConfig.Version is required")
+	}
+	return nil
 }
 
 func (c UpdateConfig) githubBaseURL() string {
@@ -282,6 +308,10 @@ func CheckForUpdate(cfg UpdateConfig) (*UpdateResult, error) {
 	// Skip for dev builds
 	if cfg.Version == "" || cfg.Version == "dev" {
 		return result, nil
+	}
+
+	if err := ValidateConfig(cfg); err != nil {
+		return nil, fmt.Errorf("invalid config: %w", err)
 	}
 
 	current, err := ParseVersion(cfg.Version)
@@ -398,6 +428,10 @@ func extractFromZip(data []byte, binaryName string) ([]byte, error) {
 // SelfUpdate downloads the latest release and replaces the current binary.
 // Only works for manual installs (not Homebrew/Scoop).
 func SelfUpdate(cfg UpdateConfig) error {
+	if err := ValidateConfig(cfg); err != nil {
+		return fmt.Errorf("invalid config: %w", err)
+	}
+
 	rel, err := FetchLatestRelease(cfg.githubBaseURL(), cfg.Owner, cfg.Repo)
 	if err != nil {
 		return fmt.Errorf("fetching release: %w", err)
@@ -416,7 +450,7 @@ func SelfUpdate(cfg UpdateConfig) error {
 	fmt.Printf("Downloading %s...\n", asset.Name)
 
 	client := &http.Client{Timeout: 120 * time.Second}
-	assetData, err := downloadURL(client, asset.DownloadURL)
+	assetData, err := downloadURLWithProgress(client, asset.DownloadURL, cfg.OnProgress)
 	if err != nil {
 		return fmt.Errorf("downloading asset: %w", err)
 	}
@@ -453,15 +487,46 @@ func SelfUpdate(cfg UpdateConfig) error {
 }
 
 func downloadURL(client *http.Client, url string) ([]byte, error) {
+	return downloadURLWithProgress(client, url, nil)
+}
+
+func downloadURLWithProgress(client *http.Client, url string, onProgress ProgressFunc) ([]byte, error) {
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GET %s: %w", url, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
-	return io.ReadAll(resp.Body)
+
+	if onProgress == nil {
+		return io.ReadAll(resp.Body)
+	}
+
+	total := int64(-1)
+	if cl := resp.ContentLength; cl > 0 {
+		total = cl
+	}
+
+	var buf bytes.Buffer
+	var received int64
+	chunk := make([]byte, 32*1024)
+	for {
+		n, readErr := resp.Body.Read(chunk)
+		if n > 0 {
+			buf.Write(chunk[:n])
+			received += int64(n)
+			onProgress(received, total)
+		}
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			return nil, fmt.Errorf("reading response body: %w", readErr)
+		}
+	}
+	return buf.Bytes(), nil
 }
 
 func replaceBinary(exePath string, newBinary []byte) error {
