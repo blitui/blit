@@ -23,6 +23,7 @@ func (s *stubOverlay) SetSize(w, h int)                        { s.width = w; s.
 func (s *stubOverlay) Focused() bool                           { return s.focused }
 func (s *stubOverlay) SetFocused(f bool)                       { s.focused = f }
 func (s *stubOverlay) IsActive() bool                          { return s.active }
+func (s *stubOverlay) SetActive(v bool)                        { s.active = v }
 func (s *stubOverlay) Close()                                  { s.active = false }
 
 func TestOverlayStackEmpty(t *testing.T) {

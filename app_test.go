@@ -291,3 +291,29 @@ func TestNotifyCmd(t *testing.T) {
 		t.Errorf("expected 2s, got %v", nm.Duration)
 	}
 }
+
+func TestAppAutoPushActiveOverlay(t *testing.T) {
+	c := &stubComponent{name: "main"}
+	o := &stubOverlay{name: "detail"}
+
+	a := newAppModel(
+		WithTheme(DefaultTheme()),
+		WithComponent("main", c),
+		WithOverlay("detail", "", o), // no trigger key
+	)
+
+	// Overlay not on stack yet
+	if a.overlays.active() != nil {
+		t.Error("no overlay should be active initially")
+	}
+
+	// Simulate component activating the overlay
+	o.active = true
+
+	// Broadcast a message to trigger the auto-push check
+	a.Update(TickMsg{Time: time.Now()})
+
+	if a.overlays.active() != o {
+		t.Error("overlay should be auto-pushed after becoming active")
+	}
+}

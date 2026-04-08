@@ -310,7 +310,9 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// Forward unknown messages to all components (for custom app messages)
-	return a, a.broadcastMsg(msg)
+	cmd := a.broadcastMsg(msg)
+	a.checkOverlayActivation()
+	return a, cmd
 }
 
 // broadcastMsg sends a message to all registered components.
@@ -345,6 +347,9 @@ func (a *appModel) handleTick(msg TickMsg) (tea.Model, tea.Cmd) {
 	if cmd := a.tickCmd(); cmd != nil {
 		cmds = append(cmds, cmd)
 	}
+
+	a.checkOverlayActivation()
+
 	return a, tea.Batch(cmds...)
 }
 
@@ -445,6 +450,27 @@ func (a *appModel) openOverlay(o Overlay) {
 		}
 	}
 	a.overlays.push(o)
+}
+
+// checkOverlayActivation pushes any named overlay that became active
+// outside of the normal trigger-key flow (e.g., via component calling Show()).
+func (a *appModel) checkOverlayActivation() {
+	for _, no := range a.namedOverlays {
+		if no.overlay.IsActive() && a.overlays.active() != no.overlay {
+			// Check it's not already somewhere in the stack
+			found := false
+			for _, stacked := range a.overlays.stack {
+				if stacked == no.overlay {
+					found = true
+					break
+				}
+			}
+			if !found {
+				no.overlay.SetSize(a.width, a.height)
+				a.overlays.push(no.overlay)
+			}
+		}
+	}
 }
 
 func (a *appModel) resize() {
