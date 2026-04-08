@@ -368,6 +368,41 @@ func (a *appModel) handleTick(msg TickMsg) (tea.Model, tea.Cmd) {
 }
 
 func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	// Route mouse events to the correct pane based on X position
+	if a.dualPane != nil && a.dualPane.Side != nil {
+		main, _, sideVisible := a.dualPane.compute(a.width, 0)
+		if sideVisible {
+			var mainStart, mainEnd int
+			if a.dualPane.SideRight {
+				mainStart = 0
+				mainEnd = main.width
+			} else {
+				sideW := a.width - main.width - 3 // 3 for separator
+				mainStart = sideW + 3
+				mainEnd = a.width
+			}
+
+			target := 0 // main
+			if msg.X < mainStart || msg.X >= mainEnd {
+				target = 1 // side
+			}
+
+			// Switch focus to clicked pane
+			if target != a.focusIdx {
+				a.setFocus(target)
+			}
+
+			// Adjust X coordinate relative to the target pane
+			if target == 0 {
+				msg.X -= mainStart
+			} else {
+				if a.dualPane.SideRight {
+					msg.X -= mainEnd + 3 // skip past main + separator
+				}
+			}
+		}
+	}
+
 	focusable := a.focusableComponents()
 	if a.focusIdx < len(focusable) {
 		_, cmd := focusable[a.focusIdx].Update(msg)
@@ -398,7 +433,27 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a, cmd
 	}
 
-	// 2. Built-in global bindings
+	// 2. Check if focused component captures input (e.g., search mode)
+	focusable := a.focusableComponents()
+	inputCaptured := false
+	if a.focusIdx < len(focusable) {
+		if ic, ok := focusable[a.focusIdx].(InputCapture); ok {
+			inputCaptured = ic.CapturesInput()
+		}
+	}
+
+	// When input is captured, only ctrl+c passes through to globals
+	if inputCaptured {
+		if key == "ctrl+c" {
+			return a, tea.Quit
+		}
+		if a.focusIdx < len(focusable) {
+			_, cmd := focusable[a.focusIdx].Update(msg)
+			return a, cmd
+		}
+	}
+
+	// 3. Built-in global bindings
 	switch key {
 	case "q", "ctrl+c":
 		return a, tea.Quit
@@ -410,25 +465,25 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return a, nil
 		}
 	case "left", "right":
-		if len(a.focusableComponents()) > 1 {
+		if len(focusable) > 1 {
 			a.cycleFocus()
 			return a, nil
 		}
 	default:
-		if a.focusCycleKey != "" && key == a.focusCycleKey && len(a.focusableComponents()) > 1 {
+		if a.focusCycleKey != "" && key == a.focusCycleKey && len(focusable) > 1 {
 			a.cycleFocus()
 			return a, nil
 		}
 	}
 
-	// 3. Dual pane toggle
+	// 4. Dual pane toggle
 	if a.dualPane != nil && a.dualPane.ToggleKey != "" && key == a.dualPane.ToggleKey {
 		a.dualPane.Toggle()
 		a.resize()
 		return a, nil
 	}
 
-	// 4. Named overlay triggers (each overlay has its own trigger key)
+	// 5. Named overlay triggers (each overlay has its own trigger key)
 	for _, no := range a.namedOverlays {
 		if no.triggerKey == key {
 			a.openOverlay(no.overlay)
@@ -436,7 +491,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// 5. User-defined global keybindings with handlers
+	// 6. User-defined global keybindings with handlers
 	for _, kb := range a.globalBindings {
 		if kb.Key == key && kb.Handler != nil {
 			kb.Handler()
@@ -444,14 +499,20 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// 6. Focused component
-	focusable := a.focusableComponents()
+	// 7. Focused component
 	if a.focusIdx < len(focusable) {
 		_, cmd := focusable[a.focusIdx].Update(msg)
 		return a, cmd
 	}
 
 	return a, nil
+}
+
+// InputCapture is implemented by components that can enter text-input mode
+// (e.g., search, filter). When CapturesInput returns true, the App skips
+// global keybindings and sends keys directly to the component.
+type InputCapture interface {
+	CapturesInput() bool
 }
 
 // Activatable is implemented by overlays that can be explicitly activated.
@@ -502,7 +563,14 @@ func (a *appModel) resize() {
 	contentHeight := a.height
 	if a.statusBar != nil {
 		contentHeight--
-		a.statusBar.SetSize(a.width, 1)
+		sbWidth := a.width
+		if a.dualPane != nil {
+			main, _, vis := a.dualPane.compute(a.width, 0)
+			if vis {
+				sbWidth = main.width
+			}
+		}
+		a.statusBar.SetSize(sbWidth, 1)
 	}
 
 	if a.notifyMsg != "" {
@@ -576,6 +644,14 @@ func (a *appModel) View() string {
 		if a.statusBar != nil {
 			contentHeight--
 		}
+		if a.notifyMsg != "" {
+			contentHeight--
+		}
+		if overlay := a.overlays.active(); overlay != nil {
+			if _, ok := overlay.(InlineOverlay); ok {
+				contentHeight--
+			}
+		}
 		compHeight := contentHeight
 		if badges {
 			compHeight--
@@ -647,8 +723,9 @@ func (a *appModel) joinPanes(mainView, sideView string, height int) string {
 	sepStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(a.theme.Border))
 
-	// Build a full-height separator
-	sep := sepStyle.Render(strings.Repeat("│\n", height-1) + "│")
+	// Build a full-height separator with spacing on both sides
+	sepLine := " │ "
+	sep := sepStyle.Render(strings.Repeat(sepLine+"\n", height-1) + sepLine)
 
 	if a.dualPane.SideRight {
 		return lipgloss.JoinHorizontal(lipgloss.Top, mainView, sep, sideView)

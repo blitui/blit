@@ -22,8 +22,8 @@ func TestDualPaneSizeNormal(t *testing.T) {
 	if !sideVisible {
 		t.Error("side should be visible at width 120")
 	}
-	if main.width != 89 {
-		t.Errorf("expected main width 89, got %d", main.width)
+	if main.width != 87 {
+		t.Errorf("expected main width 87, got %d", main.width)
 	}
 	if side.width != 30 {
 		t.Errorf("expected side width 30, got %d", side.width)
