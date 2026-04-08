@@ -43,10 +43,10 @@ func (d DualPane) compute(totalWidth, totalHeight int) (paneSize, paneSize, bool
 	}
 
 	// Auto-hide if terminal too narrow
-	if totalWidth < d.MinMainWidth+d.SideWidth+1 {
+	if totalWidth < d.MinMainWidth+d.SideWidth+3 {
 		return paneSize{totalWidth, totalHeight}, paneSize{}, false
 	}
 
-	mainW := totalWidth - d.SideWidth - 1 // 1 for border/separator
+	mainW := totalWidth - d.SideWidth - 3 // 3 for " │ " separator
 	return paneSize{mainW, totalHeight}, paneSize{d.SideWidth, totalHeight}, true
 }

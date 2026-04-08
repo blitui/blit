@@ -19,11 +19,13 @@ const (
 
 // Column defines a table column with responsive visibility.
 type Column struct {
-	Title    string    // Column header text
-	Width    int       // Proportional width weight
-	MinWidth int       // Hide column when terminal width is below this (0 = always show)
-	Align    Alignment // Text alignment within the column
-	Sortable bool      // Whether this column supports sorting
+	Title      string    // Column header text
+	Width      int       // Proportional width weight
+	MaxWidth   int       // Cap column at this many characters (0 = no cap)
+	MinWidth   int       // Hide column when terminal width is below this (0 = always show)
+	Align      Alignment // Text alignment within the column
+	Sortable   bool      // Whether this column supports sorting
+	NoRowStyle bool      // Exempt this column from row-level background styling
 }
 
 // Row is a slice of cell values, one per column.
@@ -46,6 +48,11 @@ type FilterFunc func(row Row) bool
 // RowClickHandler is called when a row is clicked or Enter is pressed.
 type RowClickHandler func(row Row, rowIdx int)
 
+// RowStyler returns an optional lipgloss.Style to apply to an entire row.
+// Use this for full-row highlights (cursor, flash effects, alerts) when
+// a CellRenderer is also in use. Return nil for no row-level styling.
+type RowStyler func(row Row, idx int, isCursor bool, theme Theme) *lipgloss.Style
+
 // TableOpts configures a Table component.
 type TableOpts struct {
 	Sortable     bool           // Enable sort cycling with 's'
@@ -53,6 +60,7 @@ type TableOpts struct {
 	CursorStyle  CursorStyle   // How the cursor is rendered
 	HeaderStyle  lipgloss.Style // Override header style (zero value = use theme)
 	CellRenderer CellRenderer   // Custom cell renderer (nil = plain text)
+	RowStyler    RowStyler      // Optional full-row style (applied after cell rendering)
 	SortFunc     SortFunc       // Custom sort function (nil = lexicographic)
 	OnRowClick   RowClickHandler // Called on Enter or mouse click on a row
 }
@@ -274,11 +282,11 @@ func (t *Table) View() string {
 	visibleCols := t.visibleColumns()
 	colWidths := t.computeWidths(visibleCols)
 
-	var sb strings.Builder
+	// Exactly t.height lines, joined without trailing \n
+	lines := make([]string, 0, t.height)
 
 	// Header
-	sb.WriteString(t.renderHeader(visibleCols, colWidths))
-	sb.WriteString("\n")
+	lines = append(lines, t.renderHeader(visibleCols, colWidths))
 
 	// Rows
 	visibleRows := t.height - 2 // header + possible filter line
@@ -292,20 +300,18 @@ func (t *Table) View() string {
 	}
 
 	for i := t.offset; i < end; i++ {
-		row := t.visible[i]
-		sb.WriteString(t.renderRow(row, i, visibleCols, colWidths))
-		if i < end-1 {
-			sb.WriteString("\n")
-		}
+		lines = append(lines, t.renderRow(t.visible[i], i, visibleCols, colWidths))
 	}
 
-	if t.filtering {
-		sb.WriteString("\n")
+	if t.filtering && len(lines) > 0 {
 		filterStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(t.theme.Accent))
-		sb.WriteString(filterStyle.Render(fmt.Sprintf(" / %s█", t.filterQuery)))
+		lines[len(lines)-1] = filterStyle.Render(fmt.Sprintf(" / %s█", t.filterQuery))
 	}
 
-	return sb.String()
+	if len(lines) > t.height {
+		lines = lines[:t.height]
+	}
+	return strings.Join(lines, "\n")
 }
 
 func (t *Table) renderHeader(cols []Column, widths []int) string {
@@ -337,44 +343,67 @@ func (t *Table) renderHeader(cols []Column, widths []int) string {
 func (t *Table) renderRow(row Row, idx int, cols []Column, widths []int) string {
 	isCursor := idx == t.cursor && t.focused
 
+	// Determine row-level style first so separators can be styled too
+	var rowStyle *lipgloss.Style
+	if t.opts.RowStyler != nil {
+		rowStyle = t.opts.RowStyler(row, idx, isCursor, t.theme)
+	}
+	if rowStyle == nil && isCursor {
+		cs := lipgloss.NewStyle().
+			Background(lipgloss.Color(t.theme.Cursor)).
+			Foreground(lipgloss.Color(t.theme.TextInverse))
+		rowStyle = &cs
+	}
+
 	var parts []string
 	for i, col := range cols {
 		origIdx := t.origColIndex(col)
 
 		var cellContent string
 		if t.opts.CellRenderer != nil {
-			// Custom cell renderer — app controls styling per cell
 			cellContent = t.opts.CellRenderer(row, origIdx, isCursor, t.theme)
 		} else {
-			// Default: plain text from row data
 			if origIdx < len(row) {
 				cellContent = row[origIdx]
 			}
 		}
 
-		cell := t.alignCell(cellContent, widths[i], col.Align)
+		// Exempt columns marked NoRowStyle from row-level background
+		cellRowStyle := rowStyle
+		if col.NoRowStyle {
+			cellRowStyle = nil
+		}
+		cell := t.alignCellStyled(cellContent, widths[i], col.Align, cellRowStyle)
 		parts = append(parts, cell)
 	}
 
-	line := strings.Join(parts, " ")
-	if isCursor && t.opts.CellRenderer == nil {
-		// Default cursor styling (only when no custom renderer — custom renderers
-		// handle cursor styling themselves via the isCursor parameter)
-		cursorStyle := lipgloss.NewStyle().
-			Background(lipgloss.Color(t.theme.Cursor)).
-			Foreground(lipgloss.Color(t.theme.TextInverse))
-		line = cursorStyle.Render(line)
+	// Style separators and trailing padding with row background
+	sep := " "
+	if rowStyle != nil {
+		sep = rowStyle.Render(" ")
+	}
+	line := strings.Join(parts, sep)
+
+	// Pad to full table width with row style background
+	if rowStyle != nil {
+		vis := lipgloss.Width(line)
+		if vis < t.width {
+			line += rowStyle.Render(strings.Repeat(" ", t.width-vis))
+		}
 	}
 
 	return line
 }
 
 func (t *Table) alignCell(content string, width int, align Alignment) string {
+	return t.alignCellStyled(content, width, align, nil)
+}
+
+func (t *Table) alignCellStyled(content string, width int, align Alignment, rs *lipgloss.Style) string {
 	contentWidth := lipgloss.Width(content)
 	if contentWidth > width {
 		// Truncate — but be careful with styled content
 		if width > 1 {
-			// For plain text, truncate directly. For styled text, this is approximate.
 			runes := []rune(content)
 			if len(runes) > width-1 {
 				content = string(runes[:width-1]) + "…"
@@ -390,15 +419,30 @@ func (t *Table) alignCell(content string, width int, align Alignment) string {
 		gap = 0
 	}
 
+	pad := strings.Repeat(" ", gap)
+	if rs != nil && gap > 0 {
+		pad = rs.Render(pad)
+	}
+
 	switch align {
 	case Right:
-		return strings.Repeat(" ", gap) + content
+		return pad + content
 	case Center:
 		left := gap / 2
 		right := gap - left
-		return strings.Repeat(" ", left) + content + strings.Repeat(" ", right)
+		lpad := strings.Repeat(" ", left)
+		rpad := strings.Repeat(" ", right)
+		if rs != nil {
+			if left > 0 {
+				lpad = rs.Render(lpad)
+			}
+			if right > 0 {
+				rpad = rs.Render(rpad)
+			}
+		}
+		return lpad + content + rpad
 	default:
-		return content + strings.Repeat(" ", gap)
+		return content + pad
 	}
 }
 
@@ -438,15 +482,28 @@ func (t *Table) computeWidths(cols []Column) []int {
 	used := 0
 	for i, c := range cols {
 		w := (c.Width * available) / totalWeight
-		if w < 4 {
+		if c.MaxWidth > 0 {
+			if w > c.MaxWidth {
+				w = c.MaxWidth
+			}
+		} else if w < 4 {
 			w = 4
 		}
 		widths[i] = w
 		used += w
 	}
 
+	// Redistribute excess to the last uncapped column
 	if diff := available - used; diff > 0 && len(widths) > 0 {
-		widths[len(widths)-1] += diff
+		for i := len(widths) - 1; i >= 0; i-- {
+			if cols[i].MaxWidth == 0 {
+				widths[i] += diff
+				break
+			}
+			if i == 0 {
+				widths[len(widths)-1] += diff
+			}
+		}
 	}
 
 	return widths
