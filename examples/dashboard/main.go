@@ -1,3 +1,11 @@
+// Package main demonstrates a full-featured tuikit dashboard.
+//
+// This example showcases: Table with sorting/filtering, DualPane layout,
+// ConfigEditor overlay, StatusBar, Help, custom cell rendering with semantic
+// colors, custom sort functions, and global keybindings.
+//
+// Theme: "Galactic Pizza Delivery" — 42 pizza deliveries across the galaxy
+// with drivers, statuses, ETAs, and tips. Fun data makes for better demos.
 package main
 
 import (

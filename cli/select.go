@@ -13,6 +13,7 @@ var (
 	selectedStyle = lipgloss.NewStyle().Bold(true)
 	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 	filterStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	pickedStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("82")).Bold(true)
 )
 
 type selectModel struct {
@@ -98,11 +99,14 @@ func (m selectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m selectModel) View() string {
+	if m.done && !m.quitting && m.selected >= 0 {
+		return confirmPromptStyle.Render(m.prompt) + " " + pickedStyle.Render(m.items[m.selected]) + "\n"
+	}
 	if m.done {
 		return ""
 	}
 	var sb strings.Builder
-	sb.WriteString(m.prompt)
+	sb.WriteString(confirmPromptStyle.Render(m.prompt))
 	sb.WriteString("\n")
 	if m.useFilter {
 		sb.WriteString(filterStyle.Render("  Filter: "))
@@ -135,7 +139,7 @@ func SelectOne(prompt string, items []string) (string, int, error) {
 		return "", -1, fmt.Errorf("select: no items provided")
 	}
 	m := newSelectModel(prompt, items)
-	p := tea.NewProgram(m, tea.WithoutRenderer())
+	p := tea.NewProgram(m)
 	result, err := p.Run()
 	if err != nil {
 		return "", -1, fmt.Errorf("select: %w", err)

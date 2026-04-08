@@ -79,10 +79,16 @@ func TestConfirmEnterDefaultNo(t *testing.T) {
 	}
 }
 
-func TestConfirmViewEmptyWhenDone(t *testing.T) {
-	m := confirmModel{done: true}
-	if m.View() != "" {
-		t.Errorf("expected empty view when done")
+func TestConfirmViewShowsResultWhenDone(t *testing.T) {
+	m := confirmModel{prompt: "Continue?", done: true, result: true}
+	view := m.View()
+	if !strings.Contains(view, "Continue?") || !strings.Contains(view, "Yes") {
+		t.Errorf("expected completion view with prompt and answer, got: %q", view)
+	}
+	m.result = false
+	view = m.View()
+	if !strings.Contains(view, "No") {
+		t.Errorf("expected 'No' in completion view, got: %q", view)
 	}
 }
 
@@ -113,11 +119,22 @@ func TestInputViewShowsError(t *testing.T) {
 	}
 }
 
-func TestInputViewEmptyWhenDone(t *testing.T) {
+func TestInputViewShowsValueWhenDone(t *testing.T) {
 	m := newInputModel("Name:", nil)
 	m.done = true
+	m.value = "myproject"
+	view := m.View()
+	if !strings.Contains(view, "Name:") || !strings.Contains(view, "myproject") {
+		t.Errorf("expected completion view with prompt and value, got: %q", view)
+	}
+}
+
+func TestInputViewEmptyWhenCancelled(t *testing.T) {
+	m := newInputModel("Name:", nil)
+	m.done = true
+	m.quitting = true
 	if m.View() != "" {
-		t.Errorf("expected empty view when done")
+		t.Errorf("expected empty view when cancelled")
 	}
 }
 
