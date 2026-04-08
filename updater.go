@@ -206,3 +206,122 @@ func VerifyChecksum(data []byte, assetName string, checksumFile []byte) error {
 	}
 	return nil
 }
+
+// UpdateMode controls how the update prompt behaves.
+type UpdateMode int
+
+const (
+	// UpdateNotify shows a non-blocking notification in the TUI after startup.
+	UpdateNotify UpdateMode = iota
+	// UpdateBlocking prompts the user in stdout before the TUI starts.
+	UpdateBlocking
+)
+
+// UpdateConfig configures the auto-update system.
+type UpdateConfig struct {
+	Owner      string        // GitHub repo owner
+	Repo       string        // GitHub repo name
+	BinaryName string        // Binary name in release assets (e.g. "cryptstream")
+	Version    string        // Current version (set via ldflags; "dev" or "" skips check)
+	Mode       UpdateMode    // UpdateNotify or UpdateBlocking
+	CacheTTL   time.Duration // How long to cache the check result (default: 24h)
+	CacheDir   string        // Override cache directory (default: os.UserConfigDir()/<BinaryName>)
+
+	// APIBaseURL overrides the GitHub API URL. Leave empty for production.
+	// Exported for testing; not intended for consumer use.
+	APIBaseURL string
+}
+
+func (c UpdateConfig) githubBaseURL() string {
+	if c.APIBaseURL != "" {
+		return c.APIBaseURL
+	}
+	return "https://api.github.com"
+}
+
+func (c UpdateConfig) cachePath() string {
+	dir := c.CacheDir
+	if dir == "" {
+		base, err := os.UserConfigDir()
+		if err != nil {
+			base = os.TempDir()
+		}
+		dir = filepath.Join(base, c.BinaryName)
+	}
+	return filepath.Join(dir, "update-check.json")
+}
+
+func (c UpdateConfig) ttl() time.Duration {
+	if c.CacheTTL <= 0 {
+		return 24 * time.Hour
+	}
+	return c.CacheTTL
+}
+
+// UpdateResult holds the result of an update check.
+type UpdateResult struct {
+	Available      bool
+	CurrentVersion string
+	LatestVersion  string
+	ReleaseURL     string
+	ReleaseNotes   string
+	InstallMethod  InstallMethod
+}
+
+// CheckForUpdate checks GitHub Releases for a newer version.
+// Returns a zero-value UpdateResult (Available=false) if the version is "dev" or empty.
+// Network/API errors return a zero-value result with no error (fail-silent).
+func CheckForUpdate(cfg UpdateConfig) (*UpdateResult, error) {
+	result := &UpdateResult{CurrentVersion: cfg.Version}
+
+	// Skip for dev builds
+	if cfg.Version == "" || cfg.Version == "dev" {
+		return result, nil
+	}
+
+	current, err := ParseVersion(cfg.Version)
+	if err != nil {
+		return result, nil // unparseable version, skip silently
+	}
+
+	// Check cache
+	cachePath := cfg.cachePath()
+	cache, cacheErr := ReadCache(cachePath)
+	if cacheErr == nil && cache.IsFresh(cfg.ttl()) {
+		latest, err := ParseVersion(cache.LatestVersion)
+		if err == nil {
+			result.LatestVersion = cache.LatestVersion
+			result.ReleaseURL = cache.ReleaseURL
+			result.ReleaseNotes = cache.ReleaseNotes
+			result.Available = latest.NewerThan(current)
+		}
+		return result, nil
+	}
+
+	// Fetch from GitHub
+	rel, err := FetchLatestRelease(cfg.githubBaseURL(), cfg.Owner, cfg.Repo)
+	if err != nil {
+		return result, nil // network error, skip silently
+	}
+
+	// Write to cache
+	newCache := UpdateCache{
+		CheckedAt:     time.Now().UTC(),
+		LatestVersion: rel.TagName,
+		ReleaseURL:    rel.HTMLURL,
+		ReleaseNotes:  rel.Body,
+	}
+	_ = WriteCache(cachePath, newCache) // best-effort cache write
+
+	latest, err := ParseVersion(rel.TagName)
+	if err != nil {
+		return result, nil
+	}
+
+	result.LatestVersion = rel.TagName
+	result.ReleaseURL = rel.HTMLURL
+	result.ReleaseNotes = rel.Body
+	result.Available = latest.NewerThan(current)
+
+	return result, nil
+}

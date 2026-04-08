@@ -275,3 +275,121 @@ func TestVerifyChecksum(t *testing.T) {
 	})
 }
 
+func TestCheckForUpdate(t *testing.T) {
+	responseJSON := `{
+		"tag_name": "v0.5.0",
+		"html_url": "https://github.com/owner/repo/releases/tag/v0.5.0",
+		"body": "Release notes",
+		"assets": []
+	}`
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(responseJSON))
+	}))
+	defer srv.Close()
+
+	dir := t.TempDir()
+
+	t.Run("update available", func(t *testing.T) {
+		cfg := tuikit.UpdateConfig{
+			Owner:      "owner",
+			Repo:       "repo",
+			BinaryName: "myapp",
+			Version:    "v0.3.0",
+			CacheTTL:   24 * time.Hour,
+			CacheDir:   dir,
+			APIBaseURL: srv.URL,
+		}
+		result, err := tuikit.CheckForUpdate(cfg)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !result.Available {
+			t.Error("expected update to be available")
+		}
+		if result.LatestVersion != "v0.5.0" {
+			t.Errorf("LatestVersion = %q, want %q", result.LatestVersion, "v0.5.0")
+		}
+	})
+
+	t.Run("no update when current is latest", func(t *testing.T) {
+		cfg := tuikit.UpdateConfig{
+			Owner:      "owner",
+			Repo:       "repo",
+			BinaryName: "myapp",
+			Version:    "v0.5.0",
+			CacheTTL:   24 * time.Hour,
+			CacheDir:   filepath.Join(dir, "no-update"),
+			APIBaseURL: srv.URL,
+		}
+		result, err := tuikit.CheckForUpdate(cfg)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Available {
+			t.Error("expected no update available")
+		}
+	})
+
+	t.Run("skip when version is dev", func(t *testing.T) {
+		cfg := tuikit.UpdateConfig{
+			Owner:   "owner",
+			Repo:    "repo",
+			Version: "dev",
+		}
+		result, err := tuikit.CheckForUpdate(cfg)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Available {
+			t.Error("expected no update for dev version")
+		}
+	})
+
+	t.Run("skip when version is empty", func(t *testing.T) {
+		cfg := tuikit.UpdateConfig{
+			Owner: "owner",
+			Repo:  "repo",
+		}
+		result, err := tuikit.CheckForUpdate(cfg)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Available {
+			t.Error("expected no update for empty version")
+		}
+	})
+
+	t.Run("uses cache when fresh", func(t *testing.T) {
+		cacheDir := filepath.Join(dir, "cached")
+		cachePath := filepath.Join(cacheDir, "update-check.json")
+		cache := tuikit.UpdateCache{
+			CheckedAt:     time.Now().UTC(),
+			LatestVersion: "v0.6.0",
+			ReleaseURL:    "https://example.com",
+		}
+		if err := tuikit.WriteCache(cachePath, cache); err != nil {
+			t.Fatalf("WriteCache: %v", err)
+		}
+
+		// Server would return v0.5.0, but cache says v0.6.0
+		cfg := tuikit.UpdateConfig{
+			Owner:      "owner",
+			Repo:       "repo",
+			BinaryName: "myapp",
+			Version:    "v0.3.0",
+			CacheTTL:   24 * time.Hour,
+			CacheDir:   cacheDir,
+			APIBaseURL: srv.URL,
+		}
+		result, err := tuikit.CheckForUpdate(cfg)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		// Should use cached v0.6.0, not server's v0.5.0
+		if result.LatestVersion != "v0.6.0" {
+			t.Errorf("LatestVersion = %q, want %q (from cache)", result.LatestVersion, "v0.6.0")
+		}
+	})
+}
