@@ -1,6 +1,11 @@
 # Dev tooling
 .claude/
+.omc/
 .opencode/
+.cursorrules
+.aider*
+.copilot/
+CLAUDE.md
 AGENTS.md
 docs/superpowers/
 
