@@ -1,6 +1,9 @@
 package tuikit_test
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"fmt"
 	"net/http"
@@ -426,4 +429,48 @@ func TestCheckForUpdate(t *testing.T) {
 			t.Errorf("LatestVersion = %q, want %q (from cache)", result.LatestVersion, "v0.6.0")
 		}
 	})
+}
+
+func createTestTarGz(t *testing.T, binaryName string, content []byte) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	gw := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gw)
+
+	hdr := &tar.Header{
+		Name: binaryName,
+		Mode: 0o755,
+		Size: int64(len(content)),
+	}
+	if err := tw.WriteHeader(hdr); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tw.Write(content); err != nil {
+		t.Fatal(err)
+	}
+	tw.Close()
+	gw.Close()
+	return buf.Bytes()
+}
+
+func TestExtractBinaryFromTarGz(t *testing.T) {
+	content := []byte("#!/bin/sh\necho hello")
+	archive := createTestTarGz(t, "myapp", content)
+
+	got, err := tuikit.ExtractBinary(archive, "myapp", "tar.gz")
+	if err != nil {
+		t.Fatalf("ExtractBinary: %v", err)
+	}
+	if !bytes.Equal(got, content) {
+		t.Errorf("extracted content mismatch")
+	}
+}
+
+func TestExtractBinaryFromTarGzMissing(t *testing.T) {
+	archive := createTestTarGz(t, "other", []byte("content"))
+
+	_, err := tuikit.ExtractBinary(archive, "myapp", "tar.gz")
+	if err == nil {
+		t.Error("expected error for missing binary")
+	}
 }

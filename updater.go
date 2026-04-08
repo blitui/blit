@@ -1,7 +1,11 @@
 package tuikit
 
 import (
+	"archive/tar"
+	"archive/zip"
 	"bufio"
+	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -9,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -333,4 +338,170 @@ func WithAutoUpdate(cfg UpdateConfig) Option {
 	return func(a *appModel) {
 		a.updateConfig = &cfg
 	}
+}
+
+// ExtractBinary extracts the named binary from a tar.gz or zip archive.
+func ExtractBinary(archive []byte, binaryName, format string) ([]byte, error) {
+	switch format {
+	case "tar.gz":
+		return extractFromTarGz(archive, binaryName)
+	case "zip":
+		return extractFromZip(archive, binaryName)
+	default:
+		return nil, fmt.Errorf("unsupported archive format: %s", format)
+	}
+}
+
+func extractFromTarGz(data []byte, binaryName string) ([]byte, error) {
+	gr, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("opening gzip: %w", err)
+	}
+	defer gr.Close()
+
+	tr := tar.NewReader(gr)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("reading tar: %w", err)
+		}
+		name := filepath.Base(hdr.Name)
+		if name == binaryName || name == binaryName+".exe" {
+			return io.ReadAll(tr)
+		}
+	}
+	return nil, fmt.Errorf("binary %q not found in archive", binaryName)
+}
+
+func extractFromZip(data []byte, binaryName string) ([]byte, error) {
+	r, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return nil, fmt.Errorf("opening zip: %w", err)
+	}
+	for _, f := range r.File {
+		name := filepath.Base(f.Name)
+		if name == binaryName || name == binaryName+".exe" {
+			rc, err := f.Open()
+			if err != nil {
+				return nil, fmt.Errorf("opening %s: %w", f.Name, err)
+			}
+			defer rc.Close()
+			return io.ReadAll(rc)
+		}
+	}
+	return nil, fmt.Errorf("binary %q not found in archive", binaryName)
+}
+
+// SelfUpdate downloads the latest release and replaces the current binary.
+// Only works for manual installs (not Homebrew/Scoop).
+func SelfUpdate(cfg UpdateConfig) error {
+	rel, err := FetchLatestRelease(cfg.githubBaseURL(), cfg.Owner, cfg.Repo)
+	if err != nil {
+		return fmt.Errorf("fetching release: %w", err)
+	}
+
+	asset, err := MatchAsset(rel.Assets, cfg.BinaryName, runtime.GOOS, runtime.GOARCH)
+	if err != nil {
+		return fmt.Errorf("matching asset: %w", err)
+	}
+
+	checksumAsset, err := MatchChecksumAsset(rel.Assets)
+	if err != nil {
+		return fmt.Errorf("finding checksums: %w", err)
+	}
+
+	fmt.Printf("Downloading %s...\n", asset.Name)
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	assetData, err := downloadURL(client, asset.DownloadURL)
+	if err != nil {
+		return fmt.Errorf("downloading asset: %w", err)
+	}
+
+	checksumData, err := downloadURL(client, checksumAsset.DownloadURL)
+	if err != nil {
+		return fmt.Errorf("downloading checksums: %w", err)
+	}
+
+	if err := VerifyChecksum(assetData, asset.Name, checksumData); err != nil {
+		return fmt.Errorf("checksum verification failed: %w", err)
+	}
+
+	format := "tar.gz"
+	if strings.HasSuffix(asset.Name, ".zip") {
+		format = "zip"
+	}
+
+	binaryData, err := ExtractBinary(assetData, cfg.BinaryName, format)
+	if err != nil {
+		return fmt.Errorf("extracting binary: %w", err)
+	}
+
+	exePath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("finding executable path: %w", err)
+	}
+	exePath, err = filepath.EvalSymlinks(exePath)
+	if err != nil {
+		return fmt.Errorf("resolving symlinks: %w", err)
+	}
+
+	return replaceBinary(exePath, binaryData)
+}
+
+func downloadURL(client *http.Client, url string) ([]byte, error) {
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+	return io.ReadAll(resp.Body)
+}
+
+func replaceBinary(exePath string, newBinary []byte) error {
+	info, err := os.Stat(exePath)
+	if err != nil {
+		return fmt.Errorf("stat %s: %w", exePath, err)
+	}
+	mode := info.Mode()
+
+	newPath := exePath + ".new"
+	oldPath := exePath + ".old"
+
+	if err := os.WriteFile(newPath, newBinary, mode); err != nil {
+		return fmt.Errorf("writing new binary: %w", err)
+	}
+
+	if err := os.Rename(exePath, oldPath); err != nil {
+		os.Remove(newPath)
+		return fmt.Errorf("backing up current binary: %w", err)
+	}
+
+	if err := os.Rename(newPath, exePath); err != nil {
+		os.Rename(oldPath, exePath)
+		return fmt.Errorf("replacing binary: %w", err)
+	}
+
+	os.Remove(oldPath)
+	return nil
+}
+
+// CleanupOldBinary removes a leftover .old binary from a previous update.
+// Call this early in main() or in the update check flow.
+func CleanupOldBinary() {
+	exe, err := os.Executable()
+	if err != nil {
+		return
+	}
+	exe, err = filepath.EvalSymlinks(exe)
+	if err != nil {
+		return
+	}
+	os.Remove(exe + ".old")
 }

@@ -694,17 +694,24 @@ func (a *App) runUpdateCheck() {
 	switch cfg.Mode {
 	case UpdateBlocking:
 		fmt.Printf("Update available: %s → %s\n", result.CurrentVersion, result.LatestVersion)
-		fmt.Println(upgradeHint)
+		if result.InstallMethod != InstallManual {
+			fmt.Println(upgradeHint)
+			fmt.Print("Update now? [y/n]: ")
+			var answer string
+			fmt.Scanln(&answer)
+			// Package manager users just get the hint
+			return
+		}
 		fmt.Print("Update now? [y/n]: ")
 		var answer string
 		fmt.Scanln(&answer)
 		if strings.ToLower(strings.TrimSpace(answer)) == "y" {
-			if result.InstallMethod != InstallManual {
-				fmt.Println(upgradeHint)
+			if err := SelfUpdate(*cfg); err != nil {
+				fmt.Fprintf(os.Stderr, "Update failed: %v\n", err)
 				return
 			}
-			fmt.Println("Self-update not yet implemented. Download from:")
-			fmt.Println(result.ReleaseURL)
+			fmt.Printf("Updated to %s. Please restart.\n", result.LatestVersion)
+			os.Exit(0)
 		}
 
 	case UpdateNotify:
