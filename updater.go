@@ -28,8 +28,16 @@ type Version struct {
 }
 
 // ParseVersion parses a semver string like "v1.2.3" or "1.2.3".
+// Pre-release (-rc.1) and build metadata (+dirty, +incompatible) suffixes are stripped.
 func ParseVersion(s string) (Version, error) {
 	s = strings.TrimPrefix(s, "v")
+	// Strip build metadata (+dirty, +incompatible) and pre-release (-rc.1)
+	if i := strings.IndexByte(s, '+'); i != -1 {
+		s = s[:i]
+	}
+	if i := strings.IndexByte(s, '-'); i != -1 {
+		s = s[:i]
+	}
 	parts := strings.Split(s, ".")
 	if len(parts) != 3 {
 		return Version{}, fmt.Errorf("invalid version %q: expected MAJOR.MINOR.PATCH", s)
