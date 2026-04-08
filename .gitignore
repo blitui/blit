@@ -1,5 +1,7 @@
 # Dev tooling
 .claude/
+.opencode/
+AGENTS.md
 docs/superpowers/
 
 # Go binaries
