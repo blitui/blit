@@ -6,6 +6,13 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	inputPromptStyle = lipgloss.NewStyle().Bold(true)
+	inputValueStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("82")).Bold(true)
+	inputErrStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 )
 
 type inputModel struct {
@@ -21,6 +28,7 @@ type inputModel struct {
 func newInputModel(prompt string, validate func(string) error) inputModel {
 	ti := textinput.New()
 	ti.Focus()
+	ti.Prompt = ""
 	return inputModel{
 		prompt:   prompt,
 		validate: validate,
@@ -60,16 +68,19 @@ func (m inputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m inputModel) View() string {
+	if m.done && !m.quitting {
+		return inputPromptStyle.Render(m.prompt) + " " + inputValueStyle.Render(m.value) + "\n"
+	}
 	if m.done {
 		return ""
 	}
 	var sb strings.Builder
-	sb.WriteString(m.prompt)
+	sb.WriteString(inputPromptStyle.Render(m.prompt))
 	sb.WriteString(" ")
 	sb.WriteString(m.ti.View())
 	if m.errMsg != "" {
 		sb.WriteString("\n  ")
-		sb.WriteString(m.errMsg)
+		sb.WriteString(inputErrStyle.Render(m.errMsg))
 	}
 	return sb.String()
 }
@@ -79,7 +90,7 @@ func (m inputModel) View() string {
 // Returns an error only if the user cancels with Ctrl+C.
 func Input(prompt string, validate func(string) error) (string, error) {
 	m := newInputModel(prompt, validate)
-	p := tea.NewProgram(m, tea.WithoutRenderer())
+	p := tea.NewProgram(m)
 	result, err := p.Run()
 	if err != nil {
 		return "", fmt.Errorf("input: %w", err)

@@ -3,10 +3,16 @@
 package cli
 
 import (
-	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	confirmPromptStyle = lipgloss.NewStyle().Bold(true)
+	confirmHintStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	confirmAnswerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("82")).Bold(true)
 )
 
 type confirmModel struct {
@@ -45,27 +51,25 @@ func (m confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m confirmModel) View() string {
 	if m.done {
-		return ""
+		answer := "No"
+		if m.result {
+			answer = "Yes"
+		}
+		return confirmPromptStyle.Render(m.prompt) + " " + confirmAnswerStyle.Render(answer) + "\n"
 	}
 	hint := "[y/N]"
 	if m.defaultYes {
 		hint = "[Y/n]"
 	}
-	return fmt.Sprintf("%s %s ", m.prompt, hint)
+	return confirmPromptStyle.Render(m.prompt) + " " + confirmHintStyle.Render(hint) + " "
 }
 
 // Confirm prints a yes/no prompt and returns the user's choice.
 // Default value is used when the user presses Enter without typing.
 // Shows [Y/n] if defaultYes is true, [y/N] otherwise.
 func Confirm(prompt string, defaultYes bool) bool {
-	hint := "[y/N]"
-	if defaultYes {
-		hint = "[Y/n]"
-	}
-	fmt.Printf("%s %s ", prompt, hint)
-
 	m := confirmModel{prompt: prompt, defaultYes: defaultYes}
-	p := tea.NewProgram(m, tea.WithoutRenderer())
+	p := tea.NewProgram(m)
 	result, err := p.Run()
 	if err != nil {
 		return defaultYes
