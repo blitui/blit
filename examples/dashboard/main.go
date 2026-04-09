@@ -259,7 +259,8 @@ func main() {
 		}
 	})
 
-	app := tuikit.NewApp(
+	var app *tuikit.App
+	app = tuikit.NewApp(
 		tuikit.WithTheme(tuikit.DefaultTheme()),
 		tuikit.WithLayout(&tuikit.DualPane{
 			Main:         table,
@@ -285,6 +286,38 @@ func main() {
 				filterIdx = (filterIdx + 1) % len(filterModes)
 				// Re-apply the filter (the closure already reads filterIdx)
 				table.SetRows(rows)
+			},
+		}),
+		tuikit.WithKeyBind(tuikit.KeyBind{
+			Key:   "i",
+			Label: "Info toast",
+			Group: "TOAST",
+			Handler: func() {
+				app.Send(tuikit.ToastMsg{Severity: tuikit.SeverityInfo, Title: "Info", Body: "Mission is a go!", Duration: 4 * time.Second})
+			},
+		}),
+		tuikit.WithKeyBind(tuikit.KeyBind{
+			Key:   "s",
+			Label: "Success toast",
+			Group: "TOAST",
+			Handler: func() {
+				app.Send(tuikit.ToastMsg{Severity: tuikit.SeveritySuccess, Title: "Delivered!", Body: "Pizza arrived at destination.", Duration: 4 * time.Second})
+			},
+		}),
+		tuikit.WithKeyBind(tuikit.KeyBind{
+			Key:   "w",
+			Label: "Warning toast",
+			Group: "TOAST",
+			Handler: func() {
+				app.Send(tuikit.ToastMsg{Severity: tuikit.SeverityWarn, Title: "Asteroid Field", Body: "Wormhole instability detected.", Duration: 4 * time.Second})
+			},
+		}),
+		tuikit.WithKeyBind(tuikit.KeyBind{
+			Key:   "e",
+			Label: "Error toast",
+			Group: "TOAST",
+			Handler: func() {
+				app.Send(tuikit.ToastMsg{Severity: tuikit.SeverityError, Title: "Delivery Failed", Body: "Lost in wormhole. No pizza.", Duration: 4 * time.Second})
 			},
 		}),
 		tuikit.WithMouseSupport(),
