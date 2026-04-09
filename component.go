@@ -62,6 +62,17 @@ type InlineOverlay interface {
 	Inline() bool
 }
 
+// FloatingOverlay is an overlay that composites on top of the main content
+// rather than replacing it. The App renders the normal content first, then
+// calls FloatView with the rendered content so the overlay can composite
+// its panel over it (e.g., a dev console, tooltip, or pop-over).
+type FloatingOverlay interface {
+	Overlay
+	// FloatView receives the fully-rendered background content and returns
+	// the composited result with the floating panel drawn on top.
+	FloatView(background string) string
+}
+
 // Themed is an optional interface for components that accept a theme.
 // The App automatically calls SetTheme on any Component or Overlay that
 // implements this interface. Built-in components (Table, StatusBar, Help,
