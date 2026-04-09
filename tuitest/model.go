@@ -255,6 +255,12 @@ var keyMap = map[string]tea.KeyType{
 	"f12": tea.KeyF12,
 }
 
+// KeyMsgForTesting converts a key name to a tea.KeyMsg for use in unit tests
+// that call Component.Update directly without a full TestModel.
+func KeyMsgForTesting(key string) tea.KeyMsg {
+	return keyToMsg(key)
+}
+
 // KeyNames returns the list of all recognized key names for documentation.
 func KeyNames() []string {
 	names := make([]string, 0, len(keyMap))

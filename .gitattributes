@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Golden fixtures must stay LF so generator comparisons are stable on Windows.
+*.golden text eol=lf

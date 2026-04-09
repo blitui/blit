@@ -1,0 +1,29 @@
+package mypkg_test
+
+import (
+	"testing"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/moneycaringcoder/tuikit-go/tuitest"
+)
+
+// TestMypkg is a generated test stub. Replace the stub model with a
+// real tea.Model from your package and extend the assertions.
+func TestMypkg(t *testing.T) {
+	// TODO: replace &stubMypkg{} with your model, e.g. mypkg.NewMypkg().
+	tm := tuitest.NewTestModel(t, &stubMypkg{}, 80, 24)
+
+	tm.RequireScreen(func(t testing.TB, s *tuitest.Screen) {
+		if s.String() == "" {
+			t.Log("screen is empty — wire up your model and add assertions here")
+		}
+	})
+}
+
+// stubMypkg satisfies tea.Model so the generated file compiles and
+// passes go vet immediately without importing the package under test.
+type stubMypkg struct{}
+
+func (s *stubMypkg) Init() tea.Cmd                           { return nil }
+func (s *stubMypkg) Update(msg tea.Msg) (tea.Model, tea.Cmd) { return s, nil }
+func (s *stubMypkg) View() string                            { return "" }

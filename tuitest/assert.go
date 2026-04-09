@@ -246,10 +246,16 @@ func AssertRegionNotContains(t testing.TB, s *Screen, row, col, width, height in
 }
 
 // AssertScreenEquals fails if the full screen text doesn't exactly match expected.
+// On failure it also persists a FailureCapture so `tuitest diff` can replay it.
 func AssertScreenEquals(t testing.TB, s *Screen, expected string) {
 	t.Helper()
 	actual := s.String()
 	if actual != expected {
+		SaveFailureCapture(t, FailureCapture{
+			Kind:           FailureScreenEqual,
+			ExpectedScreen: expected,
+			ActualScreen:   actual,
+		})
 		t.Errorf("screen content mismatch\nwant:\n%s\ngot:\n%s\ndiff:\n%s",
 			expected, actual, diffStrings(expected, actual))
 	}
