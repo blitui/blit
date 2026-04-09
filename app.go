@@ -19,24 +19,47 @@ func WithTheme(t Theme) Option {
 }
 
 // WithComponent registers a named component with the App.
+//
+// Slot mapping: the first call populates SlotMain; subsequent calls stack
+// additional components that share focus cycling with Main.
 func WithComponent(name string, c Component) Option {
 	return func(a *appModel) {
 		a.components = append(a.components, namedComponent{name: name, component: c})
+		if a.slots != nil && !a.slots.has(SlotMain) {
+			a.slots.set(SlotMain, c)
+		}
 	}
 }
 
 // WithLayout sets a dual-pane layout.
+//
+// Slot mapping: DualPane.Main -> SlotMain, DualPane.Side -> SlotSidebar.
 func WithLayout(l *DualPane) Option {
-	return func(a *appModel) { a.dualPane = l }
+	return func(a *appModel) {
+		a.dualPane = l
+		if a.slots != nil && l != nil {
+			if l.Main != nil {
+				a.slots.set(SlotMain, l.Main)
+			}
+			if l.Side != nil {
+				a.slots.set(SlotSidebar, l.Side)
+			}
+		}
+	}
 }
 
 // WithStatusBar adds a status bar at the bottom of the screen.
 //
 // left and right are legacy `func() string` closures. For reactive status
 // bar content driven by signals, use WithStatusBarSignal.
+//
+// Slot mapping: the resulting StatusBar is bound to SlotFooter.
 func WithStatusBar(left, right func() string) Option {
 	return func(a *appModel) {
 		a.statusBar = NewStatusBar(StatusBarOpts{Left: left, Right: right})
+		if a.slots != nil {
+			a.slots.set(SlotFooter, a.statusBar)
+		}
 	}
 }
 
@@ -48,6 +71,9 @@ func WithStatusBar(left, right func() string) Option {
 func WithStatusBarSignal(left, right *Signal[string]) Option {
 	return func(a *appModel) {
 		a.statusBar = NewStatusBar(StatusBarOpts{Left: left, Right: right})
+		if a.slots != nil {
+			a.slots.set(SlotFooter, a.statusBar)
+		}
 		if left != nil {
 			a.trackSignal(left)
 		}
@@ -64,6 +90,8 @@ func WithHelp() Option {
 
 // WithOverlay registers a named overlay with an explicit trigger key.
 // Press triggerKey to open the overlay; Esc closes it.
+//
+// Slot mapping: the overlay is pushed onto SlotOverlay.
 func WithOverlay(name string, triggerKey string, o Overlay) Option {
 	return func(a *appModel) {
 		a.namedOverlays = append(a.namedOverlays, namedOverlay{
@@ -71,6 +99,14 @@ func WithOverlay(name string, triggerKey string, o Overlay) Option {
 			triggerKey: triggerKey,
 			overlay:    o,
 		})
+		if a.slots != nil {
+			a.slots.push(slotEntry{
+				name:        SlotOverlay,
+				component:   o,
+				overlayKey:  triggerKey,
+				overlayName: name,
+			})
+		}
 	}
 }
 
@@ -152,6 +188,7 @@ type appModel struct {
 	animationsEnabled bool
 	signalBus         *signalBus
 	signals           []AnySignal
+	slots             *slotRegistry
 }
 
 // trackSignal registers a signal with the app's bus so its Set calls fire
@@ -174,10 +211,12 @@ func newAppModel(opts ...Option) *appModel {
 		focusCycleKey: "tab",
 		toasts:        newToastManager(ToastManagerOpts{}),
 		signalBus:     newSignalBus(),
+		slots:         newSlotRegistry(),
 	}
 	for _, opt := range opts {
 		opt(a)
 	}
+	a.materialiseSlots()
 	a.setup()
 	return a
 }
