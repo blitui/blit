@@ -1,0 +1,70 @@
+version: 2
+
+project_name: myapp
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/myapp
+    binary: myapp
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: "checksums.txt"
+
+brews:
+  - repository:
+      owner: OWNER
+      name: homebrew-tap
+    directory: Formula
+    homepage: "https://github.com/OWNER/myapp"
+    description: "A tuikit-go starter application"
+    license: "MIT"
+    test: |
+      system "#{bin}/myapp", "-h"
+
+scoops:
+  - repository:
+      owner: OWNER
+      name: scoop-bucket
+    homepage: "https://github.com/OWNER/myapp"
+    description: "A tuikit-go starter application"
+    license: "MIT"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^chore:"
+      - "^test:"
+      - "^ci:"
+      - "Merge pull request"
+      - "Merge branch"
+
+release:
+  github:
+    owner: OWNER
+    name: myapp
+  draft: false
+  prerelease: auto
+  name_template: "{{.Tag}}"
