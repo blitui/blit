@@ -95,7 +95,7 @@ func newDashboard() *dashboard {
 }
 
 func (d *dashboard) Init() tea.Cmd { return nil }
-func (d *dashboard) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) {
+func (d *dashboard) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
 	return d, nil
 }
 func (d *dashboard) KeyBindings() []tuikit.KeyBind { return nil }

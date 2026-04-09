@@ -83,7 +83,7 @@ type infoPane struct {
 }
 
 func (p *infoPane) Init() tea.Cmd                                      { return nil }
-func (p *infoPane) Update(msg tea.Msg) (tuikit.Component, tea.Cmd)     { return p, nil }
+func (p *infoPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd)     { return p, nil }
 func (p *infoPane) KeyBindings() []tuikit.KeyBind                      { return nil }
 func (p *infoPane) SetSize(w, h int)                                   { p.width = w; p.height = h }
 func (p *infoPane) Focused() bool                                      { return p.focused }

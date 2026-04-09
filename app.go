@@ -490,20 +490,44 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
+// ctx builds the ambient Context passed to every component.Update call.
+// It snapshots the current theme, size, focus, and hotkey registry so
+// components can read the latest frame state without stashing copies.
+func (a *appModel) ctx() Context {
+	focusName := ""
+	if a.dualPane != nil {
+		switch a.focusIdx {
+		case 0:
+			focusName = a.dualPane.MainName
+		case 1:
+			focusName = a.dualPane.SideName
+		}
+	} else if a.focusIdx >= 0 && a.focusIdx < len(a.components) {
+		focusName = a.components[a.focusIdx].name
+	}
+	return Context{
+		Theme:   a.theme,
+		Size:    Size{Width: a.width, Height: a.height},
+		Focus:   Focus{Index: a.focusIdx, Name: focusName},
+		Hotkeys: a.registry,
+	}
+}
+
 // broadcastMsg sends a message to all registered components.
 func (a *appModel) broadcastMsg(msg tea.Msg) tea.Cmd {
+	ctx := a.ctx()
 	var cmds []tea.Cmd
 	for _, nc := range a.components {
-		if _, cmd := nc.component.Update(msg); cmd != nil {
+		if _, cmd := nc.component.Update(msg, ctx); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 	}
 	if a.dualPane != nil {
-		if _, cmd := a.dualPane.Main.Update(msg); cmd != nil {
+		if _, cmd := a.dualPane.Main.Update(msg, ctx); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 		if a.dualPane.Side != nil {
-			if _, cmd := a.dualPane.Side.Update(msg); cmd != nil {
+			if _, cmd := a.dualPane.Side.Update(msg, ctx); cmd != nil {
 				cmds = append(cmds, cmd)
 			}
 		}
@@ -578,7 +602,7 @@ func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 
 	focusable := a.focusableComponents()
 	if a.focusIdx < len(focusable) {
-		_, cmd := focusable[a.focusIdx].Update(msg)
+		_, cmd := focusable[a.focusIdx].Update(msg, a.ctx())
 		return a, cmd
 	}
 	return a, nil
@@ -594,7 +618,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			a.resize()
 			return a, nil
 		}
-		_, cmd := overlay.Update(msg)
+		_, cmd := overlay.Update(msg, a.ctx())
 		// If the overlay closed itself (e.g., CommandBar after executing), pop it
 		if !overlay.IsActive() {
 			a.overlays.stack = a.overlays.stack[:len(a.overlays.stack)-1]
@@ -621,7 +645,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return a, tea.Quit
 		}
 		if a.focusIdx < len(focusable) {
-			_, cmd := focusable[a.focusIdx].Update(msg)
+			_, cmd := focusable[a.focusIdx].Update(msg, a.ctx())
 			return a, cmd
 		}
 	}
@@ -685,7 +709,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	// 7. Focused component
 	if a.focusIdx < len(focusable) {
-		_, cmd := focusable[a.focusIdx].Update(msg)
+		_, cmd := focusable[a.focusIdx].Update(msg, a.ctx())
 		return a, cmd
 	}
 

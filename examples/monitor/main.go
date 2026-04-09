@@ -123,7 +123,7 @@ func (p *FleetPanel) SetSize(w, h int)                                 { p.width
 func (p *FleetPanel) Focused() bool                                    { return p.focused }
 func (p *FleetPanel) SetFocused(f bool)                                { p.focused = f }
 func (p *FleetPanel) SetTheme(t tuikit.Theme)                          { p.theme = t }
-func (p *FleetPanel) Update(msg tea.Msg) (tuikit.Component, tea.Cmd)   { return p, nil }
+func (p *FleetPanel) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd)   { return p, nil }
 func (p *FleetPanel) UpdateServices(svcs []service)                    { p.services = svcs }
 
 func (p *FleetPanel) View() string {

@@ -145,7 +145,7 @@ func (l *ListView[T]) ItemCount() int {
 
 func (l *ListView[T]) Init() tea.Cmd { return nil }
 
-func (l *ListView[T]) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (l *ListView[T]) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		cmd := l.HandleKey(msg)

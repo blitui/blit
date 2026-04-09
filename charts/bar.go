@@ -45,7 +45,9 @@ func NewBar(data []float64, labels []string, horizontal bool) *Bar {
 }
 
 func (b *Bar) Init() tea.Cmd                             { return nil }
-func (b *Bar) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return b, nil }
+func (b *Bar) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return b, nil
+}
 func (b *Bar) KeyBindings() []tuikit.KeyBind             { return nil }
 func (b *Bar) SetSize(w, h int)                          { b.width = w; b.height = h }
 func (b *Bar) Focused() bool                             { return b.focused }

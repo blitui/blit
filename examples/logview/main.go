@@ -59,7 +59,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
-		comp, cmd := m.lv.Update(msg)
+		comp, cmd := m.lv.Update(msg, tuikit.Context{})
 		m.lv = comp.(*tuikit.LogViewer)
 		return m, cmd
 
@@ -68,7 +68,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tick()
 	}
 
-	comp, cmd := m.lv.Update(msg)
+	comp, cmd := m.lv.Update(msg, tuikit.Context{})
 	m.lv = comp.(*tuikit.LogViewer)
 	return m, cmd
 }

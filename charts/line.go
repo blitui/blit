@@ -38,7 +38,9 @@ func NewLine(series [][]float64, colors []string, smooth bool) *Line {
 }
 
 func (l *Line) Init() tea.Cmd                             { return nil }
-func (l *Line) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return l, nil }
+func (l *Line) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return l, nil
+}
 func (l *Line) KeyBindings() []tuikit.KeyBind             { return nil }
 func (l *Line) SetSize(w, h int)                          { l.width = w; l.height = h }
 func (l *Line) Focused() bool                             { return l.focused }

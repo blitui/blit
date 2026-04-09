@@ -43,7 +43,7 @@ func NewStatusBar(opts StatusBarOpts) *StatusBar {
 
 func (s *StatusBar) Init() tea.Cmd { return nil }
 
-func (s *StatusBar) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (s *StatusBar) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	return s, nil
 }
 

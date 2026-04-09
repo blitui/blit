@@ -34,13 +34,15 @@ type missionStats struct{ total, delivered, lost int; topDriver string }
 
 func newMissionControl(s missionStats) *MissionControl { return &MissionControl{stats: s} }
 
-func (m *MissionControl) Init() tea.Cmd                                 { return nil }
-func (m *MissionControl) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return m, nil }
-func (m *MissionControl) KeyBindings() []tuikit.KeyBind                  { return nil }
-func (m *MissionControl) SetSize(w, h int)                               { m.width, m.height = w, h }
-func (m *MissionControl) Focused() bool                                  { return m.focused }
-func (m *MissionControl) SetFocused(f bool)                              { m.focused = f }
-func (m *MissionControl) SetTheme(t tuikit.Theme)                        { m.theme = t }
+func (m *MissionControl) Init() tea.Cmd                                { return nil }
+func (m *MissionControl) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return m, nil
+}
+func (m *MissionControl) KeyBindings() []tuikit.KeyBind { return nil }
+func (m *MissionControl) SetSize(w, h int)              { m.width, m.height = w, h }
+func (m *MissionControl) Focused() bool                 { return m.focused }
+func (m *MissionControl) SetFocused(f bool)             { m.focused = f }
+func (m *MissionControl) SetTheme(t tuikit.Theme)       { m.theme = t }
 
 func (m *MissionControl) View() string {
 	title := lipgloss.NewStyle().Foreground(lipgloss.Color(m.theme.Accent)).Bold(true)

@@ -797,7 +797,7 @@ func (f *Form) Init() tea.Cmd {
 }
 
 // Update implements Component.
-func (f *Form) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (f *Form) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if !f.focused {
 		return f, nil
 	}

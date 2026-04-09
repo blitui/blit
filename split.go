@@ -122,7 +122,7 @@ func (s *Split) Init() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (s *Split) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (s *Split) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		cmd := s.handleKey(msg)
@@ -130,19 +130,19 @@ func (s *Split) Update(msg tea.Msg) (Component, tea.Cmd) {
 			return s, cmd
 		}
 		// Delegate to focused child.
-		return s, s.delegateKey(msg)
+		return s, s.delegateKey(msg, ctx)
 
 	case tea.MouseMsg:
 		// Delegate mouse to both children; the one that consumes wins.
 		if s.A != nil {
-			updated, cmd := s.A.Update(msg)
+			updated, cmd := s.A.Update(msg, ctx)
 			s.A = updated
 			if isConsumed(cmd) {
 				return s, cmd
 			}
 		}
 		if s.B != nil {
-			updated, cmd := s.B.Update(msg)
+			updated, cmd := s.B.Update(msg, ctx)
 			s.B = updated
 			if isConsumed(cmd) {
 				return s, cmd
@@ -196,14 +196,14 @@ func (s *Split) handleKey(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
-func (s *Split) delegateKey(msg tea.KeyMsg) tea.Cmd {
+func (s *Split) delegateKey(msg tea.KeyMsg, ctx Context) tea.Cmd {
 	if s.focusA && s.A != nil {
-		updated, cmd := s.A.Update(msg)
+		updated, cmd := s.A.Update(msg, ctx)
 		s.A = updated
 		return cmd
 	}
 	if !s.focusA && s.B != nil {
-		updated, cmd := s.B.Update(msg)
+		updated, cmd := s.B.Update(msg, ctx)
 		s.B = updated
 		return cmd
 	}

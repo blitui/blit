@@ -102,7 +102,7 @@ func (v *Viewport) viewHeight() int {
 
 func (v *Viewport) Init() tea.Cmd { return nil }
 
-func (v *Viewport) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (v *Viewport) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		cmd := v.HandleKey(msg)

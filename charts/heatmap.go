@@ -46,7 +46,9 @@ func NewHeatmap(grid [][]float64, palette string) *Heatmap {
 }
 
 func (h *Heatmap) Init() tea.Cmd                             { return nil }
-func (h *Heatmap) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return h, nil }
+func (h *Heatmap) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return h, nil
+}
 func (h *Heatmap) KeyBindings() []tuikit.KeyBind             { return nil }
 func (h *Heatmap) SetSize(w, hh int)                         { h.width = w; h.height = hh }
 func (h *Heatmap) Focused() bool                             { return h.focused }

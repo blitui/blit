@@ -105,7 +105,7 @@ func (lv *LogViewer) Lines() []LogLine {
 func (lv *LogViewer) Init() tea.Cmd { return nil }
 
 // Update implements Component.
-func (lv *LogViewer) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (lv *LogViewer) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		cmd := lv.handleKey(msg)
