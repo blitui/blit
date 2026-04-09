@@ -325,6 +325,12 @@ type UpdateConfig struct {
 	// observe/telemetry the failure in-process.
 	OnUpdateError func(err error)
 
+	// CosignPublicKey is an optional ed25519 public key used to verify the
+	// detached signature (<asset>.sig) before replacing the binary. The key
+	// may be PEM-encoded ("-----BEGIN PUBLIC KEY-----") or bare base64.
+	// When empty, signature verification is skipped.
+	CosignPublicKey string
+
 	// APIBaseURL overrides the GitHub API URL. Leave empty for production.
 	// Exported for testing; not intended for consumer use.
 	APIBaseURL string
@@ -626,6 +632,20 @@ func SelfUpdate(cfg UpdateConfig) error {
 
 	if err := VerifyChecksum(assetData, asset.Name, checksumData); err != nil {
 		return fmt.Errorf("checksum verification failed: %w", err)
+	}
+
+	if cfg.CosignPublicKey != "" {
+		sigAsset, err := MatchSigAsset(rel.Assets, asset.Name)
+		if err != nil {
+			return fmt.Errorf("finding signature asset: %w", err)
+		}
+		sigData, err := downloadURL(client, sigAsset.DownloadURL)
+		if err != nil {
+			return fmt.Errorf("downloading signature: %w", err)
+		}
+		if err := VerifyCosignSignature(assetData, sigData, cfg.CosignPublicKey); err != nil {
+			return fmt.Errorf("cosign verification failed: %w", err)
+		}
 	}
 
 	format := "tar.gz"
