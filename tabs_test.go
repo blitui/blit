@@ -19,7 +19,7 @@ type stubContent struct {
 func newStub(name string) *stubContent { return &stubContent{name: name} }
 
 func (s *stubContent) Init() tea.Cmd                           { return nil }
-func (s *stubContent) Update(msg tea.Msg) (Component, tea.Cmd) { return s, nil }
+func (s *stubContent) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) { return s, nil }
 func (s *stubContent) View() string                            { return "[" + s.name + "]" }
 func (s *stubContent) KeyBindings() []KeyBind                  { return nil }
 func (s *stubContent) SetSize(w, h int)                        { s.width = w; s.height = h }
@@ -94,16 +94,16 @@ func TestTabs_TabKeyCycles(t *testing.T) {
 	tabs := newTestTabs(3)
 	tabs.SetFocused(true)
 
-	tabs.Update(tea.KeyMsg{Type: tea.KeyTab})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyTab}, Context{})
 	if tabs.ActiveIndex() != 1 {
 		t.Errorf("tab → index = %d, want 1", tabs.ActiveIndex())
 	}
-	tabs.Update(tea.KeyMsg{Type: tea.KeyTab})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyTab}, Context{})
 	if tabs.ActiveIndex() != 2 {
 		t.Errorf("tab → index = %d, want 2", tabs.ActiveIndex())
 	}
 	// wraps around
-	tabs.Update(tea.KeyMsg{Type: tea.KeyTab})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyTab}, Context{})
 	if tabs.ActiveIndex() != 0 {
 		t.Errorf("tab wrap → index = %d, want 0", tabs.ActiveIndex())
 	}
@@ -113,7 +113,7 @@ func TestTabs_ShiftTabCycles(t *testing.T) {
 	tabs := newTestTabs(3)
 	tabs.SetFocused(true)
 
-	tabs.Update(tea.KeyMsg{Type: tea.KeyShiftTab})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyShiftTab}, Context{})
 	if tabs.ActiveIndex() != 2 {
 		t.Errorf("shift+tab from 0 → index = %d, want 2", tabs.ActiveIndex())
 	}
@@ -123,11 +123,11 @@ func TestTabs_NumberJump(t *testing.T) {
 	tabs := newTestTabs(5)
 	tabs.SetFocused(true)
 
-	tabs.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("3")})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("3")}, Context{})
 	if tabs.ActiveIndex() != 2 {
 		t.Errorf("key '3' → index = %d, want 2", tabs.ActiveIndex())
 	}
-	tabs.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("1")})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("1")}, Context{})
 	if tabs.ActiveIndex() != 0 {
 		t.Errorf("key '1' → index = %d, want 0", tabs.ActiveIndex())
 	}
@@ -139,7 +139,7 @@ func TestTabs_NumberJumpOutOfRange(t *testing.T) {
 	before := tabs.ActiveIndex()
 
 	// Key '5' is out of range for a 2-tab set — index unchanged.
-	tabs.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("5")})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("5")}, Context{})
 	if tabs.ActiveIndex() != before {
 		t.Errorf("out-of-range key changed index to %d", tabs.ActiveIndex())
 	}
@@ -152,7 +152,7 @@ func TestTabs_MouseClickHorizontal(t *testing.T) {
 	tabs.SetFocused(true)
 
 	// Row 0, X=0 → first tab (always starts at x=0).
-	tabs.Update(tea.MouseMsg{Button: tea.MouseButtonLeft, Action: tea.MouseActionPress, X: 0, Y: 0})
+	tabs.Update(tea.MouseMsg{Button: tea.MouseButtonLeft, Action: tea.MouseActionPress, X: 0, Y: 0}, Context{})
 	if tabs.ActiveIndex() != 0 {
 		t.Errorf("click x=0 y=0 → index = %d, want 0", tabs.ActiveIndex())
 	}
@@ -162,7 +162,7 @@ func TestTabs_MouseClickIgnoresRelease(t *testing.T) {
 	tabs := newTestTabs(3)
 	tabs.SetActive(2)
 
-	tabs.Update(tea.MouseMsg{Button: tea.MouseButtonLeft, Action: tea.MouseActionRelease, X: 0, Y: 0})
+	tabs.Update(tea.MouseMsg{Button: tea.MouseButtonLeft, Action: tea.MouseActionRelease, X: 0, Y: 0}, Context{})
 	if tabs.ActiveIndex() != 2 {
 		t.Errorf("release event changed active tab, should be no-op")
 	}
@@ -180,7 +180,7 @@ func TestTabs_MouseClickVertical(t *testing.T) {
 	tabs.SetFocused(true)
 
 	// Click on row 1 (second tab) within bar width.
-	tabs.Update(tea.MouseMsg{Button: tea.MouseButtonLeft, Action: tea.MouseActionPress, X: 0, Y: 1})
+	tabs.Update(tea.MouseMsg{Button: tea.MouseButtonLeft, Action: tea.MouseActionPress, X: 0, Y: 1}, Context{})
 	if tabs.ActiveIndex() != 1 {
 		t.Errorf("vertical click row=1 → index = %d, want 1", tabs.ActiveIndex())
 	}
@@ -343,5 +343,5 @@ func TestTabs_EmptyTabs(t *testing.T) {
 	_ = tabs.Init()
 	_ = tabs.View()
 	tabs.SetActive(0)
-	tabs.Update(tea.KeyMsg{Type: tea.KeyTab})
+	tabs.Update(tea.KeyMsg{Type: tea.KeyTab}, Context{})
 }

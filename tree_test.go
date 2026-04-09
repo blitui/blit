@@ -23,12 +23,12 @@ func makeTestTree() (*tuikit.Tree, []*tuikit.Node) {
 }
 
 func sendKey(c tuikit.Component, key string) tuikit.Component {
-	updated, _ := c.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(key)})
+	updated, _ := c.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(key)}, tuikit.Context{})
 	return updated
 }
 
 func sendSpecialKey(c tuikit.Component, keyType tea.KeyType) tuikit.Component {
-	updated, _ := c.Update(tea.KeyMsg{Type: keyType})
+	updated, _ := c.Update(tea.KeyMsg{Type: keyType}, tuikit.Context{})
 	return updated
 }
 
@@ -41,7 +41,7 @@ func TestTree_Navigate(t *testing.T) {
 	}
 
 	// Move down.
-	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	// parent is collapsed, so cursor moves to leaf (index 1).
 	if tree.CursorNode() != roots[1] {
@@ -49,7 +49,7 @@ func TestTree_Navigate(t *testing.T) {
 	}
 
 	// Move back up.
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyUp})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyUp}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if tree.CursorNode() != roots[0] {
 		t.Fatalf("expected cursor back at parent after up, got %v", tree.CursorNode())
@@ -65,23 +65,23 @@ func TestTree_ExpandCollapse(t *testing.T) {
 	}
 
 	// Expand with right arrow.
-	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRight})
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRight}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if !parent.Expanded {
 		t.Fatal("parent should be expanded after right arrow")
 	}
 
 	// Move down — cursor should be at child1 now.
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if tree.CursorNode().Title != "child1" {
 		t.Fatalf("expected child1, got %s", tree.CursorNode().Title)
 	}
 
 	// Move back to parent and collapse with left arrow.
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyUp})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyUp}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyLeft})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyLeft}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if parent.Expanded {
 		t.Fatal("parent should be collapsed after left arrow")
@@ -93,14 +93,14 @@ func TestTree_SpaceToggle(t *testing.T) {
 	parent := roots[0]
 
 	// Space expands.
-	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeySpace})
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeySpace}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if !parent.Expanded {
 		t.Fatal("space should expand parent")
 	}
 
 	// Space collapses.
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeySpace})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeySpace}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if parent.Expanded {
 		t.Fatal("space should collapse parent")
@@ -118,7 +118,7 @@ func TestTree_Select(t *testing.T) {
 	tree2.SetFocused(true)
 
 	// Enter on parent (which has children, no file) should still call OnSelect.
-	updated, _ := tree2.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	updated, _ := tree2.Update(tea.KeyMsg{Type: tea.KeyEnter}, tuikit.Context{})
 	tree2 = updated.(*tuikit.Tree)
 	if selected != roots[0] {
 		t.Fatalf("expected OnSelect called with parent, got %v", selected)
@@ -142,28 +142,28 @@ func TestTree_ViAlias(t *testing.T) {
 	tree, roots := makeTestTree()
 
 	// j moves down.
-	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("j")})
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("j")}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if tree.CursorNode() != roots[1] {
 		t.Fatalf("j should move cursor down to leaf, got %v", tree.CursorNode())
 	}
 
 	// k moves up.
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("k")})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("k")}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if tree.CursorNode() != roots[0] {
 		t.Fatalf("k should move cursor up to parent, got %v", tree.CursorNode())
 	}
 
 	// l expands.
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("l")})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("l")}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if !roots[0].Expanded {
 		t.Fatal("l should expand node")
 	}
 
 	// h collapses.
-	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("h")})
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("h")}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if roots[0].Expanded {
 		t.Fatal("h should collapse node")
@@ -199,7 +199,7 @@ func TestTree_OnToggle(t *testing.T) {
 	tree.SetSize(80, 20)
 	tree.SetFocused(true)
 
-	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRight})
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRight}, tuikit.Context{})
 	tree = updated.(*tuikit.Tree)
 	if toggled != parent {
 		t.Fatalf("expected OnToggle with parent, got %v", toggled)

@@ -23,17 +23,17 @@ func TestConfigEditorNavigation(t *testing.T) {
 		t.Errorf("initial cursor should be 0, got %d", ce.cursor)
 	}
 
-	ce.Update(tea.KeyMsg{Type: tea.KeyDown})
+	ce.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
 	if ce.cursor != 1 {
 		t.Errorf("cursor should be 1 after down, got %d", ce.cursor)
 	}
 
-	ce.Update(tea.KeyMsg{Type: tea.KeyDown})
+	ce.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
 	if ce.cursor != 1 {
 		t.Errorf("cursor should clamp to 1, got %d", ce.cursor)
 	}
 
-	ce.Update(tea.KeyMsg{Type: tea.KeyUp})
+	ce.Update(tea.KeyMsg{Type: tea.KeyUp}, Context{})
 	if ce.cursor != 0 {
 		t.Errorf("cursor should be 0 after up, got %d", ce.cursor)
 	}
@@ -58,22 +58,22 @@ func TestConfigEditorEdit(t *testing.T) {
 	ce.active = true
 
 	// Enter edit mode
-	ce.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 	if !ce.editing {
 		t.Error("should be in edit mode after Enter")
 	}
 
 	// Clear the buffer (it starts with "old"), then type "new"
 	// Backspace 3 times to clear "old"
-	ce.Update(tea.KeyMsg{Type: tea.KeyBackspace})
-	ce.Update(tea.KeyMsg{Type: tea.KeyBackspace})
-	ce.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+	ce.Update(tea.KeyMsg{Type: tea.KeyBackspace}, Context{})
+	ce.Update(tea.KeyMsg{Type: tea.KeyBackspace}, Context{})
+	ce.Update(tea.KeyMsg{Type: tea.KeyBackspace}, Context{})
 
 	for _, ch := range "new" {
-		ce.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{ch}})
+		ce.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{ch}}, Context{})
 	}
 
-	ce.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 	if value != "new" {
 		t.Errorf("expected value 'new', got '%s'", value)
 	}
@@ -98,9 +98,9 @@ func TestConfigEditorValidation(t *testing.T) {
 	ce.SetSize(80, 24)
 	ce.active = true
 
-	ce.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	ce.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}})
-	ce.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
+	ce.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}}, Context{})
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 
 	if ce.errMsg == "" {
 		t.Error("should have error message after validation failure")

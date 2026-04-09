@@ -34,14 +34,14 @@ func TestTableCursorClamp(t *testing.T) {
 	tbl.SetTheme(DefaultTheme())
 
 	for i := 0; i < 10; i++ {
-		tbl.Update(tea.KeyMsg{Type: tea.KeyDown})
+		tbl.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
 	}
 	if tbl.cursor != 2 {
 		t.Errorf("cursor should clamp to 2, got %d", tbl.cursor)
 	}
 
 	for i := 0; i < 10; i++ {
-		tbl.Update(tea.KeyMsg{Type: tea.KeyUp})
+		tbl.Update(tea.KeyMsg{Type: tea.KeyUp}, Context{})
 	}
 	if tbl.cursor != 0 {
 		t.Errorf("cursor should clamp to 0, got %d", tbl.cursor)
@@ -260,7 +260,7 @@ func TestTableCursorRowAccess(t *testing.T) {
 		t.Errorf("expected cursor row 'Alice', got '%s'", row[0])
 	}
 
-	tbl.Update(tea.KeyMsg{Type: tea.KeyDown})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
 	row = tbl.CursorRow()
 	if row[0] != "Bob" {
 		t.Errorf("expected cursor row 'Bob', got '%s'", row[0])
@@ -275,13 +275,13 @@ func TestTableMouseScroll(t *testing.T) {
 	tbl.SetTheme(DefaultTheme())
 
 	// Scroll down
-	tbl.Update(tea.MouseMsg{Button: tea.MouseButtonWheelDown})
+	tbl.Update(tea.MouseMsg{Button: tea.MouseButtonWheelDown}, Context{})
 	if tbl.cursor != 1 {
 		t.Errorf("cursor should be 1 after scroll down, got %d", tbl.cursor)
 	}
 
 	// Scroll up
-	tbl.Update(tea.MouseMsg{Button: tea.MouseButtonWheelUp})
+	tbl.Update(tea.MouseMsg{Button: tea.MouseButtonWheelUp}, Context{})
 	if tbl.cursor != 0 {
 		t.Errorf("cursor should be 0 after scroll up, got %d", tbl.cursor)
 	}
@@ -301,8 +301,8 @@ func TestTableRowClick(t *testing.T) {
 	tbl.SetTheme(DefaultTheme())
 
 	// Enter key triggers OnRowClick
-	tbl.Update(tea.KeyMsg{Type: tea.KeyDown}) // move to row 1
-	tbl.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{}) // move to row 1
+	tbl.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 	if clickedRow != 1 {
 		t.Errorf("expected click on row 1, got %d", clickedRow)
 	}
@@ -397,7 +397,7 @@ func TestTable_CursorTweenStartsOnMove(t *testing.T) {
 	}
 
 	// Move cursor down — tween must start
-	tb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+	tb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}}, Context{})
 	if !tb.cursorTween.Running() {
 		t.Error("tween should be running after cursor move")
 	}
@@ -423,7 +423,7 @@ func TestTable_CursorTweenSnapOnNoAnim(t *testing.T) {
 	tb.SetSize(80, 10)
 	tb.SetFocused(true)
 
-	tb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+	tb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}}, Context{})
 
 	// With animDisabled, Progress() returns 1.0 immediately regardless of elapsed time
 	tval := tb.cursorTween.Progress(time.Now())
@@ -505,7 +505,7 @@ func TestTableVirtualScrollFetchesWindow(t *testing.T) {
 	tbl.SetFocused(true)
 
 	// Jump to end
-	tbl.Update(tea.KeyMsg{Type: tea.KeyEnd})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyEnd}, Context{})
 	if tbl.CursorIndex() != 999_999 {
 		t.Errorf("cursor should be 999999, got %d", tbl.CursorIndex())
 	}
@@ -531,7 +531,7 @@ func TestTableVirtualCursorNavigation(t *testing.T) {
 	tbl.SetFocused(true)
 
 	for i := 0; i < 50; i++ {
-		tbl.Update(tea.KeyMsg{Type: tea.KeyDown})
+		tbl.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
 	}
 	if tbl.CursorIndex() != 50 {
 		t.Errorf("cursor = %d, want 50", tbl.CursorIndex())
@@ -557,9 +557,9 @@ func TestTableVirtualOnRowClick(t *testing.T) {
 	tbl.SetTheme(DefaultTheme())
 	tbl.SetFocused(true)
 
-	tbl.Update(tea.KeyMsg{Type: tea.KeyDown})
-	tbl.Update(tea.KeyMsg{Type: tea.KeyDown})
-	tbl.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 	if clicked != 2 {
 		t.Errorf("clicked = %d, want 2", clicked)
 	}
@@ -589,8 +589,8 @@ func TestTableVirtualFilterCallback(t *testing.T) {
 	tbl.SetTheme(DefaultTheme())
 	tbl.SetFocused(true)
 
-	tbl.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}})
-	tbl.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r', 'o', 'w'}})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}}, Context{})
+	tbl.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r', 'o', 'w'}}, Context{})
 	if lastQuery != "row" {
 		t.Errorf("OnFilterChange last query = %q, want %q", lastQuery, "row")
 	}

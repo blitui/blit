@@ -54,7 +54,7 @@ func TestFilePicker_Navigate(t *testing.T) {
 	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
 
 	// Press down — should move within the tree.
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 	view := fp.View()
 	if view == "" {
@@ -68,13 +68,13 @@ func TestFilePicker_ExpandDirectory(t *testing.T) {
 
 	// Root is already expanded; navigate to subdir and expand it.
 	// Move down to first child (file1.txt or subdir).
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 	// Move down again.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 	// Expand with right.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight})
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 	view := fp.View()
 	if view == "" {
@@ -87,12 +87,12 @@ func TestFilePicker_SearchFilter(t *testing.T) {
 	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
 
 	// Activate search with "/".
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")})
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 
 	// Type "file" to filter.
 	for _, r := range "file" {
-		updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, tuikit.Context{})
 		fp = updated.(*tuikit.FilePicker)
 	}
 
@@ -107,11 +107,11 @@ func TestFilePicker_SearchEsc(t *testing.T) {
 	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
 
 	// Activate search.
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")})
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 
 	// Escape closes search — should return tree view.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEsc}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 	view := fp.View()
 	if view == "" {
@@ -131,9 +131,9 @@ func TestFilePicker_Select(t *testing.T) {
 
 	// Navigate to a file and press enter.
 	// Down moves to first child (file1.txt in alphabetical order).
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEnter}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 
 	// We may or may not land on a file (depends on sorting), but no panic.
@@ -146,17 +146,17 @@ func TestFilePicker_LazyLoad(t *testing.T) {
 
 	// Navigate down to subdir and expand.
 	// The subdir node should lazy-load its children on expand.
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 
 	// Expand — triggers lazy load.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight})
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 
 	// Move into expanded children — should work without panic.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
 	fp = updated.(*tuikit.FilePicker)
 
 	view := fp.View()

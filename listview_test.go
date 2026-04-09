@@ -302,7 +302,7 @@ func TestListView_Refresh(t *testing.T) {
 func TestListView_UpdateDelegatesToHandleKey(t *testing.T) {
 	lv := newTestListView(sampleItems(5))
 	lv.SetFocused(true)
-	_, cmd := lv.Update(tea.KeyMsg{Type: tea.KeyDown})
+	_, cmd := lv.Update(tea.KeyMsg{Type: tea.KeyDown}, Context{})
 	if cmd == nil {
 		t.Error("Update(down) should return consumed cmd")
 	}
@@ -310,7 +310,7 @@ func TestListView_UpdateDelegatesToHandleKey(t *testing.T) {
 		t.Errorf("cursor = %d, want 1", lv.CursorIndex())
 	}
 	// Non-key msg is a no-op.
-	_, cmd = lv.Update(tea.WindowSizeMsg{Width: 100, Height: 20})
+	_, cmd = lv.Update(tea.WindowSizeMsg{Width: 100, Height: 20}, Context{})
 	if cmd != nil {
 		t.Error("Update(WindowSizeMsg) should return nil cmd")
 	}

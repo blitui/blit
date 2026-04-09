@@ -214,7 +214,7 @@ func TestViewportMouseWheelDown(t *testing.T) {
 		lines[i] = "x"
 	}
 	v := newTestViewport(strings.Join(lines, "\n"), 40, 5)
-	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelDown})
+	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelDown}, tuikit.Context{})
 	if v.YOffset() != 3 {
 		t.Errorf("expected offset 3 after wheel down, got %d", v.YOffset())
 	}
@@ -227,7 +227,7 @@ func TestViewportMouseWheelUp(t *testing.T) {
 	}
 	v := newTestViewport(strings.Join(lines, "\n"), 40, 5)
 	v.ScrollBy(6)
-	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelUp})
+	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelUp}, tuikit.Context{})
 	if v.YOffset() != 3 {
 		t.Errorf("expected offset 3 after wheel up, got %d", v.YOffset())
 	}

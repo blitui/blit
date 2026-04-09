@@ -129,7 +129,7 @@ func TestLogViewer_PauseResumeKey(t *testing.T) {
 		t.Error("should not start paused")
 	}
 
-	_, cmd := lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("p")})
+	_, cmd := lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("p")}, Context{})
 	if cmd == nil {
 		t.Error("p key should return consumed cmd")
 	}
@@ -137,7 +137,7 @@ func TestLogViewer_PauseResumeKey(t *testing.T) {
 		t.Error("should be paused after p")
 	}
 
-	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("p")})
+	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("p")}, Context{})
 	if lv.paused {
 		t.Error("should be resumed after second p")
 	}
@@ -148,7 +148,7 @@ func TestLogViewer_ClearKey(t *testing.T) {
 	lv.Append(makeLogLine(LogInfo, "msg", ""))
 	lv.Append(makeLogLine(LogInfo, "msg2", ""))
 
-	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("c")})
+	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("c")}, Context{})
 	if n := len(lv.Lines()); n != 0 {
 		t.Errorf("after c key, Lines() = %d, want 0", n)
 	}
@@ -161,11 +161,11 @@ func TestLogViewer_EndKeyJumpsToBottom(t *testing.T) {
 	}
 
 	// Scroll up first
-	lv.Update(tea.KeyMsg{Type: tea.KeyUp})
+	lv.Update(tea.KeyMsg{Type: tea.KeyUp}, Context{})
 	lv.paused = true
 
 	// End jumps down and resumes
-	lv.Update(tea.KeyMsg{Type: tea.KeyEnd})
+	lv.Update(tea.KeyMsg{Type: tea.KeyEnd}, Context{})
 	if lv.paused {
 		t.Error("end key should resume auto-scroll")
 	}
@@ -180,7 +180,7 @@ func TestLogViewer_ScrollUpPausesAutoScroll(t *testing.T) {
 		lv.Append(makeLogLine(LogInfo, "line", ""))
 	}
 
-	lv.Update(tea.KeyMsg{Type: tea.KeyUp})
+	lv.Update(tea.KeyMsg{Type: tea.KeyUp}, Context{})
 	if !lv.paused {
 		t.Error("scrolling up should pause auto-scroll")
 	}
@@ -192,7 +192,7 @@ func TestLogViewer_LevelCycleKey(t *testing.T) {
 		t.Errorf("initial filterLevel = %d, want LogDebug", lv.filterLevel)
 	}
 
-	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("l")})
+	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("l")}, Context{})
 	if lv.filterLevel != LogInfo {
 		t.Errorf("after l, filterLevel = %d, want LogInfo", lv.filterLevel)
 	}
@@ -286,7 +286,7 @@ func TestLogViewer_SetFocused(t *testing.T) {
 func TestLogViewer_LogAppendMsg(t *testing.T) {
 	lv := newTestLogViewer()
 	line := makeLogLine(LogWarn, "via message", "src")
-	lv.Update(LogAppendMsg{Line: line})
+	lv.Update(LogAppendMsg{Line: line}, Context{})
 
 	lines := lv.Lines()
 	if len(lines) != 1 {
@@ -303,18 +303,18 @@ func TestLogViewer_FilterInputMode(t *testing.T) {
 	lv.Append(makeLogLine(LogInfo, "other", ""))
 
 	// Enter filter mode
-	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")})
+	lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}, Context{})
 	if !lv.filtering {
 		t.Fatal("/ should activate filter mode")
 	}
 
 	// Type filter text
 	for _, ch := range "match" {
-		lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{ch}})
+		lv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{ch}}, Context{})
 	}
 
 	// Confirm with Enter
-	lv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	lv.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 	if lv.filtering {
 		t.Error("Enter should exit filter mode")
 	}
