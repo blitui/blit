@@ -20,14 +20,15 @@ import (
 //	prog.Update(UpdateProgressMsg{Downloaded: n})
 //	fmt.Println(prog.View())
 type UpdateProgress struct {
-	Binary     string
-	Version    string
-	Total      int64
-	Downloaded int64
-	StartedAt  time.Time
-	Width      int
-	Done       bool
-	Err        error
+	Binary       string
+	Version      string
+	Total        int64
+	Downloaded   int64
+	StartedAt    time.Time
+	Width        int
+	Done         bool
+	Err          error
+	shimmerPhase float64 // 0..1 position of shimmer highlight sweep
 }
 
 // NewUpdateProgress constructs a progress component for binary/version
@@ -53,10 +54,10 @@ type UpdateProgressMsg struct {
 // Init implements tea.Model.
 func (p *UpdateProgress) Init() tea.Cmd { return nil }
 
-// Update handles UpdateProgressMsg events and returns the model unchanged
-// for any other message.
+// Update handles UpdateProgressMsg and animTickMsg events.
 func (p *UpdateProgress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m, ok := msg.(UpdateProgressMsg); ok {
+	switch m := msg.(type) {
+	case UpdateProgressMsg:
 		if m.Downloaded > 0 {
 			p.Downloaded = m.Downloaded
 		}
@@ -65,6 +66,14 @@ func (p *UpdateProgress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.Err != nil {
 			p.Err = m.Err
+		}
+	case animTickMsg:
+		if !animDisabled && !p.Done && p.Err == nil {
+			// Advance shimmer phase at ~0.8 cycles/sec (16ms * 0.013 ≈ 0.8/s)
+			p.shimmerPhase += 0.013
+			if p.shimmerPhase > 1 {
+				p.shimmerPhase -= 1
+			}
 		}
 	}
 	return p, nil
@@ -133,7 +142,7 @@ func (p *UpdateProgress) View() string {
 	}
 	pct := p.Percent()
 	filled := int(float64(width) * pct)
-	bar := strings.Repeat("█", filled) + strings.Repeat("░", width-filled)
+	bar := p.renderBar(width, filled)
 	b.WriteString("  [")
 	b.WriteString(bar)
 	b.WriteString("] ")
@@ -156,6 +165,29 @@ func (p *UpdateProgress) View() string {
 		b.WriteString("  •  done")
 	}
 	return b.String()
+}
+
+// renderBar renders the progress bar with a shimmer sweep across filled cells.
+// When animDisabled or shimmerPhase is zero, it falls back to plain blocks.
+func (p *UpdateProgress) renderBar(width, filled int) string {
+	if filled <= 0 {
+		return strings.Repeat("░", width)
+	}
+	empty := width - filled
+	if animDisabled || p.shimmerPhase == 0 {
+		return strings.Repeat("█", filled) + strings.Repeat("░", empty)
+	}
+	shimmerPos := int(p.shimmerPhase * float64(filled))
+	var buf strings.Builder
+	for i := 0; i < filled; i++ {
+		if i == shimmerPos {
+			buf.WriteString("▓") // bright shimmer cell
+		} else {
+			buf.WriteString("█")
+		}
+	}
+	buf.WriteString(strings.Repeat("░", empty))
+	return buf.String()
 }
 
 // humanBytes renders a byte count as KiB / MiB / GiB.

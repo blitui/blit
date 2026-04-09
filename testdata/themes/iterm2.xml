@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Foreground Color</key>
+	<dict>
+		<key>Red Component</key>
+		<real>0.97254901960784312</real>
+		<key>Green Component</key>
+		<real>0.97254901960784312</real>
+		<key>Blue Component</key>
+		<real>0.94901960784313721</real>
+	</dict>
+	<key>Background Color</key>
+	<dict>
+		<key>Red Component</key>
+		<real>0.15686274509803921</real>
+		<key>Green Component</key>
+		<real>0.16470588235294117</real>
+		<key>Blue Component</key>
+		<real>0.21176470588235294</real>
+	</dict>
+	<key>Ansi 1 Color</key>
+	<dict>
+		<key>Red Component</key>
+		<real>1.0</real>
+		<key>Green Component</key>
+		<real>0.33333333333333331</real>
+		<key>Blue Component</key>
+		<real>0.33333333333333331</real>
+	</dict>
+	<key>Ansi 2 Color</key>
+	<dict>
+		<key>Red Component</key>
+		<real>0.31372549019607843</real>
+		<key>Green Component</key>
+		<real>0.98039215686274506</real>
+		<key>Blue Component</key>
+		<real>0.48235294117647058</real>
+	</dict>
+</dict>
+</plist>

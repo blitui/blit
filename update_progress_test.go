@@ -98,3 +98,70 @@ var errTestBoom = &testError{"boom"}
 type testError struct{ msg string }
 
 func (e *testError) Error() string { return e.msg }
+
+// B5: shimmer tests
+
+func TestUpdateProgress_ShimmerAdvancesOnAnimTick(t *testing.T) {
+	p := NewUpdateProgress("tool", "v1.0.0", 1024)
+	p.Downloaded = 512
+
+	before := p.shimmerPhase
+	p.Update(animTickMsg{time: time.Now()})
+	if p.shimmerPhase <= before {
+		t.Errorf("shimmerPhase should advance on animTickMsg: before=%f after=%f", before, p.shimmerPhase)
+	}
+}
+
+func TestUpdateProgress_ShimmerNoAdvanceWhenDone(t *testing.T) {
+	p := NewUpdateProgress("tool", "v1.0.0", 1024)
+	p.Downloaded = 1024
+	p.Done = true
+	phase := p.shimmerPhase
+
+	p.Update(animTickMsg{time: time.Now()})
+	if p.shimmerPhase != phase {
+		t.Error("shimmerPhase should not advance when Done=true")
+	}
+}
+
+func TestUpdateProgress_ShimmerNoAdvanceWhenDisabled(t *testing.T) {
+	animDisabled = true
+	defer func() { animDisabled = false }()
+
+	p := NewUpdateProgress("tool", "v1.0.0", 1024)
+	p.Downloaded = 512
+	phase := p.shimmerPhase
+
+	p.Update(animTickMsg{time: time.Now()})
+	if p.shimmerPhase != phase {
+		t.Error("shimmerPhase should not advance when animDisabled=true")
+	}
+}
+
+func TestUpdateProgress_RenderBarShimmer(t *testing.T) {
+	p := NewUpdateProgress("tool", "v1.0.0", 100)
+	p.Downloaded = 50
+	p.shimmerPhase = 0.5 // shimmer at midpoint of filled region
+
+	bar := p.renderBar(10, 5) // 5 filled, 5 empty
+	if !strings.Contains(bar, "▓") {
+		t.Errorf("renderBar should contain shimmer cell ▓ when shimmerPhase > 0, got: %q", bar)
+	}
+	if !strings.Contains(bar, "░") {
+		t.Errorf("renderBar should contain empty cells ░, got: %q", bar)
+	}
+}
+
+func TestUpdateProgress_RenderBarNoShimmerWhenDisabled(t *testing.T) {
+	animDisabled = true
+	defer func() { animDisabled = false }()
+
+	p := NewUpdateProgress("tool", "v1.0.0", 100)
+	p.Downloaded = 50
+	p.shimmerPhase = 0.5
+
+	bar := p.renderBar(10, 5)
+	if strings.Contains(bar, "▓") {
+		t.Errorf("renderBar should not render shimmer when animDisabled=true, got: %q", bar)
+	}
+}

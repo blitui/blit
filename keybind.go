@@ -1,13 +1,16 @@
 package tuikit
 
+import tea "github.com/charmbracelet/bubbletea"
+
 // KeyBind defines a keyboard shortcut with its label and group.
 // Components return slices of KeyBind from their KeyBindings() method.
 // The App collects these for dispatch and auto-generates the help screen.
 type KeyBind struct {
-	Key     string // Key name: "q", "ctrl+c", "?", "/", "up", "down"
-	Label   string // Human-readable label: "Quit", "Search", "Help"
-	Group   string // Grouping for help screen: "NAVIGATION", "DATA", "OTHER"
-	Handler func() // Optional handler for app-level keybindings (nil for component bindings)
+	Key        string        // Key name: "q", "ctrl+c", "?", "/", "up", "down"
+	Label      string        // Human-readable label: "Quit", "Search", "Help"
+	Group      string        // Grouping for help screen: "NAVIGATION", "DATA", "OTHER"
+	Handler    func()        // Optional handler for app-level keybindings (nil for component bindings)
+	HandlerCmd func() tea.Cmd // Optional handler that returns a tea.Cmd
 }
 
 // KeyGroup is a named group of keybindings for help screen rendering.

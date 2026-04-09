@@ -354,3 +354,46 @@ func TestListView_InitReturnsNil(t *testing.T) {
 		t.Error("Init should return nil")
 	}
 }
+
+// B3: cursor tween tests
+
+func TestListView_CursorTweenStartsOnMove(t *testing.T) {
+	lv := newTestListView(sampleItems(5))
+	lv.SetFocused(true)
+
+	if lv.cursorTween.Running() {
+		t.Fatal("tween should not be running before cursor moves")
+	}
+
+	lv.HandleKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+	if !lv.cursorTween.Running() {
+		t.Error("tween should be running after cursor move down")
+	}
+
+	// Progress() advances the tween state and marks it done when elapsed >= Duration
+	time.Sleep(130 * time.Millisecond)
+	prog := lv.cursorTween.Progress(time.Now())
+	if prog != 1.0 {
+		t.Errorf("tween progress should be 1.0 after 130ms, got %f", prog)
+	}
+	if lv.cursorTween.Running() {
+		t.Error("tween should have finished after 130ms")
+	}
+}
+
+func TestListView_CursorTweenSnapOnNoAnim(t *testing.T) {
+	animDisabled = true
+	defer func() { animDisabled = false }()
+
+	lv := newTestListView(sampleItems(3))
+	lv.SetFocused(true)
+
+	lv.HandleKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+
+	if lv.cursorTween.Running() {
+		tval := lv.cursorTween.Progress(time.Now())
+		if tval != 1.0 {
+			t.Errorf("expected tween progress 1.0 when animDisabled, got %f", tval)
+		}
+	}
+}

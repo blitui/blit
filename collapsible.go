@@ -25,11 +25,12 @@ func (s *CollapsibleSection) Render(theme Theme, contentFunc func() string) stri
 	arrowStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Muted))
 	titleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Text))
 
+	glyphs := theme.glyphsOrDefault()
 	if s.Collapsed {
-		return arrowStyle.Render("▸") + " " + titleStyle.Render(s.Title)
+		return arrowStyle.Render(glyphs.CollapsedArrow) + " " + titleStyle.Render(s.Title)
 	}
 
-	header := arrowStyle.Render("▾") + " " + titleStyle.Render(s.Title)
+	header := arrowStyle.Render(glyphs.ExpandedArrow) + " " + titleStyle.Render(s.Title)
 	content := contentFunc()
 	if content == "" {
 		return header

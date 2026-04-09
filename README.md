@@ -2,6 +2,8 @@
 
 The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https://github.com/charmbracelet/bubbletea) + [Lip Gloss](https://github.com/charmbracelet/lipgloss) with reusable components, a layout engine, a keybinding registry, a theme system, and built-in binary self-update. Build a complete TUI app in under 20 lines.
 
+![tuikit-go quick start](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/quickstart.gif)
+
 ## Features
 
 - Table with sorting, filtering, custom cell rendering, and mouse support
@@ -17,6 +19,8 @@ The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https:
 - **tuitest CLI** — `go install` or grab a prebuilt binary to run test suites with snapshot update, JUnit/HTML reports, filtering, parallelism, and watch mode
 
 ## Install
+
+![install and get started](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/tuitest-runner.gif)
 
 Library:
 
@@ -39,6 +43,8 @@ go install github.com/moneycaringcoder/tuikit-go/cmd/tuitest@latest
 ```
 
 ## Quick Start
+
+![quick start demo](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/quickstart.gif)
 
 ```go
 package main
@@ -85,6 +91,8 @@ go run ./examples/cli-demo/    # Interactive CLI primitives showcase
 ```
 
 ## Components
+
+![components overview](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/table.gif)
 
 ### Table
 
@@ -243,6 +251,8 @@ Unknown message types are forwarded to all components via `Update`.
 
 ## CLI Primitives
 
+![CLI primitives showcase](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/cli-primitives.gif)
+
 The `cli` package provides interactive prompts for tools that need more than `fmt.Print` but less than a full TUI. Each primitive runs a minimal Bubble Tea program, captures input, and returns the result.
 
 ```go
@@ -291,6 +301,8 @@ cli.KeyValue("Version", "1.2.3")   // dimmed key: value
 ```
 
 ## Testing with tuitest
+
+![tuitest vitest-style reporter](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/tuitest-runner.gif)
 
 The `tuitest` package provides a virtual terminal and assertion helpers for testing Bubble Tea models without launching a real terminal.
 
@@ -417,6 +429,8 @@ tuikit.Hyperlink("https://example.com", "click here")
 
 ## Layout & Theming
 
+![theme gallery — 8 presets](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/theme-gallery.gif)
+
 ### Layout
 
 Single pane or dual pane with collapsible sidebar.
@@ -474,6 +488,8 @@ type Themed interface {
 ```
 
 ## Self-Update
+
+![self-update progress flow](https://raw.githubusercontent.com/moneycaringcoder/tuikit-go/main/docs/gifs/update-flow.gif)
 
 tuikit-go ships a binary self-update system designed for GoReleaser-published CLIs. It checks GitHub Releases, verifies SHA256 checksums against GoReleaser's `checksums.txt`, replaces the running binary atomically, rolls back on verify failure, and detects Homebrew/Scoop installs so package-managed binaries are left alone.
 
