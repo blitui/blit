@@ -68,6 +68,8 @@ func main() {
 			os.Exit(cmdReport(*out))
 		case "coverage":
 			os.Exit(readCoverage())
+		case "vhs":
+			os.Exit(runVHS(os.Args[2:]))
 		}
 	}
 
