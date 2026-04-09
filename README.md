@@ -554,8 +554,8 @@ tuikit follows consistent patterns throughout:
 
 ## Used By
 
-- [cryptstream-tui](https://github.com/moneycaringcoder/cryptstream-tui) — Live cryptocurrency ticker
 - [gitstream-tui](https://github.com/moneycaringcoder/gitstream-tui) — GitHub activity dashboard
+- [cryptstream-tui](https://github.com/moneycaringcoder/cryptstream-tui) — Live cryptocurrency ticker
 
 ## Dependencies
 
