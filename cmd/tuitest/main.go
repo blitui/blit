@@ -7,12 +7,14 @@
 // Subcommands:
 //
 //	tuitest diff <testname>   show the failure diff for a named test
+//	tuitest review [root]     interactive review of pending .golden.new snapshots
 //
 // Usage:
 //
 //	tuitest [flags] [packages...]
 //	tuitest record <name> -- <command> [args...]
 //	tuitest replay [--speed 1x] <name>
+//	tuitest review [root]
 //
 // Packages default to "./..." when none are provided. The default reporter
 // is the vitest-style runner already wired into the test code.
@@ -68,6 +70,8 @@ func main() {
 			os.Exit(cmdReport(*out))
 		case "coverage":
 			os.Exit(readCoverage())
+		case "review":
+			os.Exit(runReview(os.Args[2:]))
 		}
 	}
 
