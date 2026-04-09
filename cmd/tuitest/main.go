@@ -32,7 +32,7 @@ import (
 )
 
 func main() {
-	// Subcommand dispatch: tuitest history [--keep N] | tuitest report [--out path]
+	// Sub-commands handled before flag parsing.
 	if len(os.Args) >= 2 {
 		switch os.Args[1] {
 		case "history":
@@ -45,6 +45,8 @@ func main() {
 			out := fs.String("out", "report.html", "output path for the HTML report")
 			_ = fs.Parse(os.Args[2:])
 			os.Exit(cmdReport(*out))
+		case "coverage":
+			os.Exit(readCoverage())
 		}
 	}
 
@@ -57,12 +59,17 @@ func main() {
 		watch    = flag.Bool("watch", false, "watch the working tree for changes and re-run on modification")
 		verbose  = flag.Bool("v", false, "verbose go test output")
 		keep     = flag.Int("keep", defaultKeep, "max history entries to keep (prune older runs)")
+		coverage = flag.Bool("coverage", false, "run go test with -coverprofile and display a coverage summary panel")
 	)
 	flag.Parse()
 
 	packages := flag.Args()
 	if len(packages) == 0 {
 		packages = []string{"./..."}
+	}
+
+	if *coverage {
+		os.Exit(runCoverage(packages))
 	}
 
 	runOnce := func() int {
