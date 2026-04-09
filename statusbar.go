@@ -8,14 +8,22 @@ import (
 )
 
 // StatusBarOpts configures a StatusBar.
+//
+// Left and Right accept any value that can be converted into a StringSource:
+// a plain `func() string` closure (legacy), a `*Signal[string]` (reactive,
+// v0.10+), or an explicit StringSource. Nil means "empty". The overload is
+// intentional so existing call sites keep working while new code can hand
+// in a signal for per-frame reactivity without plumbing a getter closure
+// that captures the signal.
 type StatusBarOpts struct {
-	Left  func() string // Dynamic left-aligned content
-	Right func() string // Dynamic right-aligned content
+	Left  any // func() string, *Signal[string], or StringSource
+	Right any
 }
 
 // StatusBar renders a footer bar with left and right aligned sections.
 type StatusBar struct {
-	opts    StatusBarOpts
+	left    StringSource
+	right   StringSource
 	width   int
 	height  int
 	theme   Theme
@@ -23,8 +31,14 @@ type StatusBar struct {
 }
 
 // NewStatusBar creates a new StatusBar with the given options.
+//
+// Left and Right in opts accept either a `func() string` closure or a
+// `*Signal[string]`. See StatusBarOpts for details.
 func NewStatusBar(opts StatusBarOpts) *StatusBar {
-	return &StatusBar{opts: opts}
+	return &StatusBar{
+		left:  toStringSource(opts.Left),
+		right: toStringSource(opts.Right),
+	}
 }
 
 func (s *StatusBar) Init() tea.Cmd { return nil }
@@ -36,11 +50,11 @@ func (s *StatusBar) Update(msg tea.Msg) (Component, tea.Cmd) {
 func (s *StatusBar) View() string {
 	left := ""
 	right := ""
-	if s.opts.Left != nil {
-		left = s.opts.Left()
+	if s.left != nil {
+		left = s.left.Value()
 	}
-	if s.opts.Right != nil {
-		right = s.opts.Right()
+	if s.right != nil {
+		right = s.right.Value()
 	}
 
 	style := lipgloss.NewStyle().

@@ -31,9 +31,29 @@ func WithLayout(l *DualPane) Option {
 }
 
 // WithStatusBar adds a status bar at the bottom of the screen.
+//
+// left and right are legacy `func() string` closures. For reactive status
+// bar content driven by signals, use WithStatusBarSignal.
 func WithStatusBar(left, right func() string) Option {
 	return func(a *appModel) {
 		a.statusBar = NewStatusBar(StatusBarOpts{Left: left, Right: right})
+	}
+}
+
+// WithStatusBarSignal adds a status bar whose left and right content are
+// driven by *Signal[string]. Either may be nil. Prefer this over
+// WithStatusBar when the values change asynchronously (background polling,
+// websocket streams, etc.) — updates collapse into one notification per
+// frame thanks to Signal's dirty-bit coalescing.
+func WithStatusBarSignal(left, right *Signal[string]) Option {
+	return func(a *appModel) {
+		a.statusBar = NewStatusBar(StatusBarOpts{Left: left, Right: right})
+		if left != nil {
+			a.trackSignal(left)
+		}
+		if right != nil {
+			a.trackSignal(right)
+		}
 	}
 }
 
@@ -130,6 +150,19 @@ type appModel struct {
 	pendingNotify     string
 	toasts            *toastManager
 	animationsEnabled bool
+	signalBus         *signalBus
+	signals           []AnySignal
+}
+
+// trackSignal registers a signal with the app's bus so its Set calls fire
+// subscribers on the UI goroutine. Idempotent — attaching the same signal
+// twice is harmless.
+func (a *appModel) trackSignal(s AnySignal) {
+	if s == nil {
+		return
+	}
+	s.attach(a.signalBus)
+	a.signals = append(a.signals, s)
 }
 
 // newAppModel creates an appModel for testing (does not start tea.Program).
@@ -140,6 +173,7 @@ func newAppModel(opts ...Option) *appModel {
 		registry:      newRegistry(),
 		focusCycleKey: "tab",
 		toasts:        newToastManager(ToastManagerOpts{}),
+		signalBus:     newSignalBus(),
 	}
 	for _, opt := range opts {
 		opt(a)
@@ -378,6 +412,16 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.theme = msg.Theme
 		a.setup()
 		a.resize()
+		return a, nil
+
+	case signalFlushMsg:
+		// Drain pending signal subscribers on the UI goroutine. A5: this
+		// is how signal-driven re-renders surface — Bubble Tea repaints
+		// after any Update, so View() calls that read Signal.Get() pick
+		// up the new value on the next frame without any extra plumbing.
+		if a.signalBus != nil {
+			a.signalBus.drain()
+		}
 		return a, nil
 	}
 
@@ -832,6 +876,10 @@ func (a *App) Run() error {
 	}
 
 	a.program = tea.NewProgram(a.model, a.opts...)
+	if a.model.signalBus != nil {
+		prog := a.program
+		a.model.signalBus.setSender(func(msg tea.Msg) { prog.Send(msg) })
+	}
 	_, err := a.program.Run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
