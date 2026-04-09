@@ -32,7 +32,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -91,18 +90,10 @@ func main() {
 		os.Exit(runOnce())
 	}
 
-	// Watch mode: simple mtime poll on .go files under cwd.
-	fmt.Fprintln(os.Stderr, "[tuitest] watch mode (polling every 1s, Ctrl+C to stop)")
-	lastHash := snapshotTree(".")
-	runOnce()
-	for {
-		time.Sleep(time.Second)
-		h := snapshotTree(".")
-		if h != lastHash {
-			fmt.Fprintln(os.Stderr, "[tuitest] change detected, re-running")
-			lastHash = h
-			runOnce()
-		}
+	// Watch mode: interactive TUI with status bar, filter panel, and log viewer.
+	if err := RunWatchMode(packages); err != nil {
+		fmt.Fprintf(os.Stderr, "[tuitest] watch mode error: %v\n", err)
+		os.Exit(1)
 	}
 }
 
