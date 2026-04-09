@@ -32,3 +32,6 @@ go.work.sum
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated GIFs (regenerate with ./scripts/gen-gifs.sh)
+docs/gifs/*.gif
