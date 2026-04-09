@@ -13,6 +13,11 @@ import (
 //
 // The overlay is self-contained: it tracks scroll offset, renders a
 // bordered box, and closes itself when the user presses q/esc.
+//
+// When a Theme has been set via SetTheme, release notes are rendered through
+// Markdown() so that headings, code spans, and lists are styled. BREAKING and
+// SECURITY section headings are additionally highlighted using the theme's
+// Negative and Flash color tokens.
 type ReleaseNotesOverlay struct {
 	Title   string
 	Version string
@@ -21,6 +26,9 @@ type ReleaseNotesOverlay struct {
 	Width   int
 	Height  int
 	Closed  bool
+	raw     string // original markdown source, preserved for re-rendering on theme change
+	theme   Theme
+	themed  bool // true once SetTheme has been called
 }
 
 // NewReleaseNotesOverlay constructs an overlay for the given release
@@ -29,18 +37,53 @@ func NewReleaseNotesOverlay(version, notes string) *ReleaseNotesOverlay {
 	return &ReleaseNotesOverlay{
 		Title:   "Release notes",
 		Version: version,
-		Lines:   splitLines(notes),
+		Lines:   splitNoteLines(notes),
 		Width:   80,
 		Height:  24,
+		raw:     notes,
 	}
 }
 
-func splitLines(s string) []string {
+// NewReleaseNotesOverlayThemed is like NewReleaseNotesOverlay but immediately
+// applies a theme so the notes are rendered through Markdown from the start.
+func NewReleaseNotesOverlayThemed(version, notes string, t Theme) *ReleaseNotesOverlay {
+	return &ReleaseNotesOverlay{
+		Title:   "Release notes",
+		Version: version,
+		Lines:   renderNotes(notes, t),
+		Width:   80,
+		Height:  24,
+		raw:     notes,
+		theme:   t,
+		themed:  true,
+	}
+}
+
+// SetTheme implements the Themed interface. When set, release notes are
+// rendered through Markdown() with BREAKING/SECURITY section highlighting.
+func (o *ReleaseNotesOverlay) SetTheme(t Theme) {
+	o.theme = t
+	o.themed = true
+	o.Lines = renderNotes(o.raw, t)
+}
+
+func splitNoteLines(s string) []string {
 	s = strings.ReplaceAll(s, "\r\n", "\n")
 	if s == "" {
 		return []string{"(no release notes)"}
 	}
 	return strings.Split(s, "\n")
+}
+
+// renderNotes renders notes through Markdown (with BREAKING/SECURITY
+// highlighting) and splits the result into lines.
+func renderNotes(notes string, t Theme) []string {
+	if notes == "" {
+		return []string{"(no release notes)"}
+	}
+	rendered := Markdown(notes, t)
+	rendered = highlightSections(rendered, t)
+	return strings.Split(strings.ReplaceAll(rendered, "\r\n", "\n"), "\n")
 }
 
 // Init implements tea.Model.
@@ -112,7 +155,14 @@ func (o *ReleaseNotesOverlay) View() string {
 	}
 	page := o.Lines[o.Offset:end]
 
-	title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("14")).
+	borderColor := lipgloss.Color("14")
+	titleFg := lipgloss.Color("14")
+	if o.themed {
+		borderColor = o.theme.Accent
+		titleFg = o.theme.Accent
+	}
+
+	title := lipgloss.NewStyle().Bold(true).Foreground(titleFg).
 		Render(o.Title + "  " + o.Version)
 	body := strings.Join(page, "\n")
 
@@ -133,7 +183,7 @@ func (o *ReleaseNotesOverlay) View() string {
 	content := title + "\n\n" + body + "\n\n" + footer
 	box := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("14")).
+		BorderForeground(borderColor).
 		Padding(0, 1).
 		Render(content)
 	return box

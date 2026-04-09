@@ -68,7 +68,15 @@ func (h *Help) View() string {
 
 	groups := h.reg.grouped()
 	for i, group := range groups {
-		sb.WriteString(groupStyle.Render(group.Name))
+		groupName := group.Name
+		if strings.HasPrefix(groupName, "md:") {
+			// Render the description portion (after the "md:" prefix) through
+			// Markdown so that inline formatting (bold, code, links) is styled.
+			rendered := strings.TrimSpace(Markdown(strings.TrimPrefix(groupName, "md:"), h.theme))
+			sb.WriteString(rendered)
+		} else {
+			sb.WriteString(groupStyle.Render(groupName))
+		}
 		sb.WriteString("\n")
 		for _, kb := range group.Bindings {
 			line := fmt.Sprintf("  %s  %s",
