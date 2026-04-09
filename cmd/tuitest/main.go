@@ -72,6 +72,8 @@ func main() {
 			os.Exit(readCoverage())
 		case "review":
 			os.Exit(runReview(os.Args[2:]))
+		case "vhs":
+			os.Exit(runVHS(os.Args[2:]))
 		}
 	}
 

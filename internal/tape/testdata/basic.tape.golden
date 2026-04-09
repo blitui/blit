@@ -1,0 +1,12 @@
+Set Width 640
+Set Height 384
+Set FontSize 14
+
+Type "hello"
+Sleep 100ms
+Enter
+Sleep 100ms
+Down
+Sleep 100ms
+Type "world"
+Sleep 100ms
