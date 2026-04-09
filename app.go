@@ -191,6 +191,7 @@ type appModel struct {
 	hotReloadPath     string
 	hotReload         *ThemeHotReload
 	slots             *slotRegistry
+	devConsole        *devConsole
 }
 
 // trackSignal registers a signal with the app's bus so its Set calls fire
@@ -217,6 +218,10 @@ func newAppModel(opts ...Option) *appModel {
 	}
 	for _, opt := range opts {
 		opt(a)
+	}
+	// Auto-enable dev console from environment even without WithDevConsole option.
+	if a.devConsole == nil && os.Getenv("TUIKIT_DEVCONSOLE") == "1" {
+		a.devConsole = newDevConsole()
 	}
 	a.materialiseSlots()
 	a.setup()
@@ -482,6 +487,9 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.signalBus.drain()
 		}
 		return a, nil
+
+	case devConsoleToggleMsg:
+		return a, a.toggleDevConsole()
 	}
 
 	// Forward unknown messages to all components (for custom app messages)
@@ -611,6 +619,11 @@ func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	key := msg.String()
 
+	// Record keypress in dev console ring buffer (zero cost when disabled)
+	if a.devConsole != nil {
+		a.devConsole.recordKey(key)
+	}
+
 	// 1. Active overlay gets first crack
 	if overlay := a.overlays.active(); overlay != nil {
 		if key == "esc" {
@@ -652,6 +665,8 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	// 3. Built-in global bindings
 	switch key {
+	case "ctrl+\\":
+		return a, a.toggleDevConsole()
 	case "q", "ctrl+c":
 		return a, tea.Quit
 	case "esc":
@@ -714,6 +729,88 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	return a, nil
+}
+
+// toggleDevConsole creates (if needed) and toggles the dev console overlay.
+// Returns a nil cmd when the console is being closed, or nil otherwise.
+func (a *appModel) toggleDevConsole() tea.Cmd {
+	if a.devConsole == nil {
+		a.devConsole = newDevConsole()
+		a.devConsole.SetTheme(a.theme)
+		a.devConsole.SetSize(a.width, a.height)
+	}
+	if a.devConsole.active {
+		// Close: pop from overlay stack
+		a.devConsole.active = false
+		// Remove from overlay stack if present
+		stack := a.overlays.stack[:0]
+		for _, o := range a.overlays.stack {
+			if o != a.devConsole {
+				stack = append(stack, o)
+			}
+		}
+		a.overlays.stack = stack
+	} else {
+		a.devConsole.active = true
+		a.devConsole.SetSize(a.width, a.height)
+		a.devConsoleUpdateSnapshot()
+		// Push onto overlay stack at top (highest z)
+		a.overlays.push(a.devConsole)
+	}
+	return nil
+}
+
+// devConsoleUpdateSnapshot refreshes the console's snapshot of app state.
+func (a *appModel) devConsoleUpdateSnapshot() {
+	if a.devConsole == nil {
+		return
+	}
+	snap := devConsoleSnapshot{
+		focusIdx:  a.focusIdx,
+		theme:     a.theme,
+		themeName: a.hotReloadPath,
+	}
+	if snap.themeName == "" {
+		snap.themeName = "default"
+	}
+
+	// Component names and focus state
+	if a.dualPane != nil {
+		mainName := a.dualPane.MainName
+		if mainName == "" {
+			mainName = "Main"
+		}
+		sideName := a.dualPane.SideName
+		if sideName == "" {
+			sideName = "Side"
+		}
+		snap.componentNames = []string{mainName, sideName}
+		snap.componentFocus = []bool{a.focusIdx == 0, a.focusIdx == 1}
+		snap.focusName = snap.componentNames[a.focusIdx%len(snap.componentNames)]
+	} else {
+		for i, nc := range a.components {
+			snap.componentNames = append(snap.componentNames, nc.name)
+			snap.componentFocus = append(snap.componentFocus, i == a.focusIdx)
+		}
+		if a.focusIdx < len(a.components) {
+			snap.focusName = a.components[a.focusIdx].name
+		}
+	}
+
+	// Signals: render each signal's current value via fmt.Sprintf
+	for i, sig := range a.signals {
+		label := fmt.Sprintf("signal[%d]", i)
+		// Use the StringSource adapter if the signal is a *Signal[string]
+		var value string
+		if ss, ok := sig.(*Signal[string]); ok {
+			value = ss.Get()
+		} else {
+			value = fmt.Sprintf("%T", sig)
+		}
+		snap.signals = append(snap.signals, signalInfo{label: label, value: value})
+	}
+
+	a.devConsole.snapshot = snap
 }
 
 // InputCapture is implemented by components that can enter text-input mode
@@ -830,10 +927,18 @@ func (a *appModel) renderBadge(name string, focused bool) string {
 }
 
 func (a *appModel) View() string {
-	// Active overlay takes over the screen (unless inline)
+	// Record frame time and update snapshot for dev console (zero cost when nil)
+	if a.devConsole != nil {
+		a.devConsole.recordFrame(time.Now())
+		a.devConsoleUpdateSnapshot()
+	}
+
+	// Active overlay takes over the screen (unless inline or floating)
 	if overlay := a.overlays.active(); overlay != nil {
 		if _, ok := overlay.(InlineOverlay); !ok {
-			return overlay.View()
+			if _, ok := overlay.(FloatingOverlay); !ok {
+				return overlay.View()
+			}
 		}
 	}
 
@@ -913,10 +1018,22 @@ func (a *appModel) View() string {
 	if a.statusBar != nil {
 		bottom = append(bottom, a.statusBar.View())
 	}
+
+	var result string
 	if len(bottom) > 0 {
-		return lipgloss.JoinVertical(lipgloss.Left, content, strings.Join(bottom, "\n"))
+		result = lipgloss.JoinVertical(lipgloss.Left, content, strings.Join(bottom, "\n"))
+	} else {
+		result = content
 	}
-	return content
+
+	// Floating overlays composite on top of the assembled content.
+	if overlay := a.overlays.active(); overlay != nil {
+		if fo, ok := overlay.(FloatingOverlay); ok {
+			result = fo.FloatView(result)
+		}
+	}
+
+	return result
 }
 
 // joinPanes renders main + separator + side with a full-height border.
