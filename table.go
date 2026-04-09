@@ -63,42 +63,135 @@ type DetailRenderer func(row Row, rowIdx int, width int, theme Theme) string
 // CursorChangeHandler is called when the cursor moves to a different row.
 type CursorChangeHandler func(row Row, rowIdx int)
 
+// TableRowProvider lazily supplies rows for a virtualized Table. Implementations
+// must be cheap for windowed access — only the visible slice is ever fetched per
+// frame, enabling tables over millions of rows.
+//
+// Len returns the total logical row count. Rows returns up to limit rows
+// starting at offset; the returned slice length may be shorter at the end.
+// Implementations should not return nil; an empty slice is acceptable.
+//
+// A TableRowProvider is used only when TableOpts.Virtual is true and
+// TableOpts.RowProvider is non-nil.
+type TableRowProvider interface {
+	Len() int
+	Rows(offset, limit int) []Row
+}
+
+// TableRowProviderFunc adapts a plain function into a TableRowProvider for
+// callers that already hold the total row count separately.
+type TableRowProviderFunc struct {
+	Total int
+	Fetch func(offset, limit int) []Row
+}
+
+// Len returns the configured total row count.
+func (f TableRowProviderFunc) Len() int { return f.Total }
+
+// Rows delegates to the underlying Fetch function.
+func (f TableRowProviderFunc) Rows(offset, limit int) []Row {
+	if f.Fetch == nil {
+		return nil
+	}
+	return f.Fetch(offset, limit)
+}
+
 // TableOpts configures a Table component.
 type TableOpts struct {
-	Sortable       bool              // Enable sort cycling with 's'
-	Filterable     bool              // Enable '/' search mode
-	CursorStyle    CursorStyle       // How the cursor is rendered
-	HeaderStyle    lipgloss.Style    // Override header style (zero value = use theme)
-	CellRenderer   CellRenderer      // Custom cell renderer (nil = plain text)
-	RowStyler      RowStyler         // Optional full-row style (applied after cell rendering)
-	SortFunc       SortFunc          // Custom sort function (nil = lexicographic)
-	OnRowClick     RowClickHandler   // Called on Enter or mouse click on a row
-	DetailFunc     DetailRenderer    // Renders inline detail bar for cursor row (nil = no detail bar)
-	DetailHeight   int               // Lines reserved for detail bar (default 3 when DetailFunc set)
+	Sortable       bool                // Enable sort cycling with 's'
+	Filterable     bool                // Enable '/' search mode
+	CursorStyle    CursorStyle         // How the cursor is rendered
+	HeaderStyle    lipgloss.Style      // Override header style (zero value = use theme)
+	CellRenderer   CellRenderer        // Custom cell renderer (nil = plain text)
+	RowStyler      RowStyler           // Optional full-row style (applied after cell rendering)
+	SortFunc       SortFunc            // Custom sort function (nil = lexicographic)
+	OnRowClick     RowClickHandler     // Called on Enter or mouse click on a row
+	DetailFunc     DetailRenderer      // Renders inline detail bar for cursor row (nil = no detail bar)
+	DetailHeight   int                 // Lines reserved for detail bar (default 3 when DetailFunc set)
 	OnCursorChange CursorChangeHandler // Called when cursor moves to a different row
+
+	// Virtual enables the virtualized render path. When true, only the visible
+	// slice of rows is materialized per frame and RowProvider supplies data
+	// lazily. Default false for backwards compatibility.
+	Virtual bool
+	// RowProvider supplies rows for the virtualized path. Required when
+	// Virtual is true. Sorting is disabled in virtual mode; implement sorting
+	// inside the provider if needed.
+	RowProvider TableRowProvider
+	// OnFilterChange fires whenever the built-in filter query changes. In
+	// virtual mode the consumer should use this to re-query the provider or
+	// swap in a filtered provider; the table does not filter rows itself
+	// when Virtual is true.
+	OnFilterChange func(query string)
 }
 
 // Table is an adaptive table component with sorting, filtering, and responsive columns.
 type Table struct {
-	columns      []Column
-	rows         []Row
-	visible      []Row // filtered/sorted view of rows
-	opts         TableOpts
-	theme        Theme
-	focused      bool
-	width        int
-	height       int
-	cursor       int
-	offset       int // scroll offset
-	sortCol      int // -1 = no sort
-	sortAsc      bool
-	filtering    bool       // in search mode
-	filterQuery  string     // current filter text
-	filterFunc   FilterFunc // predicate filter
-	cursorTween  Tween      // 120ms cursor highlight fade-in
+	columns     []Column
+	rows        []Row
+	visible     []Row // filtered/sorted view of rows (non-virtual mode)
+	opts        TableOpts
+	theme       Theme
+	focused     bool
+	width       int
+	height      int
+	cursor      int
+	offset      int // scroll offset
+	sortCol     int // -1 = no sort
+	sortAsc     bool
+	filtering   bool       // in search mode
+	filterQuery string     // current filter text
+	filterFunc  FilterFunc // predicate filter
+	cursorTween Tween      // 120ms cursor highlight fade-in
+
+	// Virtual-mode scratch buffer. Reused across frames to avoid per-frame
+	// allocation on the hot render path.
+	virtWindow []Row
+}
+
+// virtual returns true when this table is driven by a TableRowProvider.
+func (t *Table) virtual() bool {
+	return t.opts.Virtual && t.opts.RowProvider != nil
+}
+
+// visibleLen returns the total number of rows currently visible to the cursor
+// and scroll logic, handling both virtual and non-virtual modes.
+func (t *Table) visibleLen() int {
+	if t.virtual() {
+		return t.opts.RowProvider.Len()
+	}
+	return len(t.visible)
+}
+
+// rowAt returns the row at the given logical visible index, or nil if out of
+// range. In virtual mode this fetches a single-row window from the provider;
+// callers on the hot render path should prefer using the pre-fetched window
+// slice to avoid per-row provider calls.
+func (t *Table) rowAt(idx int) Row {
+	if idx < 0 {
+		return nil
+	}
+	if t.virtual() {
+		if idx >= t.opts.RowProvider.Len() {
+			return nil
+		}
+		rows := t.opts.RowProvider.Rows(idx, 1)
+		if len(rows) == 0 {
+			return nil
+		}
+		return rows[0]
+	}
+	if idx >= len(t.visible) {
+		return nil
+	}
+	return t.visible[idx]
 }
 
 // NewTable creates a new Table component.
+//
+// When opts.Virtual is true and opts.RowProvider is non-nil, the table uses a
+// lazy windowed render path: only rows in the visible viewport are fetched from
+// the provider per frame. The rows argument is ignored in virtual mode.
 func NewTable(columns []Column, rows []Row, opts TableOpts) *Table {
 	if opts.DetailHeight == 0 && opts.DetailFunc != nil {
 		opts.DetailHeight = 3
@@ -110,12 +203,18 @@ func NewTable(columns []Column, rows []Row, opts TableOpts) *Table {
 		sortCol: -1,
 		sortAsc: true,
 	}
-	t.rebuildVisible()
+	if !t.virtual() {
+		t.rebuildVisible()
+	}
 	return t
 }
 
-// SetRows replaces the table data and rebuilds the view.
+// SetRows replaces the table data and rebuilds the view. In virtual mode this
+// is a no-op; update the underlying TableRowProvider instead.
 func (t *Table) SetRows(rows []Row) {
+	if t.virtual() {
+		return
+	}
 	t.rows = rows
 	t.rebuildVisible()
 	t.clampCursor()
@@ -123,11 +222,18 @@ func (t *Table) SetRows(rows []Row) {
 
 // SetFilter sets a predicate filter function. Pass nil to clear.
 // This works alongside text search — both must pass for a row to be visible.
+// No-op in virtual mode: filter inside the TableRowProvider instead.
 func (t *Table) SetFilter(fn FilterFunc) {
 	t.filterFunc = fn
+	if t.virtual() {
+		return
+	}
 	t.rebuildVisible()
 	t.clampCursor()
 }
+
+// FilterQuery returns the active built-in text search query.
+func (t *Table) FilterQuery() string { return t.filterQuery }
 
 // SortCol returns the current sort column index (-1 if no sort).
 func (t *Table) SortCol() int { return t.sortCol }
@@ -137,10 +243,7 @@ func (t *Table) SortAsc() bool { return t.sortAsc }
 
 // CursorRow returns the row at the current cursor position, or nil if empty.
 func (t *Table) CursorRow() Row {
-	if t.cursor >= 0 && t.cursor < len(t.visible) {
-		return t.visible[t.cursor]
-	}
-	return nil
+	return t.rowAt(t.cursor)
 }
 
 // CursorIndex returns the current cursor position.
@@ -161,11 +264,23 @@ func (t *Table) SetSort(col int, asc bool) {
 	t.clampCursor()
 }
 
-// RowCount returns the total number of rows (before filtering).
-func (t *Table) RowCount() int { return len(t.rows) }
+// RowCount returns the total number of rows (before filtering). In virtual
+// mode this is the provider's Len.
+func (t *Table) RowCount() int {
+	if t.virtual() {
+		return t.opts.RowProvider.Len()
+	}
+	return len(t.rows)
+}
 
-// VisibleRowCount returns the number of rows after filtering.
-func (t *Table) VisibleRowCount() int { return len(t.visible) }
+// VisibleRowCount returns the number of rows after filtering. In virtual mode
+// filtering is provider-driven, so this matches RowCount.
+func (t *Table) VisibleRowCount() int {
+	if t.virtual() {
+		return t.opts.RowProvider.Len()
+	}
+	return len(t.visible)
+}
 
 func (t *Table) Init() tea.Cmd { return nil }
 
@@ -199,11 +314,13 @@ func (t *Table) handleMouse(msg tea.MouseMsg) (Component, tea.Cmd) {
 		}
 		// Calculate which row was clicked (Y relative to table content)
 		clickedRow := t.offset + msg.Y - 1 // -1 for header
-		if clickedRow >= 0 && clickedRow < len(t.visible) {
+		if clickedRow >= 0 && clickedRow < t.visibleLen() {
 			t.cursor = clickedRow
 			t.clampCursor()
 			if t.opts.OnRowClick != nil {
-				t.opts.OnRowClick(t.visible[t.cursor], t.cursor)
+				if row := t.rowAt(t.cursor); row != nil {
+					t.opts.OnRowClick(row, t.cursor)
+				}
 			}
 			return t, Consumed()
 		}
@@ -217,13 +334,23 @@ func (t *Table) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 		case "esc":
 			t.filtering = false
 			t.filterQuery = ""
-			t.rebuildVisible()
+			if !t.virtual() {
+				t.rebuildVisible()
+			}
+			if t.opts.OnFilterChange != nil {
+				t.opts.OnFilterChange(t.filterQuery)
+			}
 			t.clampCursor()
 			return t, Consumed()
 		case "backspace":
 			if len(t.filterQuery) > 0 {
 				t.filterQuery = t.filterQuery[:len(t.filterQuery)-1]
-				t.rebuildVisible()
+				if !t.virtual() {
+					t.rebuildVisible()
+				}
+				if t.opts.OnFilterChange != nil {
+					t.opts.OnFilterChange(t.filterQuery)
+				}
 				t.clampCursor()
 			}
 			return t, Consumed()
@@ -247,7 +374,12 @@ func (t *Table) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 				}
 			}
 			if added {
-				t.rebuildVisible()
+				if !t.virtual() {
+					t.rebuildVisible()
+				}
+				if t.opts.OnFilterChange != nil {
+					t.opts.OnFilterChange(t.filterQuery)
+				}
 				t.clampCursor()
 			}
 			return t, Consumed()
@@ -272,7 +404,7 @@ func (t *Table) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 		return t, Consumed()
 	case "end", "G":
 		t.startCursorTween()
-		t.cursor = len(t.visible) - 1
+		t.cursor = t.visibleLen() - 1
 		t.clampCursor()
 		return t, Consumed()
 	case "ctrl+d":
@@ -294,12 +426,14 @@ func (t *Table) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 		t.clampCursor()
 		return t, Consumed()
 	case "enter":
-		if t.opts.OnRowClick != nil && t.cursor < len(t.visible) {
-			t.opts.OnRowClick(t.visible[t.cursor], t.cursor)
-			return t, Consumed()
+		if t.opts.OnRowClick != nil && t.cursor < t.visibleLen() {
+			if row := t.rowAt(t.cursor); row != nil {
+				t.opts.OnRowClick(row, t.cursor)
+				return t, Consumed()
+			}
 		}
 	case "s":
-		if t.opts.Sortable {
+		if t.opts.Sortable && !t.virtual() {
 			t.cycleSort()
 			return t, Consumed()
 		}
@@ -337,13 +471,32 @@ func (t *Table) View() string {
 		visibleRows = 0
 	}
 
+	total := t.visibleLen()
 	end := t.offset + visibleRows
-	if end > len(t.visible) {
-		end = len(t.visible)
+	if end > total {
+		end = total
 	}
 
-	for i := t.offset; i < end; i++ {
-		lines = append(lines, t.renderRow(t.visible[i], i, visibleCols, origIdxs, colWidths))
+	if t.virtual() {
+		// Fetch only the visible window from the provider. Reuse the
+		// virtWindow buffer across frames — the provider is free to return
+		// either its own backing slice or one copied into ours.
+		want := end - t.offset
+		if want < 0 {
+			want = 0
+		}
+		if want > 0 {
+			t.virtWindow = t.opts.RowProvider.Rows(t.offset, want)
+		} else {
+			t.virtWindow = t.virtWindow[:0]
+		}
+		for i := 0; i < want && i < len(t.virtWindow); i++ {
+			lines = append(lines, t.renderRow(t.virtWindow[i], t.offset+i, visibleCols, origIdxs, colWidths))
+		}
+	} else {
+		for i := t.offset; i < end; i++ {
+			lines = append(lines, t.renderRow(t.visible[i], i, visibleCols, origIdxs, colWidths))
+		}
 	}
 
 	if t.filtering && len(lines) > 0 {
@@ -657,7 +810,8 @@ func (t *Table) clampCursor() {
 	if t.cursor < 0 {
 		t.cursor = 0
 	}
-	maxCursor := len(t.visible) - 1
+	total := t.visibleLen()
+	maxCursor := total - 1
 	if maxCursor < 0 {
 		maxCursor = 0
 	}
@@ -666,8 +820,10 @@ func (t *Table) clampCursor() {
 	}
 
 	if t.cursor != prev {
-		if t.opts.OnCursorChange != nil && t.cursor < len(t.visible) {
-			t.opts.OnCursorChange(t.visible[t.cursor], t.cursor)
+		if t.opts.OnCursorChange != nil && t.cursor < total {
+			if row := t.rowAt(t.cursor); row != nil {
+				t.opts.OnCursorChange(row, t.cursor)
+			}
 		}
 	}
 

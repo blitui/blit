@@ -7,16 +7,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Orientation controls whether tabs are laid out horizontally or vertically.
-type Orientation int
-
-const (
-	// Horizontal renders tabs as a row across the top.
-	Horizontal Orientation = iota
-	// Vertical renders tabs as a column on the left.
-	Vertical
-)
-
 // TabItem is a single tab entry with a title, optional glyph, and content component.
 type TabItem struct {
 	// Title is the label shown in the tab bar.
