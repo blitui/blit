@@ -96,7 +96,7 @@ func (t *Tabs) Init() tea.Cmd {
 }
 
 // Update implements Component.
-func (t *Tabs) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (t *Tabs) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		cmd := t.handleKey(msg)
@@ -105,7 +105,7 @@ func (t *Tabs) Update(msg tea.Msg) (Component, tea.Cmd) {
 		}
 		// Forward unconsumed keys to active content.
 		if c := t.activeContent(); c != nil && c.Focused() {
-			updated, cmd2 := c.Update(msg)
+			updated, cmd2 := c.Update(msg, ctx)
 			t.items[t.active].Content = updated
 			return t, cmd2
 		}
@@ -117,7 +117,7 @@ func (t *Tabs) Update(msg tea.Msg) (Component, tea.Cmd) {
 		}
 		// Forward mouse to active content.
 		if c := t.activeContent(); c != nil {
-			updated, cmd2 := c.Update(msg)
+			updated, cmd2 := c.Update(msg, ctx)
 			t.items[t.active].Content = updated
 			return t, cmd2
 		}
@@ -125,7 +125,7 @@ func (t *Tabs) Update(msg tea.Msg) (Component, tea.Cmd) {
 	default:
 		// Broadcast to active content.
 		if c := t.activeContent(); c != nil {
-			updated, cmd := c.Update(msg)
+			updated, cmd := c.Update(msg, ctx)
 			t.items[t.active].Content = updated
 			return t, cmd
 		}

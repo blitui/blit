@@ -107,7 +107,7 @@ func TestDetailOverlayOnKey(t *testing.T) {
 	d.SetSize(80, 24)
 	d.Show(testItem{name: "ETH", value: 50})
 
-	d.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
+	d.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}}, Context{})
 
 	if keyCalled != "s" {
 		t.Errorf("OnKey should have been called with 's', got '%s'", keyCalled)

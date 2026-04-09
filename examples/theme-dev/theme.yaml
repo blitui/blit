@@ -1,0 +1,16 @@
+# tuikit theme hot-reload demo
+# Edit any value and save — the TUI updates within 200 ms.
+
+positive: "#22c55e"
+negative: "#ef4444"
+accent: "#3b82f6"
+muted: "#6b7280"
+text: "#e5e7eb"
+text_inverse: "#111827"
+cursor: "#38bdf8"
+border: "#374151"
+flash: "#facc15"
+
+# Extra app-specific tokens (accessible via theme.Color("key", fallback))
+extra:
+  brand: "#a855f7"

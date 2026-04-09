@@ -35,7 +35,7 @@ func NewCommandBar(commands []Command) *CommandBar {
 
 func (c *CommandBar) Init() tea.Cmd { return nil }
 
-func (c *CommandBar) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (c *CommandBar) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		return c.handleKey(msg)

@@ -149,7 +149,13 @@ func (f *fieldBase) renderHint(theme Theme) string {
 	if f.hint == "" {
 		return ""
 	}
-	return lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Muted)).Render("  " + f.hint)
+	var s lipgloss.Style
+	if ss, ok := theme.Style("label.hint"); ok {
+		s = ss.Base
+	} else {
+		s = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Muted))
+	}
+	return s.Render("  " + f.hint)
 }
 
 func (f *fieldBase) renderError(theme Theme) string {
@@ -224,8 +230,16 @@ func (f *TextField) View(focused bool, theme Theme, width int) string {
 		labelLine += h
 	}
 	if focused {
-		f.input.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Text))
-		f.input.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Accent))
+		if ss, ok := theme.Style("input.text"); ok {
+			f.input.TextStyle = ss.Focus
+		} else {
+			f.input.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Text))
+		}
+		if ss, ok := theme.Style("input.focus"); ok {
+			f.input.PromptStyle = ss.Focus
+		} else {
+			f.input.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Accent))
+		}
 	}
 	inputStyle := lipgloss.NewStyle().Width(width - 2)
 	lines := []string{labelLine, inputStyle.Render(f.input.View())}
@@ -783,7 +797,7 @@ func (f *Form) Init() tea.Cmd {
 }
 
 // Update implements Component.
-func (f *Form) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (f *Form) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if !f.focused {
 		return f, nil
 	}

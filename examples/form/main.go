@@ -114,7 +114,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.result = msg.Values
 		return m, nil
 	}
-	comp, cmd := m.form.Update(msg)
+	comp, cmd := m.form.Update(msg, tuikit.Context{})
 	m.form = comp.(*tuikit.Form)
 	return m, cmd
 }

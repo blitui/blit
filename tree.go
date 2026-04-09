@@ -92,7 +92,7 @@ func (t *Tree) CursorNode() *Node {
 func (t *Tree) Init() tea.Cmd { return nil }
 
 // Update implements Component.
-func (t *Tree) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (t *Tree) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if !t.focused {
 		return t, nil
 	}

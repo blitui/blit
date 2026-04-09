@@ -48,9 +48,9 @@ func TestCommandBarMatchByName(t *testing.T) {
 
 	// Type "sort price"
 	for _, r := range "sort price" {
-		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, Context{})
 	}
-	cb.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	cb.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 
 	if called != "price" {
 		t.Errorf("expected args 'price', got '%s'", called)
@@ -69,8 +69,8 @@ func TestCommandBarMatchByAlias(t *testing.T) {
 	cb.SetTheme(DefaultTheme())
 	cb.SetSize(80, 24)
 
-	cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
-	cb.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}}, Context{})
+	cb.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 
 	if !quitCalled {
 		t.Error("quit command should have been called via alias")
@@ -84,9 +84,9 @@ func TestCommandBarUnknownCommand(t *testing.T) {
 	cb.SetSize(80, 24)
 
 	for _, r := range "bogus" {
-		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, Context{})
 	}
-	cb.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	cb.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 
 	if cb.errMsg == "" {
 		t.Error("should show error for unknown command")
@@ -103,9 +103,9 @@ func TestCommandBarEscCloses(t *testing.T) {
 	cb.SetSize(80, 24)
 
 	for _, r := range "sort" {
-		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, Context{})
 	}
-	cb.Update(tea.KeyMsg{Type: tea.KeyEscape})
+	cb.Update(tea.KeyMsg{Type: tea.KeyEscape}, Context{})
 
 	if cb.IsActive() {
 		t.Error("esc should close the command bar")
@@ -121,7 +121,7 @@ func TestCommandBarBackspaceOnEmptyCloses(t *testing.T) {
 	cb.SetTheme(DefaultTheme())
 	cb.SetSize(80, 24)
 
-	cb.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+	cb.Update(tea.KeyMsg{Type: tea.KeyBackspace}, Context{})
 
 	if cb.IsActive() {
 		t.Error("backspace on empty should close the command bar")
@@ -134,9 +134,9 @@ func TestCommandBarBackspaceDeletesChar(t *testing.T) {
 	cb.SetTheme(DefaultTheme())
 	cb.SetSize(80, 24)
 
-	cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
-	cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}})
-	cb.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+	cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}, Context{})
+	cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}}, Context{})
+	cb.Update(tea.KeyMsg{Type: tea.KeyBackspace}, Context{})
 
 	if cb.input != "a" {
 		t.Errorf("expected 'a' after backspace, got '%s'", cb.input)
@@ -150,7 +150,7 @@ func TestCommandBarView(t *testing.T) {
 	cb.SetSize(80, 24)
 
 	for _, r := range "sort" {
-		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, Context{})
 	}
 
 	view := cb.View()
@@ -191,9 +191,9 @@ func TestCommandBarCaseInsensitive(t *testing.T) {
 	cb.SetSize(80, 24)
 
 	for _, r := range "QUIT" {
-		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, Context{})
 	}
-	cb.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	cb.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
 
 	if !called {
 		t.Error("command matching should be case-insensitive")
@@ -208,9 +208,9 @@ func TestCommandBarTabCompletion(t *testing.T) {
 
 	// Type "so" then tab — should complete to "sort"
 	for _, r := range "so" {
-		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		cb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, Context{})
 	}
-	cb.Update(tea.KeyMsg{Type: tea.KeyTab})
+	cb.Update(tea.KeyMsg{Type: tea.KeyTab}, Context{})
 
 	if cb.input != "sort" {
 		t.Errorf("expected tab completion to 'sort', got '%s'", cb.input)

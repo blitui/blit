@@ -9,12 +9,33 @@ import (
 )
 
 // ConfigField defines a single editable field in the config editor.
+//
+// Get accepts either the legacy `func() string` getter or a
+// `*Signal[string]` (v0.10+). The Source field takes precedence when both
+// are set. Setting Source with a signal lets background updates (e.g., a
+// value polled from disk) appear in the editor without wiring a manual
+// refresh.
 type ConfigField struct {
-	Label string             // Display label
-	Group string             // Group heading (e.g., "General", "Display")
-	Hint  string             // Help text shown below the field
-	Get   func() string      // Returns the current value
-	Set   func(string) error // Sets a new value, returns error if invalid
+	Label  string             // Display label
+	Group  string             // Group heading (e.g., "General", "Display")
+	Hint   string             // Help text shown below the field
+	Get    func() string      // Legacy getter. Ignored when Source is set.
+	Source any                // Optional: func() string, *Signal[string], or StringSource.
+	Set    func(string) error // Sets a new value, returns error if invalid
+}
+
+// currentValue returns the field's current value, preferring Source over
+// the legacy Get closure.
+func (f ConfigField) currentValue() string {
+	if f.Source != nil {
+		if src := toStringSource(f.Source); src != nil {
+			return src.Value()
+		}
+	}
+	if f.Get != nil {
+		return f.Get()
+	}
+	return ""
 }
 
 // ConfigEditor is an overlay for editing application settings.
@@ -43,7 +64,7 @@ func (c *ConfigEditor) SetTheme(t Theme) { c.theme = t }
 
 func (c *ConfigEditor) Init() tea.Cmd { return nil }
 
-func (c *ConfigEditor) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (c *ConfigEditor) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		return c.handleKey(msg)
@@ -72,7 +93,7 @@ func (c *ConfigEditor) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 	case "enter":
 		f := c.fields[c.cursor]
 		c.editing = true
-		c.editBuf = f.Get()
+		c.editBuf = f.currentValue()
 		c.errMsg = ""
 		return c, Consumed()
 	case "esc", "q":
@@ -161,7 +182,7 @@ func (c *ConfigEditor) View() string {
 
 		isCursor := i == c.cursor
 		label := fmt.Sprintf("  %-20s", f.Label)
-		val := f.Get()
+		val := f.currentValue()
 
 		if isCursor && c.editing {
 			val = c.editBuf + "█"

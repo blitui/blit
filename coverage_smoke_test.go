@@ -49,7 +49,7 @@ func TestCoverageSmoke(t *testing.T) {
 	if !h.Focused() {
 		t.Error("help Focused")
 	}
-	_, _ = h.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	_, _ = h.Update(tea.KeyMsg{Type: tea.KeyEsc}, Context{})
 	_ = h.KeyBindings()
 	h.Close()
 	if h.IsActive() {
@@ -65,7 +65,7 @@ func TestCoverageSmoke(t *testing.T) {
 		t.Error("statusbar Init should be nil")
 	}
 	sb.SetSize(80, 1)
-	_, _ = sb.Update(nil)
+	_, _ = sb.Update(nil, Context{})
 	_ = sb.View()
 	_ = sb.KeyBindings()
 	sb.SetFocused(true)

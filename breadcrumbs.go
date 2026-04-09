@@ -37,7 +37,9 @@ func NewBreadcrumbs(segments []string) *Breadcrumbs {
 // --- Component interface ---
 
 func (b *Breadcrumbs) Init() tea.Cmd                              { return nil }
-func (b *Breadcrumbs) Update(msg tea.Msg) (Component, tea.Cmd)   { return b, nil }
+func (b *Breadcrumbs) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
+	return b, nil
+}
 func (b *Breadcrumbs) KeyBindings() []KeyBind                    { return nil }
 func (b *Breadcrumbs) SetSize(w, h int)                          { b.width = w; b.height = h }
 func (b *Breadcrumbs) Focused() bool                             { return b.focused }

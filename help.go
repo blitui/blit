@@ -30,7 +30,7 @@ func (h *Help) SetTheme(t Theme)        { h.theme = t }
 
 func (h *Help) Init() tea.Cmd { return nil }
 
-func (h *Help) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (h *Help) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {

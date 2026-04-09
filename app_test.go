@@ -20,7 +20,7 @@ type stubComponent struct {
 }
 
 func (s *stubComponent) Init() tea.Cmd { return nil }
-func (s *stubComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (s *stubComponent) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	s.lastMsg = msg
 	if km, ok := msg.(tea.KeyMsg); ok {
 		s.lastKey = km.String()

@@ -97,7 +97,7 @@ func (fp *FilePicker) Init() tea.Cmd {
 }
 
 // Update implements Component.
-func (fp *FilePicker) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (fp *FilePicker) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -131,7 +131,7 @@ func (fp *FilePicker) Update(msg tea.Msg) (Component, tea.Cmd) {
 	} else {
 		var c Component
 		var cmd tea.Cmd
-		c, cmd = fp.tree.Update(msg)
+		c, cmd = fp.tree.Update(msg, ctx)
 		fp.tree = c.(*Tree)
 		if cmd != nil {
 			cmds = append(cmds, cmd)

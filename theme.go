@@ -23,6 +23,7 @@ type Theme struct {
 	Extra       map[string]lipgloss.Color // App-specific color tokens
 	Glyphs      *Glyphs                   // Optional glyph override; nil uses DefaultGlyphs
 	Borders     *BorderSet                // Optional border override; nil uses DefaultBorders
+	registry    *styleRegistry            // Named style overrides; nil means built-ins only
 }
 
 // glyphsOrDefault returns the theme glyphs or DefaultGlyphs if nil.

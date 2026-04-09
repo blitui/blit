@@ -16,7 +16,7 @@ type stubOverlay struct {
 }
 
 func (s *stubOverlay) Init() tea.Cmd                           { return nil }
-func (s *stubOverlay) Update(msg tea.Msg) (Component, tea.Cmd) { return s, nil }
+func (s *stubOverlay) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) { return s, nil }
 func (s *stubOverlay) View() string                            { return s.name }
 func (s *stubOverlay) KeyBindings() []KeyBind                  { return nil }
 func (s *stubOverlay) SetSize(w, h int)                        { s.width = w; s.height = h }

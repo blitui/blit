@@ -43,7 +43,9 @@ func NewRing(value, max float64, label string) *Ring {
 }
 
 func (r *Ring) Init() tea.Cmd                             { return nil }
-func (r *Ring) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return r, nil }
+func (r *Ring) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return r, nil
+}
 func (r *Ring) KeyBindings() []tuikit.KeyBind             { return nil }
 func (r *Ring) SetSize(w, h int)                          { r.width = w; r.height = h }
 func (r *Ring) Focused() bool                             { return r.focused }

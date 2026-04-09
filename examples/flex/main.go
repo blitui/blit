@@ -32,7 +32,7 @@ type headerPane struct {
 }
 
 func (h *headerPane) Init() tea.Cmd                            { return nil }
-func (h *headerPane) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return h, nil }
+func (h *headerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return h, nil }
 func (h *headerPane) KeyBindings() []tuikit.KeyBind            { return nil }
 func (h *headerPane) SetSize(w, ht int)                        { h.width = w; h.height = ht }
 func (h *headerPane) Focused() bool                            { return false }
@@ -65,7 +65,7 @@ type sidebarPane struct {
 }
 
 func (s *sidebarPane) Init() tea.Cmd                            { return nil }
-func (s *sidebarPane) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return s, nil }
+func (s *sidebarPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return s, nil }
 func (s *sidebarPane) KeyBindings() []tuikit.KeyBind            { return nil }
 func (s *sidebarPane) SetSize(w, h int)                         { s.width = w; s.height = h }
 func (s *sidebarPane) Focused() bool                            { return s.focused }
@@ -95,7 +95,7 @@ type contentPane struct {
 }
 
 func (c *contentPane) Init() tea.Cmd                            { return nil }
-func (c *contentPane) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return c, nil }
+func (c *contentPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return c, nil }
 func (c *contentPane) KeyBindings() []tuikit.KeyBind            { return nil }
 func (c *contentPane) SetSize(w, h int)                         { c.width = w; c.height = h }
 func (c *contentPane) Focused() bool                            { return c.focused }
@@ -140,7 +140,7 @@ type footerPane struct {
 }
 
 func (f *footerPane) Init() tea.Cmd                            { return nil }
-func (f *footerPane) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return f, nil }
+func (f *footerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return f, nil }
 func (f *footerPane) KeyBindings() []tuikit.KeyBind            { return nil }
 func (f *footerPane) SetSize(w, h int)                         { f.width = w; f.height = h }
 func (f *footerPane) Focused() bool                            { return false }
@@ -173,7 +173,7 @@ type labelComp struct {
 }
 
 func (l *labelComp) Init() tea.Cmd                            { return nil }
-func (l *labelComp) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return l, nil }
+func (l *labelComp) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return l, nil }
 func (l *labelComp) KeyBindings() []tuikit.KeyBind            { return nil }
 func (l *labelComp) SetSize(w, h int)                         { l.width = w; l.height = h }
 func (l *labelComp) Focused() bool                            { return false }
@@ -227,8 +227,8 @@ func newFlexDemo() *flexDemo {
 
 func (d *flexDemo) Init() tea.Cmd { return d.outer.Init() }
 
-func (d *flexDemo) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) {
-	updated, cmd := d.outer.Update(msg)
+func (d *flexDemo) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	updated, cmd := d.outer.Update(msg, ctx)
 	d.outer = updated.(*tuikit.VBox)
 	return d, cmd
 }

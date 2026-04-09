@@ -100,7 +100,10 @@ type Sized struct {
 }
 
 func (s Sized) Init() tea.Cmd                           { return s.C.Init() }
-func (s Sized) Update(msg tea.Msg) (Component, tea.Cmd) { c, cmd := s.C.Update(msg); return Sized{W: s.W, C: c}, cmd }
+func (s Sized) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
+	c, cmd := s.C.Update(msg, ctx)
+	return Sized{W: s.W, C: c}, cmd
+}
 func (s Sized) View() string                            { return s.C.View() }
 func (s Sized) KeyBindings() []KeyBind                  { return s.C.KeyBindings() }
 func (s Sized) SetSize(w, h int)                        { s.C.SetSize(w, h) }
@@ -116,7 +119,10 @@ type Flex struct {
 }
 
 func (f Flex) Init() tea.Cmd                           { return f.C.Init() }
-func (f Flex) Update(msg tea.Msg) (Component, tea.Cmd) { c, cmd := f.C.Update(msg); return Flex{Grow: f.Grow, C: c}, cmd }
+func (f Flex) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
+	c, cmd := f.C.Update(msg, ctx)
+	return Flex{Grow: f.Grow, C: c}, cmd
+}
 func (f Flex) View() string                            { return f.C.View() }
 func (f Flex) KeyBindings() []KeyBind                  { return f.C.KeyBindings() }
 func (f Flex) SetSize(w, h int)                        { f.C.SetSize(w, h) }
@@ -170,14 +176,14 @@ func (h *HBox) Init() tea.Cmd {
 }
 
 // Update implements Component.
-func (h *HBox) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (h *HBox) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	var cmds []tea.Cmd
 	for i, item := range h.Items {
 		c := unwrapFlexComponent(item)
 		if c == nil {
 			continue
 		}
-		updated, cmd := c.Update(msg)
+		updated, cmd := c.Update(msg, ctx)
 		h.Items[i] = rewrapFlexComponent(item, updated)
 		if cmd != nil {
 			cmds = append(cmds, cmd)
@@ -240,14 +246,14 @@ func (v *VBox) Init() tea.Cmd {
 }
 
 // Update implements Component.
-func (v *VBox) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (v *VBox) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	var cmds []tea.Cmd
 	for i, item := range v.Items {
 		c := unwrapFlexComponent(item)
 		if c == nil {
 			continue
 		}
-		updated, cmd := c.Update(msg)
+		updated, cmd := c.Update(msg, ctx)
 		v.Items[i] = rewrapFlexComponent(item, updated)
 		if cmd != nil {
 			cmds = append(cmds, cmd)

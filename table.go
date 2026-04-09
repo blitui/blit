@@ -284,7 +284,7 @@ func (t *Table) VisibleRowCount() int {
 
 func (t *Table) Init() tea.Cmd { return nil }
 
-func (t *Table) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (t *Table) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		return t.handleKey(msg)
@@ -558,17 +558,31 @@ func (t *Table) renderRow(row Row, idx int, cols []Column, origIdxs []int, width
 		rowStyle = t.opts.RowStyler(row, idx, isCursor, t.theme)
 	}
 	if rowStyle == nil && isCursor {
-		bg := lipgloss.Color(t.theme.Cursor)
-		if t.cursorTween.Running() {
-			bg = Interpolate[lipgloss.Color](
-				lipgloss.Color(t.theme.Muted),
-				lipgloss.Color(t.theme.Cursor),
-				t.cursorTween.Progress(time.Now()), EaseOutCubic,
-			)
+		var cs lipgloss.Style
+		if ss, ok := t.theme.Style("row.cursor"); ok {
+			cs = ss.Focus
+			if t.cursorTween.Running() {
+				// Animate the background from muted to the cursor style's background.
+				bg := Interpolate[lipgloss.Color](
+					lipgloss.Color(t.theme.Muted),
+					lipgloss.Color(t.theme.Cursor),
+					t.cursorTween.Progress(time.Now()), EaseOutCubic,
+				)
+				cs = cs.Background(bg)
+			}
+		} else {
+			bg := lipgloss.Color(t.theme.Cursor)
+			if t.cursorTween.Running() {
+				bg = Interpolate[lipgloss.Color](
+					lipgloss.Color(t.theme.Muted),
+					lipgloss.Color(t.theme.Cursor),
+					t.cursorTween.Progress(time.Now()), EaseOutCubic,
+				)
+			}
+			cs = lipgloss.NewStyle().
+				Background(bg).
+				Foreground(lipgloss.Color(t.theme.TextInverse))
 		}
-		cs := lipgloss.NewStyle().
-			Background(bg).
-			Foreground(lipgloss.Color(t.theme.TextInverse))
 		rowStyle = &cs
 	}
 

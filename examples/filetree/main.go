@@ -31,7 +31,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.fp.SetSize(msg.Width, msg.Height-2)
 	}
 
-	updated, cmd := m.fp.Update(msg)
+	updated, cmd := m.fp.Update(msg, tuikit.Context{})
 	m.fp = updated.(*tuikit.FilePicker)
 	return m, cmd
 }

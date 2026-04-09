@@ -17,7 +17,7 @@ type splitStub struct {
 }
 
 func (s *splitStub) Init() tea.Cmd                                  { return nil }
-func (s *splitStub) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) { return s, nil }
+func (s *splitStub) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return s, nil }
 func (s *splitStub) View() string                                   { return s.view }
 func (s *splitStub) KeyBindings() []tuikit.KeyBind                  { return nil }
 func (s *splitStub) SetSize(w, h int)                               { s.width = w; s.height = h }
@@ -97,7 +97,7 @@ func TestSplitResizableRatioDecrease(t *testing.T) {
 	s.SetSize(40, 10)
 
 	initialRatio := s.Ratio
-	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft})
+	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft}, tuikit.Context{})
 	if s.Ratio >= initialRatio {
 		t.Errorf("expected ratio to decrease after alt+left, before=%.2f after=%.2f", initialRatio, s.Ratio)
 	}
@@ -112,7 +112,7 @@ func TestSplitResizableRatioIncrease(t *testing.T) {
 	s.SetSize(40, 10)
 
 	initialRatio := s.Ratio
-	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight})
+	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight}, tuikit.Context{})
 	if s.Ratio <= initialRatio {
 		t.Errorf("expected ratio to increase after alt+right, before=%.2f after=%.2f", initialRatio, s.Ratio)
 	}
@@ -127,7 +127,7 @@ func TestSplitRatioClampMin(t *testing.T) {
 	s.SetSize(40, 10)
 
 	for i := 0; i < 20; i++ {
-		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft})
+		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft}, tuikit.Context{})
 	}
 	if s.Ratio < 0.1 {
 		t.Errorf("ratio should not go below 0.1, got %.2f", s.Ratio)
@@ -143,7 +143,7 @@ func TestSplitRatioClampMax(t *testing.T) {
 	s.SetSize(40, 10)
 
 	for i := 0; i < 20; i++ {
-		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight})
+		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight}, tuikit.Context{})
 	}
 	if s.Ratio > 0.9 {
 		t.Errorf("ratio should not go above 0.9, got %.2f", s.Ratio)
@@ -163,7 +163,7 @@ func TestSplitTabSwitchesFocus(t *testing.T) {
 		t.Error("expected pane A to be focused initially")
 	}
 
-	s.Update(tea.KeyMsg{Type: tea.KeyTab})
+	s.Update(tea.KeyMsg{Type: tea.KeyTab}, tuikit.Context{})
 	if a.focused {
 		t.Error("expected pane A to lose focus after tab")
 	}
@@ -203,7 +203,7 @@ func TestSplitVerticalResizable(t *testing.T) {
 	s.SetSize(40, 20)
 
 	initialRatio := s.Ratio
-	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyDown})
+	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyDown}, tuikit.Context{})
 	if s.Ratio <= initialRatio {
 		t.Errorf("expected ratio to increase after alt+down, before=%.2f after=%.2f", initialRatio, s.Ratio)
 	}

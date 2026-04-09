@@ -63,7 +63,7 @@ func (t *TreePlaceholder) Focused() bool                              { return t
 func (t *TreePlaceholder) SetFocused(f bool)                          { t.focused = f }
 func (t *TreePlaceholder) SetTheme(th tuikit.Theme)                   { t.theme = th }
 
-func (t *TreePlaceholder) Update(msg tea.Msg) (tuikit.Component, tea.Cmd) {
+func (t *TreePlaceholder) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
 	if km, ok := msg.(tea.KeyMsg); ok {
 		switch km.String() {
 		case "up", "k":
@@ -208,7 +208,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "q" || msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
-		updated, cmd := m.split.Update(msg)
+		updated, cmd := m.split.Update(msg, tuikit.Context{})
 		m.split = updated.(*tuikit.Split)
 		// Refresh breadcrumbs to reflect cursor movement.
 		m.breadcrumbs.Segments = m.tree.SelectedPath()

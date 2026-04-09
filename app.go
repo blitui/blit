@@ -19,21 +19,67 @@ func WithTheme(t Theme) Option {
 }
 
 // WithComponent registers a named component with the App.
+//
+// Slot mapping: the first call populates SlotMain; subsequent calls stack
+// additional components that share focus cycling with Main.
 func WithComponent(name string, c Component) Option {
 	return func(a *appModel) {
 		a.components = append(a.components, namedComponent{name: name, component: c})
+		if a.slots != nil && !a.slots.has(SlotMain) {
+			a.slots.set(SlotMain, c)
+		}
 	}
 }
 
 // WithLayout sets a dual-pane layout.
+//
+// Slot mapping: DualPane.Main -> SlotMain, DualPane.Side -> SlotSidebar.
 func WithLayout(l *DualPane) Option {
-	return func(a *appModel) { a.dualPane = l }
+	return func(a *appModel) {
+		a.dualPane = l
+		if a.slots != nil && l != nil {
+			if l.Main != nil {
+				a.slots.set(SlotMain, l.Main)
+			}
+			if l.Side != nil {
+				a.slots.set(SlotSidebar, l.Side)
+			}
+		}
+	}
 }
 
 // WithStatusBar adds a status bar at the bottom of the screen.
+//
+// left and right are legacy `func() string` closures. For reactive status
+// bar content driven by signals, use WithStatusBarSignal.
+//
+// Slot mapping: the resulting StatusBar is bound to SlotFooter.
 func WithStatusBar(left, right func() string) Option {
 	return func(a *appModel) {
 		a.statusBar = NewStatusBar(StatusBarOpts{Left: left, Right: right})
+		if a.slots != nil {
+			a.slots.set(SlotFooter, a.statusBar)
+		}
+	}
+}
+
+// WithStatusBarSignal adds a status bar whose left and right content are
+// driven by *Signal[string]. Either may be nil. Prefer this over
+// WithStatusBar when the values change asynchronously (background polling,
+// websocket streams, etc.) — updates collapse into one notification per
+// frame thanks to Signal's dirty-bit coalescing.
+func WithStatusBarSignal(left, right *Signal[string]) Option {
+	return func(a *appModel) {
+		a.statusBar = NewStatusBar(StatusBarOpts{Left: left, Right: right})
+		if a.slots != nil {
+			a.slots.set(SlotFooter, a.statusBar)
+		}
+		if left != nil {
+			a.trackSignal(left)
+		}
+		if right != nil {
+			a.trackSignal(right)
+		}
 	}
 }
 
@@ -44,6 +90,8 @@ func WithHelp() Option {
 
 // WithOverlay registers a named overlay with an explicit trigger key.
 // Press triggerKey to open the overlay; Esc closes it.
+//
+// Slot mapping: the overlay is pushed onto SlotOverlay.
 func WithOverlay(name string, triggerKey string, o Overlay) Option {
 	return func(a *appModel) {
 		a.namedOverlays = append(a.namedOverlays, namedOverlay{
@@ -51,6 +99,14 @@ func WithOverlay(name string, triggerKey string, o Overlay) Option {
 			triggerKey: triggerKey,
 			overlay:    o,
 		})
+		if a.slots != nil {
+			a.slots.push(slotEntry{
+				name:        SlotOverlay,
+				component:   o,
+				overlayKey:  triggerKey,
+				overlayName: name,
+			})
+		}
 	}
 }
 
@@ -130,6 +186,23 @@ type appModel struct {
 	pendingNotify     string
 	toasts            *toastManager
 	animationsEnabled bool
+	signalBus         *signalBus
+	signals           []AnySignal
+	hotReloadPath     string
+	hotReload         *ThemeHotReload
+	slots             *slotRegistry
+	devConsole        *devConsole
+}
+
+// trackSignal registers a signal with the app's bus so its Set calls fire
+// subscribers on the UI goroutine. Idempotent — attaching the same signal
+// twice is harmless.
+func (a *appModel) trackSignal(s AnySignal) {
+	if s == nil {
+		return
+	}
+	s.attach(a.signalBus)
+	a.signals = append(a.signals, s)
 }
 
 // newAppModel creates an appModel for testing (does not start tea.Program).
@@ -140,10 +213,17 @@ func newAppModel(opts ...Option) *appModel {
 		registry:      newRegistry(),
 		focusCycleKey: "tab",
 		toasts:        newToastManager(ToastManagerOpts{}),
+		signalBus:     newSignalBus(),
+		slots:         newSlotRegistry(),
 	}
 	for _, opt := range opts {
 		opt(a)
 	}
+	// Auto-enable dev console from environment even without WithDevConsole option.
+	if a.devConsole == nil && os.Getenv("TUIKIT_DEVCONSOLE") == "1" {
+		a.devConsole = newDevConsole()
+	}
+	a.materialiseSlots()
 	a.setup()
 	return a
 }
@@ -379,6 +459,37 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.setup()
 		a.resize()
 		return a, nil
+
+	case ThemeHotReloadMsg:
+		a.theme = msg.Theme
+		a.setup()
+		a.resize()
+		return a, nil
+
+	case ThemeHotReloadErrMsg:
+		if a.toasts != nil {
+			a.toasts.theme = a.theme
+			a.toasts.add(ToastMsg{
+				Severity: SeverityError,
+				Title:    "Theme reload failed",
+				Body:     msg.Err.Error(),
+				Duration: 5 * time.Second,
+			})
+		}
+		return a, nil
+
+	case signalFlushMsg:
+		// Drain pending signal subscribers on the UI goroutine. A5: this
+		// is how signal-driven re-renders surface — Bubble Tea repaints
+		// after any Update, so View() calls that read Signal.Get() pick
+		// up the new value on the next frame without any extra plumbing.
+		if a.signalBus != nil {
+			a.signalBus.drain()
+		}
+		return a, nil
+
+	case devConsoleToggleMsg:
+		return a, a.toggleDevConsole()
 	}
 
 	// Forward unknown messages to all components (for custom app messages)
@@ -387,20 +498,44 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
+// ctx builds the ambient Context passed to every component.Update call.
+// It snapshots the current theme, size, focus, and hotkey registry so
+// components can read the latest frame state without stashing copies.
+func (a *appModel) ctx() Context {
+	focusName := ""
+	if a.dualPane != nil {
+		switch a.focusIdx {
+		case 0:
+			focusName = a.dualPane.MainName
+		case 1:
+			focusName = a.dualPane.SideName
+		}
+	} else if a.focusIdx >= 0 && a.focusIdx < len(a.components) {
+		focusName = a.components[a.focusIdx].name
+	}
+	return Context{
+		Theme:   a.theme,
+		Size:    Size{Width: a.width, Height: a.height},
+		Focus:   Focus{Index: a.focusIdx, Name: focusName},
+		Hotkeys: a.registry,
+	}
+}
+
 // broadcastMsg sends a message to all registered components.
 func (a *appModel) broadcastMsg(msg tea.Msg) tea.Cmd {
+	ctx := a.ctx()
 	var cmds []tea.Cmd
 	for _, nc := range a.components {
-		if _, cmd := nc.component.Update(msg); cmd != nil {
+		if _, cmd := nc.component.Update(msg, ctx); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 	}
 	if a.dualPane != nil {
-		if _, cmd := a.dualPane.Main.Update(msg); cmd != nil {
+		if _, cmd := a.dualPane.Main.Update(msg, ctx); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 		if a.dualPane.Side != nil {
-			if _, cmd := a.dualPane.Side.Update(msg); cmd != nil {
+			if _, cmd := a.dualPane.Side.Update(msg, ctx); cmd != nil {
 				cmds = append(cmds, cmd)
 			}
 		}
@@ -475,7 +610,7 @@ func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 
 	focusable := a.focusableComponents()
 	if a.focusIdx < len(focusable) {
-		_, cmd := focusable[a.focusIdx].Update(msg)
+		_, cmd := focusable[a.focusIdx].Update(msg, a.ctx())
 		return a, cmd
 	}
 	return a, nil
@@ -484,6 +619,11 @@ func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	key := msg.String()
 
+	// Record keypress in dev console ring buffer (zero cost when disabled)
+	if a.devConsole != nil {
+		a.devConsole.recordKey(key)
+	}
+
 	// 1. Active overlay gets first crack
 	if overlay := a.overlays.active(); overlay != nil {
 		if key == "esc" {
@@ -491,7 +631,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			a.resize()
 			return a, nil
 		}
-		_, cmd := overlay.Update(msg)
+		_, cmd := overlay.Update(msg, a.ctx())
 		// If the overlay closed itself (e.g., CommandBar after executing), pop it
 		if !overlay.IsActive() {
 			a.overlays.stack = a.overlays.stack[:len(a.overlays.stack)-1]
@@ -518,13 +658,15 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return a, tea.Quit
 		}
 		if a.focusIdx < len(focusable) {
-			_, cmd := focusable[a.focusIdx].Update(msg)
+			_, cmd := focusable[a.focusIdx].Update(msg, a.ctx())
 			return a, cmd
 		}
 	}
 
 	// 3. Built-in global bindings
 	switch key {
+	case "ctrl+\\":
+		return a, a.toggleDevConsole()
 	case "q", "ctrl+c":
 		return a, tea.Quit
 	case "esc":
@@ -582,11 +724,93 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	// 7. Focused component
 	if a.focusIdx < len(focusable) {
-		_, cmd := focusable[a.focusIdx].Update(msg)
+		_, cmd := focusable[a.focusIdx].Update(msg, a.ctx())
 		return a, cmd
 	}
 
 	return a, nil
+}
+
+// toggleDevConsole creates (if needed) and toggles the dev console overlay.
+// Returns a nil cmd when the console is being closed, or nil otherwise.
+func (a *appModel) toggleDevConsole() tea.Cmd {
+	if a.devConsole == nil {
+		a.devConsole = newDevConsole()
+		a.devConsole.SetTheme(a.theme)
+		a.devConsole.SetSize(a.width, a.height)
+	}
+	if a.devConsole.active {
+		// Close: pop from overlay stack
+		a.devConsole.active = false
+		// Remove from overlay stack if present
+		stack := a.overlays.stack[:0]
+		for _, o := range a.overlays.stack {
+			if o != a.devConsole {
+				stack = append(stack, o)
+			}
+		}
+		a.overlays.stack = stack
+	} else {
+		a.devConsole.active = true
+		a.devConsole.SetSize(a.width, a.height)
+		a.devConsoleUpdateSnapshot()
+		// Push onto overlay stack at top (highest z)
+		a.overlays.push(a.devConsole)
+	}
+	return nil
+}
+
+// devConsoleUpdateSnapshot refreshes the console's snapshot of app state.
+func (a *appModel) devConsoleUpdateSnapshot() {
+	if a.devConsole == nil {
+		return
+	}
+	snap := devConsoleSnapshot{
+		focusIdx:  a.focusIdx,
+		theme:     a.theme,
+		themeName: a.hotReloadPath,
+	}
+	if snap.themeName == "" {
+		snap.themeName = "default"
+	}
+
+	// Component names and focus state
+	if a.dualPane != nil {
+		mainName := a.dualPane.MainName
+		if mainName == "" {
+			mainName = "Main"
+		}
+		sideName := a.dualPane.SideName
+		if sideName == "" {
+			sideName = "Side"
+		}
+		snap.componentNames = []string{mainName, sideName}
+		snap.componentFocus = []bool{a.focusIdx == 0, a.focusIdx == 1}
+		snap.focusName = snap.componentNames[a.focusIdx%len(snap.componentNames)]
+	} else {
+		for i, nc := range a.components {
+			snap.componentNames = append(snap.componentNames, nc.name)
+			snap.componentFocus = append(snap.componentFocus, i == a.focusIdx)
+		}
+		if a.focusIdx < len(a.components) {
+			snap.focusName = a.components[a.focusIdx].name
+		}
+	}
+
+	// Signals: render each signal's current value via fmt.Sprintf
+	for i, sig := range a.signals {
+		label := fmt.Sprintf("signal[%d]", i)
+		// Use the StringSource adapter if the signal is a *Signal[string]
+		var value string
+		if ss, ok := sig.(*Signal[string]); ok {
+			value = ss.Get()
+		} else {
+			value = fmt.Sprintf("%T", sig)
+		}
+		snap.signals = append(snap.signals, signalInfo{label: label, value: value})
+	}
+
+	a.devConsole.snapshot = snap
 }
 
 // InputCapture is implemented by components that can enter text-input mode
@@ -703,10 +927,18 @@ func (a *appModel) renderBadge(name string, focused bool) string {
 }
 
 func (a *appModel) View() string {
-	// Active overlay takes over the screen (unless inline)
+	// Record frame time and update snapshot for dev console (zero cost when nil)
+	if a.devConsole != nil {
+		a.devConsole.recordFrame(time.Now())
+		a.devConsoleUpdateSnapshot()
+	}
+
+	// Active overlay takes over the screen (unless inline or floating)
 	if overlay := a.overlays.active(); overlay != nil {
 		if _, ok := overlay.(InlineOverlay); !ok {
-			return overlay.View()
+			if _, ok := overlay.(FloatingOverlay); !ok {
+				return overlay.View()
+			}
 		}
 	}
 
@@ -786,10 +1018,22 @@ func (a *appModel) View() string {
 	if a.statusBar != nil {
 		bottom = append(bottom, a.statusBar.View())
 	}
+
+	var result string
 	if len(bottom) > 0 {
-		return lipgloss.JoinVertical(lipgloss.Left, content, strings.Join(bottom, "\n"))
+		result = lipgloss.JoinVertical(lipgloss.Left, content, strings.Join(bottom, "\n"))
+	} else {
+		result = content
 	}
-	return content
+
+	// Floating overlays composite on top of the assembled content.
+	if overlay := a.overlays.active(); overlay != nil {
+		if fo, ok := overlay.(FloatingOverlay); ok {
+			result = fo.FloatView(result)
+		}
+	}
+
+	return result
 }
 
 // joinPanes renders main + separator + side with a full-height border.
@@ -832,6 +1076,22 @@ func (a *App) Run() error {
 	}
 
 	a.program = tea.NewProgram(a.model, a.opts...)
+	if a.model.signalBus != nil {
+		prog := a.program
+		a.model.signalBus.setSender(func(msg tea.Msg) { prog.Send(msg) })
+	}
+	if a.model.hotReloadPath != "" {
+		prog := a.program
+		hr, hrErr := NewThemeHotReload(a.model.hotReloadPath, func(msg interface{}) {
+			prog.Send(msg)
+		})
+		if hrErr != nil {
+			fmt.Fprintf(os.Stderr, "theme hot-reload: %v\n", hrErr)
+		} else {
+			a.model.hotReload = hr
+			defer hr.Stop()
+		}
+	}
 	_, err := a.program.Run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)

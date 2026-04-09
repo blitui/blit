@@ -36,7 +36,7 @@ func (m *formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.form.SetSize(ws.Width, ws.Height)
 		return m, nil
 	}
-	comp, cmd := m.form.Update(msg)
+	comp, cmd := m.form.Update(msg, tuikit.Context{})
 	m.form = comp.(*tuikit.Form)
 	return m, cmd
 }

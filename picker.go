@@ -113,7 +113,7 @@ func (p *Picker) Init() tea.Cmd {
 }
 
 // Update implements Component.
-func (p *Picker) Update(msg tea.Msg) (Component, tea.Cmd) {
+func (p *Picker) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -226,10 +226,16 @@ func (p *Picker) renderList(width int) string {
 		end = len(p.filtered)
 	}
 
-	cursorStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color(p.theme.TextInverse)).
-		Background(lipgloss.Color(p.theme.Cursor)).
-		Width(width)
+	// Use row.cursor from the style registry when available.
+	var cursorStyle lipgloss.Style
+	if ss, ok := p.theme.Style("row.cursor"); ok {
+		cursorStyle = ss.Focus.Width(width)
+	} else {
+		cursorStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(p.theme.TextInverse)).
+			Background(lipgloss.Color(p.theme.Cursor)).
+			Width(width)
+	}
 	normalStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(p.theme.Text)).
 		Width(width)
