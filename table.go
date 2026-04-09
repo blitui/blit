@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -224,9 +225,22 @@ func (t *Table) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 			t.filtering = false
 			return t, Consumed()
 		default:
-			k := msg.String()
-			if len(k) == 1 && k[0] >= 32 && k[0] <= 126 {
-				t.filterQuery += k
+			// Accept any printable rune (space, unicode letters, emoji…)
+			// instead of the old ASCII 32-126 restriction.
+			added := false
+			if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
+				runes := msg.Runes
+				if msg.Type == tea.KeySpace && len(runes) == 0 {
+					runes = []rune{' '}
+				}
+				for _, r := range runes {
+					if unicode.IsPrint(r) {
+						t.filterQuery += string(r)
+						added = true
+					}
+				}
+			}
+			if added {
 				t.rebuildVisible()
 				t.clampCursor()
 			}
@@ -293,14 +307,14 @@ func (t *Table) View() string {
 		return ""
 	}
 
-	visibleCols := t.visibleColumns()
+	visibleCols, origIdxs := t.visibleColumnsWithIndices()
 	colWidths := t.computeWidths(visibleCols)
 
 	// Exactly t.height lines, joined without trailing \n
 	lines := make([]string, 0, t.height)
 
 	// Header
-	lines = append(lines, t.renderHeader(visibleCols, colWidths))
+	lines = append(lines, t.renderHeader(visibleCols, origIdxs, colWidths))
 
 	// Rows
 	visibleRows := t.height - 2 // header + possible filter line
@@ -317,7 +331,7 @@ func (t *Table) View() string {
 	}
 
 	for i := t.offset; i < end; i++ {
-		lines = append(lines, t.renderRow(t.visible[i], i, visibleCols, colWidths))
+		lines = append(lines, t.renderRow(t.visible[i], i, visibleCols, origIdxs, colWidths))
 	}
 
 	if t.filtering && len(lines) > 0 {
@@ -343,7 +357,7 @@ func (t *Table) View() string {
 	return strings.Join(lines, "\n")
 }
 
-func (t *Table) renderHeader(cols []Column, widths []int) string {
+func (t *Table) renderHeader(cols []Column, origIdxs []int, widths []int) string {
 	headerStyle := t.opts.HeaderStyle
 	if headerStyle.Value() == "" {
 		headerStyle = lipgloss.NewStyle().
@@ -354,8 +368,9 @@ func (t *Table) renderHeader(cols []Column, widths []int) string {
 	var parts []string
 	for i, col := range cols {
 		title := col.Title
-		// Show sort indicator
-		origIdx := t.origColIndex(col)
+		// Show sort indicator using the column's original index (not a
+		// Title-based lookup, which breaks when two columns share a title).
+		origIdx := origIdxs[i]
 		if origIdx == t.sortCol {
 			if t.sortAsc {
 				title += " ▲"
@@ -369,7 +384,7 @@ func (t *Table) renderHeader(cols []Column, widths []int) string {
 	return headerStyle.Render(strings.Join(parts, " "))
 }
 
-func (t *Table) renderRow(row Row, idx int, cols []Column, widths []int) string {
+func (t *Table) renderRow(row Row, idx int, cols []Column, origIdxs []int, widths []int) string {
 	isCursor := idx == t.cursor && t.focused
 
 	// Determine row-level style first so separators can be styled too
@@ -386,7 +401,7 @@ func (t *Table) renderRow(row Row, idx int, cols []Column, widths []int) string 
 
 	var parts []string
 	for i, col := range cols {
-		origIdx := t.origColIndex(col)
+		origIdx := origIdxs[i]
 
 		var cellContent string
 		if t.opts.CellRenderer != nil {
@@ -484,22 +499,24 @@ func (t *Table) alignCellStyled(content string, width int, align Alignment, rs *
 }
 
 func (t *Table) visibleColumns() []Column {
-	var result []Column
-	for _, col := range t.columns {
-		if col.MinWidth == 0 || t.width >= col.MinWidth {
-			result = append(result, col)
-		}
-	}
-	return result
+	cols, _ := t.visibleColumnsWithIndices()
+	return cols
 }
 
-func (t *Table) origColIndex(col Column) int {
-	for i, c := range t.columns {
-		if c.Title == col.Title {
-			return i
+// visibleColumnsWithIndices returns the subset of columns that fit in the
+// current width alongside their original indices in t.columns. Using the
+// indices (rather than looking up by Title) keeps row/header rendering
+// correct when two columns share a title.
+func (t *Table) visibleColumnsWithIndices() ([]Column, []int) {
+	var cols []Column
+	var idxs []int
+	for i, col := range t.columns {
+		if col.MinWidth == 0 || t.width >= col.MinWidth {
+			cols = append(cols, col)
+			idxs = append(idxs, i)
 		}
 	}
-	return 0
+	return cols, idxs
 }
 
 func (t *Table) computeWidths(cols []Column) []int {

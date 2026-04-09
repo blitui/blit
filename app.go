@@ -780,7 +780,14 @@ func (a *App) runUpdateCheck() {
 
 	upgradeHint := a.upgradeHint(result)
 
-	switch cfg.Mode {
+	// Required releases (min-version marker) always take the forced gate,
+	// regardless of the configured mode.
+	mode := cfg.Mode
+	if result.Required {
+		mode = UpdateForced
+	}
+
+	switch mode {
 	case UpdateBlocking:
 		fmt.Printf("Update available: %s → %s\n", result.CurrentVersion, result.LatestVersion)
 		if result.InstallMethod != InstallManual {
@@ -803,6 +810,47 @@ func (a *App) runUpdateCheck() {
 	case UpdateNotify:
 		// Queue a notification for after the TUI starts
 		a.model.pendingNotify = fmt.Sprintf("Update available: %s → %s  %s", result.CurrentVersion, result.LatestVersion, upgradeHint)
+
+	case UpdateSilent:
+		// Fire-and-forget background self-update. Users see no prompts;
+		// the replacement takes effect on next launch. Errors are
+		// routed through the OnUpdateError hook if configured.
+		go func(c UpdateConfig) {
+			if err := SelfUpdate(c); err != nil && c.OnUpdateError != nil {
+				c.OnUpdateError(err)
+			}
+		}(*cfg)
+
+	case UpdateForced:
+		// Full-screen blocking gate. If the user accepts, we run
+		// SelfUpdate inline and exit; otherwise the app exits without
+		// launching its main UI.
+		gate := NewForcedUpdateScreen(result, *cfg)
+		p := tea.NewProgram(gate, tea.WithAltScreen())
+		if _, err := p.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "Update gate failed: %v\n", err)
+			os.Exit(1)
+		}
+		switch gate.Choice {
+		case ForcedChoiceUpdate:
+			if result.InstallMethod != InstallManual {
+				fmt.Println(upgradeHint)
+				os.Exit(0)
+			}
+			if err := SelfUpdate(*cfg); err != nil {
+				fmt.Fprintf(os.Stderr, "Update failed: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("Updated to %s. Please restart.\n", result.LatestVersion)
+			os.Exit(0)
+		default:
+			os.Exit(0)
+		}
+
+	case UpdateDryRun:
+		if err := SelfUpdate(*cfg); err != nil {
+			fmt.Fprintf(os.Stderr, "Dry-run update error: %v\n", err)
+		}
 	}
 }
 

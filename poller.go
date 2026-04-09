@@ -6,6 +6,18 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// Clock abstracts time.Now so Poller can be tested deterministically.
+// Production code uses realClock (via NewPoller). Tests can pass a
+// FakeClock from the tuitest package (or any type that implements this
+// interface).
+type Clock interface {
+	Now() time.Time
+}
+
+type realClock struct{}
+
+func (realClock) Now() time.Time { return time.Now() }
+
 // Poller manages periodic command execution on top of tuikit's TickMsg.
 // Create one with NewPoller, then call Check from your component's Update
 // when it receives a TickMsg. The Poller handles interval timing, pause/resume,
@@ -16,15 +28,26 @@ type Poller struct {
 	lastPoll     time.Time
 	paused       bool
 	needsRefresh bool
+	clock        Clock
 }
 
-// NewPoller creates a Poller that runs cmd at the given interval.
-// The cmd function is called when it's time to poll — it should return
-// a tea.Cmd that fetches data (e.g., an API call wrapped in a command).
+// NewPoller creates a Poller that runs cmd at the given interval using the
+// real system clock. For deterministic tests, use NewPollerWithClock.
 func NewPoller(interval time.Duration, cmd func() tea.Cmd) *Poller {
+	return NewPollerWithClock(interval, cmd, realClock{})
+}
+
+// NewPollerWithClock creates a Poller that uses the supplied Clock for all
+// timing decisions. Pass a FakeClock in tests to advance time deterministically.
+// A nil clock is treated as the real clock.
+func NewPollerWithClock(interval time.Duration, cmd func() tea.Cmd, clock Clock) *Poller {
+	if clock == nil {
+		clock = realClock{}
+	}
 	return &Poller{
 		interval: interval,
 		cmd:      cmd,
+		clock:    clock,
 	}
 }
 
@@ -32,9 +55,10 @@ func NewPoller(interval time.Duration, cmd func() tea.Cmd) *Poller {
 // Returns a tea.Cmd if it's time to poll, nil otherwise.
 // ForceRefresh takes priority and works even when paused.
 func (p *Poller) Check(msg TickMsg) tea.Cmd {
+	now := p.clock.Now()
 	if p.needsRefresh {
 		p.needsRefresh = false
-		p.lastPoll = time.Now()
+		p.lastPoll = now
 		return p.cmd()
 	}
 
@@ -42,8 +66,8 @@ func (p *Poller) Check(msg TickMsg) tea.Cmd {
 		return nil
 	}
 
-	if time.Since(p.lastPoll) >= p.interval {
-		p.lastPoll = time.Now()
+	if now.Sub(p.lastPoll) >= p.interval {
+		p.lastPoll = now
 		return p.cmd()
 	}
 	return nil

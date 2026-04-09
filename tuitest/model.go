@@ -1,7 +1,7 @@
 package tuitest
 
 import (
-	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -140,33 +140,49 @@ func (tm *TestModel) Cols() int { return tm.cols }
 // Lines returns the current terminal height.
 func (tm *TestModel) Lines() int { return tm.lines }
 
-// processCmd executes a command and feeds its message back into the model.
-// Handles tea.BatchMsg by processing each sub-command, and recurses one level
-// to allow simple command chains to resolve.
+// processCmd executes a command and feeds its message back into the model,
+// looping until no more commands are produced (or maxProcessCmdIterations is
+// hit, in which case the test fails). Handles tea.BatchMsg by flattening all
+// sub-commands into the work queue so nested batches resolve correctly.
 func (tm *TestModel) processCmd(cmd tea.Cmd) {
 	if cmd == nil {
 		return
 	}
-	msg := cmd()
-	if msg == nil {
-		return
-	}
-	// Handle batch messages: process each sub-command.
-	if batch, ok := msg.(tea.BatchMsg); ok {
-		for _, subCmd := range batch {
-			tm.processCmd(subCmd)
+	queue := []tea.Cmd{cmd}
+	iter := 0
+	for len(queue) > 0 {
+		iter++
+		if iter > maxProcessCmdIterations {
+			tm.t.Helper()
+			tm.t.Fatalf("tuitest: processCmd did not quiesce after %d iterations "+
+				"(likely an infinite command loop)", maxProcessCmdIterations)
+			return
 		}
-		return
-	}
-	var nextCmd tea.Cmd
-	tm.model, nextCmd = tm.model.Update(msg)
-	// Process one more level to allow simple chains.
-	if nextCmd != nil {
-		if nextMsg := nextCmd(); nextMsg != nil {
-			tm.model, _ = tm.model.Update(nextMsg)
+		cur := queue[0]
+		queue = queue[1:]
+		if cur == nil {
+			continue
+		}
+		msg := cur()
+		if msg == nil {
+			continue
+		}
+		if batch, ok := msg.(tea.BatchMsg); ok {
+			queue = append(queue, batch...)
+			continue
+		}
+		var nextCmd tea.Cmd
+		tm.model, nextCmd = tm.model.Update(msg)
+		if nextCmd != nil {
+			queue = append(queue, nextCmd)
 		}
 	}
 }
+
+// maxProcessCmdIterations caps processCmd's work loop so a buggy model with a
+// command that keeps returning new commands fails the test quickly rather
+// than hanging.
+const maxProcessCmdIterations = 64
 
 // keyToMsg converts a key name string to a tea.KeyMsg.
 func keyToMsg(key string) tea.KeyMsg {
@@ -264,17 +280,8 @@ func UntilNotContains(text string) screenPredicate {
 // UntilRowContains returns a predicate satisfied when the given row contains text.
 func UntilRowContains(row int, text string) screenPredicate {
 	return func(s *Screen) bool {
-		return fmt.Sprintf("%s", s.Row(row)) != "" && contains(s.Row(row), text)
+		return strings.Contains(s.Row(row), text)
 	}
-}
-
-func contains(haystack, needle string) bool {
-	for i := 0; i <= len(haystack)-len(needle); i++ {
-		if haystack[i:i+len(needle)] == needle {
-			return true
-		}
-	}
-	return len(needle) == 0
 }
 
 // Stopwatch measures elapsed time for performance assertions in tests.
