@@ -35,3 +35,6 @@ Thumbs.db
 
 # Generated GIFs (regenerate with ./scripts/gen-gifs.sh)
 docs/gifs/*.gif
+
+# tuitest run history (local only)
+.tuitest/
