@@ -45,15 +45,15 @@ func NewHeatmap(grid [][]float64, palette string) *Heatmap {
 	}
 }
 
-func (h *Heatmap) Init() tea.Cmd                             { return nil }
+func (h *Heatmap) Init() tea.Cmd { return nil }
 func (h *Heatmap) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
 	return h, nil
 }
-func (h *Heatmap) KeyBindings() []tuikit.KeyBind             { return nil }
-func (h *Heatmap) SetSize(w, hh int)                         { h.width = w; h.height = hh }
-func (h *Heatmap) Focused() bool                             { return h.focused }
-func (h *Heatmap) SetFocused(f bool)                         { h.focused = f }
-func (h *Heatmap) SetTheme(t tuikit.Theme)                   { h.theme = t }
+func (h *Heatmap) KeyBindings() []tuikit.KeyBind { return nil }
+func (h *Heatmap) SetSize(w, hh int)             { h.width = w; h.height = hh }
+func (h *Heatmap) Focused() bool                 { return h.focused }
+func (h *Heatmap) SetFocused(f bool)             { h.focused = f }
+func (h *Heatmap) SetTheme(t tuikit.Theme)       { h.theme = t }
 
 // cellColor returns the background color for a normalized value t ∈ [0, 1].
 func (h *Heatmap) cellColor(t float64) lipgloss.Color {

@@ -155,13 +155,15 @@ type helpStatus struct {
 	height  int
 }
 
-func (s *helpStatus) Init() tea.Cmd                                   { return nil }
-func (s *helpStatus) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return s, nil }
-func (s *helpStatus) KeyBindings() []tuikit.KeyBind                  { return nil }
-func (s *helpStatus) SetSize(w, h int)                               { s.width = w; s.height = h }
-func (s *helpStatus) Focused() bool                                  { return s.focused }
-func (s *helpStatus) SetFocused(f bool)                              { s.focused = f }
-func (s *helpStatus) SetTheme(t tuikit.Theme)                        { s.theme = t }
+func (s *helpStatus) Init() tea.Cmd { return nil }
+func (s *helpStatus) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return s, nil
+}
+func (s *helpStatus) KeyBindings() []tuikit.KeyBind { return nil }
+func (s *helpStatus) SetSize(w, h int)              { s.width = w; s.height = h }
+func (s *helpStatus) Focused() bool                 { return s.focused }
+func (s *helpStatus) SetFocused(f bool)             { s.focused = f }
+func (s *helpStatus) SetTheme(t tuikit.Theme)       { s.theme = t }
 
 func (s *helpStatus) View() string {
 	style := lipgloss.NewStyle().

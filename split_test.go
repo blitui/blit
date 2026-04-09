@@ -16,13 +16,15 @@ type splitStub struct {
 	height  int
 }
 
-func (s *splitStub) Init() tea.Cmd                                  { return nil }
-func (s *splitStub) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return s, nil }
-func (s *splitStub) View() string                                   { return s.view }
-func (s *splitStub) KeyBindings() []tuikit.KeyBind                  { return nil }
-func (s *splitStub) SetSize(w, h int)                               { s.width = w; s.height = h }
-func (s *splitStub) Focused() bool                                  { return s.focused }
-func (s *splitStub) SetFocused(f bool)                              { s.focused = f }
+func (s *splitStub) Init() tea.Cmd { return nil }
+func (s *splitStub) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return s, nil
+}
+func (s *splitStub) View() string                  { return s.view }
+func (s *splitStub) KeyBindings() []tuikit.KeyBind { return nil }
+func (s *splitStub) SetSize(w, h int)              { s.width = w; s.height = h }
+func (s *splitStub) Focused() bool                 { return s.focused }
+func (s *splitStub) SetFocused(f bool)             { s.focused = f }
 
 func newSplitStub(view string) *splitStub { return &splitStub{view: view} }
 

@@ -35,7 +35,6 @@ type ThemeHotReloadErrMsg struct {
 	Err error
 }
 
-
 // themeYAML is the schema for the watched YAML file. All fields are optional;
 // missing keys fall back to DefaultTheme values.
 type themeYAML struct {

@@ -9,10 +9,10 @@ import (
 
 // Command defines a single command for the CommandBar.
 type Command struct {
-	Name    string             // Primary name: "quit", "sort", "go"
-	Aliases []string           // Alternatives: ["q"] for "quit"
-	Args    bool               // Whether it takes an argument
-	Hint    string             // Help text
+	Name    string               // Primary name: "quit", "sort", "go"
+	Aliases []string             // Alternatives: ["q"] for "quit"
+	Args    bool                 // Whether it takes an argument
+	Hint    string               // Help text
 	Run     func(string) tea.Cmd // Handler, receives args string
 }
 

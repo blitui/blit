@@ -1,4 +1,4 @@
-﻿package tuikit
+package tuikit
 
 import (
 	"fmt"
@@ -164,25 +164,25 @@ type namedOverlay struct {
 
 // appModel is the top-level Bubble Tea model that coordinates everything.
 type appModel struct {
-	theme          Theme
-	components     []namedComponent
-	dualPane       *DualPane
-	statusBar      *StatusBar
-	helpEnabled    bool
-	help           *Help
-	namedOverlays  []namedOverlay
-	overlays       *overlayStack
-	registry       *registry
-	globalBindings []KeyBind
-	mouseSupport   bool
-	tickInterval   time.Duration
-	focusCycleKey  string
-	focusIdx       int
-	width          int
-	height         int
-	notifyMsg      string
-	notifyExpiry   time.Time
-	updateConfig  *UpdateConfig
+	theme             Theme
+	components        []namedComponent
+	dualPane          *DualPane
+	statusBar         *StatusBar
+	helpEnabled       bool
+	help              *Help
+	namedOverlays     []namedOverlay
+	overlays          *overlayStack
+	registry          *registry
+	globalBindings    []KeyBind
+	mouseSupport      bool
+	tickInterval      time.Duration
+	focusCycleKey     string
+	focusIdx          int
+	width             int
+	height            int
+	notifyMsg         string
+	notifyExpiry      time.Time
+	updateConfig      *UpdateConfig
 	pendingNotify     string
 	toasts            *toastManager
 	animationsEnabled bool

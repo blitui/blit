@@ -28,12 +28,12 @@ import (
 
 // recordSession holds the mutable state accumulated during a recording.
 type recordSession struct {
-	Name       string
-	Command    []string
-	StartedAt  time.Time
-	Steps      []recordStep
-	keystroke  int
-	paused     bool
+	Name      string
+	Command   []string
+	StartedAt time.Time
+	Steps     []recordStep
+	keystroke int
+	paused    bool
 }
 
 // recordStep mirrors tuitest.SessionStep but lives in cmd/tuitest to avoid

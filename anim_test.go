@@ -207,8 +207,8 @@ func TestParseHexColor(t *testing.T) {
 	if r != 255 || g != 128 || b != 0 {
 		t.Errorf("parseHexColor = %d %d %d, want 255 128 0", r, g, b)
 	}
-	r, g, b = parseHexColor("invalid")
-	if r != -1 {
+	r2, _, _ := parseHexColor("invalid")
+	if r2 != -1 {
 		t.Error("parseHexColor invalid should return -1")
 	}
 }

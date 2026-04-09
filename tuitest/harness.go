@@ -17,11 +17,11 @@ import (
 //	    ExpectRow(2, "selected").
 //	    Done()
 type Harness struct {
-	t       testing.TB
-	tm      *TestModel
-	setup   []func()
+	t        testing.TB
+	tm       *TestModel
+	setup    []func()
 	teardown []func()
-	done    bool
+	done     bool
 }
 
 // NewHarness creates a new test harness around the given model.

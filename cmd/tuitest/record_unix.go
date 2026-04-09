@@ -3,8 +3,8 @@
 package main
 
 import (
-	"os"
 	"golang.org/x/sys/unix"
+	"os"
 )
 
 // makeRaw puts fd into raw mode and returns the previous terminal state.

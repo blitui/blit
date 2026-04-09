@@ -56,12 +56,12 @@ func newTreePlaceholder() *TreePlaceholder {
 	}
 }
 
-func (t *TreePlaceholder) Init() tea.Cmd                              { return nil }
-func (t *TreePlaceholder) KeyBindings() []tuikit.KeyBind              { return nil }
-func (t *TreePlaceholder) SetSize(w, h int)                           { t.width = w; t.height = h }
-func (t *TreePlaceholder) Focused() bool                              { return t.focused }
-func (t *TreePlaceholder) SetFocused(f bool)                          { t.focused = f }
-func (t *TreePlaceholder) SetTheme(th tuikit.Theme)                   { t.theme = th }
+func (t *TreePlaceholder) Init() tea.Cmd                 { return nil }
+func (t *TreePlaceholder) KeyBindings() []tuikit.KeyBind { return nil }
+func (t *TreePlaceholder) SetSize(w, h int)              { t.width = w; t.height = h }
+func (t *TreePlaceholder) Focused() bool                 { return t.focused }
+func (t *TreePlaceholder) SetFocused(f bool)             { t.focused = f }
+func (t *TreePlaceholder) SetTheme(th tuikit.Theme)      { t.theme = th }
 
 func (t *TreePlaceholder) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
 	if km, ok := msg.(tea.KeyMsg); ok {

@@ -45,8 +45,8 @@ type FilePicker struct {
 	// search state
 	input         textinput.Model
 	searchActive  bool
-	allNodes      []*Node   // flattened paths for search
-	searchResults []string  // matched absolute paths
+	allNodes      []*Node  // flattened paths for search
+	searchResults []string // matched absolute paths
 	searchCursor  int
 
 	// preview
@@ -222,7 +222,7 @@ func (fp *FilePicker) renderSearch(width int) string {
 	inputStyle := lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color(fp.theme.Accent)).
-		Width(width - 2).
+		Width(width-2).
 		Padding(0, 1)
 	inputView := inputStyle.Render(fp.input.View())
 	inputHeight := strings.Count(inputView, "\n") + 1

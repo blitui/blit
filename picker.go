@@ -205,7 +205,7 @@ func (p *Picker) renderList(width int) string {
 	inputStyle := lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color(p.theme.Accent)).
-		Width(width - 2).
+		Width(width-2).
 		Padding(0, 1)
 
 	inputView := inputStyle.Render(p.input.View())

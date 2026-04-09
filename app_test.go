@@ -39,7 +39,7 @@ func (s *stubComponent) View() string {
 	return s.name
 }
 func (s *stubComponent) KeyBindings() []KeyBind { return s.bindings }
-func (s *stubComponent) SetSize(w, h int)      { s.width = w; s.height = h }
+func (s *stubComponent) SetSize(w, h int)       { s.width = w; s.height = h }
 func (s *stubComponent) Focused() bool          { return s.focused }
 func (s *stubComponent) SetFocused(f bool)      { s.focused = f }
 

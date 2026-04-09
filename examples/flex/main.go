@@ -31,13 +31,15 @@ type headerPane struct {
 	theme         tuikit.Theme
 }
 
-func (h *headerPane) Init() tea.Cmd                            { return nil }
-func (h *headerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return h, nil }
-func (h *headerPane) KeyBindings() []tuikit.KeyBind            { return nil }
-func (h *headerPane) SetSize(w, ht int)                        { h.width = w; h.height = ht }
-func (h *headerPane) Focused() bool                            { return false }
-func (h *headerPane) SetFocused(bool)                          {}
-func (h *headerPane) SetTheme(t tuikit.Theme)                  { h.theme = t }
+func (h *headerPane) Init() tea.Cmd { return nil }
+func (h *headerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return h, nil
+}
+func (h *headerPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (h *headerPane) SetSize(w, ht int)             { h.width = w; h.height = ht }
+func (h *headerPane) Focused() bool                 { return false }
+func (h *headerPane) SetFocused(bool)               {}
+func (h *headerPane) SetTheme(t tuikit.Theme)       { h.theme = t }
 func (h *headerPane) View() string {
 	style := lipgloss.NewStyle().
 		Width(h.width).
@@ -64,21 +66,23 @@ type sidebarPane struct {
 	focused       bool
 }
 
-func (s *sidebarPane) Init() tea.Cmd                            { return nil }
-func (s *sidebarPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return s, nil }
-func (s *sidebarPane) KeyBindings() []tuikit.KeyBind            { return nil }
-func (s *sidebarPane) SetSize(w, h int)                         { s.width = w; s.height = h }
-func (s *sidebarPane) Focused() bool                            { return s.focused }
-func (s *sidebarPane) SetFocused(f bool)                        { s.focused = f }
-func (s *sidebarPane) SetTheme(t tuikit.Theme)                  { s.theme = t }
+func (s *sidebarPane) Init() tea.Cmd { return nil }
+func (s *sidebarPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return s, nil
+}
+func (s *sidebarPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (s *sidebarPane) SetSize(w, h int)              { s.width = w; s.height = h }
+func (s *sidebarPane) Focused() bool                 { return s.focused }
+func (s *sidebarPane) SetFocused(f bool)             { s.focused = f }
+func (s *sidebarPane) SetTheme(t tuikit.Theme)       { s.theme = t }
 func (s *sidebarPane) View() string {
 	borderColor := s.theme.Border
 	if s.focused {
 		borderColor = s.theme.Accent
 	}
 	box := lipgloss.NewStyle().
-		Width(s.width - 2).
-		Height(s.height - 2).
+		Width(s.width-2).
+		Height(s.height-2).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color(borderColor)).
 		Padding(0, 1)
@@ -94,21 +98,23 @@ type contentPane struct {
 	focused       bool
 }
 
-func (c *contentPane) Init() tea.Cmd                            { return nil }
-func (c *contentPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return c, nil }
-func (c *contentPane) KeyBindings() []tuikit.KeyBind            { return nil }
-func (c *contentPane) SetSize(w, h int)                         { c.width = w; c.height = h }
-func (c *contentPane) Focused() bool                            { return c.focused }
-func (c *contentPane) SetFocused(f bool)                        { c.focused = f }
-func (c *contentPane) SetTheme(t tuikit.Theme)                  { c.theme = t }
+func (c *contentPane) Init() tea.Cmd { return nil }
+func (c *contentPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return c, nil
+}
+func (c *contentPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (c *contentPane) SetSize(w, h int)              { c.width = w; c.height = h }
+func (c *contentPane) Focused() bool                 { return c.focused }
+func (c *contentPane) SetFocused(f bool)             { c.focused = f }
+func (c *contentPane) SetTheme(t tuikit.Theme)       { c.theme = t }
 func (c *contentPane) View() string {
 	borderColor := c.theme.Border
 	if c.focused {
 		borderColor = c.theme.Accent
 	}
 	box := lipgloss.NewStyle().
-		Width(c.width - 2).
-		Height(c.height - 2).
+		Width(c.width-2).
+		Height(c.height-2).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color(borderColor)).
 		Padding(0, 1)
@@ -139,13 +145,15 @@ type footerPane struct {
 	theme         tuikit.Theme
 }
 
-func (f *footerPane) Init() tea.Cmd                            { return nil }
-func (f *footerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return f, nil }
-func (f *footerPane) KeyBindings() []tuikit.KeyBind            { return nil }
-func (f *footerPane) SetSize(w, h int)                         { f.width = w; f.height = h }
-func (f *footerPane) Focused() bool                            { return false }
-func (f *footerPane) SetFocused(bool)                          {}
-func (f *footerPane) SetTheme(t tuikit.Theme)                  { f.theme = t }
+func (f *footerPane) Init() tea.Cmd { return nil }
+func (f *footerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return f, nil
+}
+func (f *footerPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (f *footerPane) SetSize(w, h int)              { f.width = w; f.height = h }
+func (f *footerPane) Focused() bool                 { return false }
+func (f *footerPane) SetFocused(bool)               {}
+func (f *footerPane) SetTheme(t tuikit.Theme)       { f.theme = t }
 func (f *footerPane) View() string {
 	left := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(f.theme.Muted)).
@@ -172,13 +180,15 @@ type labelComp struct {
 	width, height int
 }
 
-func (l *labelComp) Init() tea.Cmd                            { return nil }
-func (l *labelComp) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return l, nil }
-func (l *labelComp) KeyBindings() []tuikit.KeyBind            { return nil }
-func (l *labelComp) SetSize(w, h int)                         { l.width = w; l.height = h }
-func (l *labelComp) Focused() bool                            { return false }
-func (l *labelComp) SetFocused(bool)                          {}
-func (l *labelComp) View() string                             { return l.text }
+func (l *labelComp) Init() tea.Cmd { return nil }
+func (l *labelComp) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+	return l, nil
+}
+func (l *labelComp) KeyBindings() []tuikit.KeyBind { return nil }
+func (l *labelComp) SetSize(w, h int)              { l.width = w; l.height = h }
+func (l *labelComp) Focused() bool                 { return false }
+func (l *labelComp) SetFocused(bool)               {}
+func (l *labelComp) View() string                  { return l.text }
 
 // --- Root layout component ---
 
@@ -243,8 +253,8 @@ func (d *flexDemo) SetSize(w, h int) {
 	d.outer.SetSize(w, h)
 }
 
-func (d *flexDemo) Focused() bool      { return false }
-func (d *flexDemo) SetFocused(f bool)  {}
+func (d *flexDemo) Focused() bool     { return false }
+func (d *flexDemo) SetFocused(f bool) {}
 
 func (d *flexDemo) SetTheme(t tuikit.Theme) {
 	d.theme = t

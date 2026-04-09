@@ -99,16 +99,16 @@ type Sized struct {
 	C Component // The wrapped component.
 }
 
-func (s Sized) Init() tea.Cmd                           { return s.C.Init() }
+func (s Sized) Init() tea.Cmd { return s.C.Init() }
 func (s Sized) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	c, cmd := s.C.Update(msg, ctx)
 	return Sized{W: s.W, C: c}, cmd
 }
-func (s Sized) View() string                            { return s.C.View() }
-func (s Sized) KeyBindings() []KeyBind                  { return s.C.KeyBindings() }
-func (s Sized) SetSize(w, h int)                        { s.C.SetSize(w, h) }
-func (s Sized) Focused() bool                           { return s.C.Focused() }
-func (s Sized) SetFocused(f bool)                       { s.C.SetFocused(f) }
+func (s Sized) View() string           { return s.C.View() }
+func (s Sized) KeyBindings() []KeyBind { return s.C.KeyBindings() }
+func (s Sized) SetSize(w, h int)       { s.C.SetSize(w, h) }
+func (s Sized) Focused() bool          { return s.C.Focused() }
+func (s Sized) SetFocused(f bool)      { s.C.SetFocused(f) }
 
 // Flex wraps a Component that grows proportionally to fill remaining space.
 // Grow is the relative weight — a child with Grow=2 gets twice as much space
@@ -118,16 +118,16 @@ type Flex struct {
 	C    Component // The wrapped component.
 }
 
-func (f Flex) Init() tea.Cmd                           { return f.C.Init() }
+func (f Flex) Init() tea.Cmd { return f.C.Init() }
 func (f Flex) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	c, cmd := f.C.Update(msg, ctx)
 	return Flex{Grow: f.Grow, C: c}, cmd
 }
-func (f Flex) View() string                            { return f.C.View() }
-func (f Flex) KeyBindings() []KeyBind                  { return f.C.KeyBindings() }
-func (f Flex) SetSize(w, h int)                        { f.C.SetSize(w, h) }
-func (f Flex) Focused() bool                           { return f.C.Focused() }
-func (f Flex) SetFocused(foc bool)                     { f.C.SetFocused(foc) }
+func (f Flex) View() string           { return f.C.View() }
+func (f Flex) KeyBindings() []KeyBind { return f.C.KeyBindings() }
+func (f Flex) SetSize(w, h int)       { f.C.SetSize(w, h) }
+func (f Flex) Focused() bool          { return f.C.Focused() }
+func (f Flex) SetFocused(foc bool)    { f.C.SetFocused(foc) }
 
 // flexItem is an internal resolved slot used during layout computation.
 type flexItem struct {

@@ -11,7 +11,7 @@ import (
 // We avoid importing tuitest here to keep the dependency one-way.
 type fakeClock struct{ now time.Time }
 
-func (f *fakeClock) Now() time.Time        { return f.now }
+func (f *fakeClock) Now() time.Time          { return f.now }
 func (f *fakeClock) Advance(d time.Duration) { f.now = f.now.Add(d) }
 
 func newFakeClock() *fakeClock {

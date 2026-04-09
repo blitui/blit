@@ -37,15 +37,15 @@ func NewLine(series [][]float64, colors []string, smooth bool) *Line {
 	}
 }
 
-func (l *Line) Init() tea.Cmd                             { return nil }
+func (l *Line) Init() tea.Cmd { return nil }
 func (l *Line) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
 	return l, nil
 }
-func (l *Line) KeyBindings() []tuikit.KeyBind             { return nil }
-func (l *Line) SetSize(w, h int)                          { l.width = w; l.height = h }
-func (l *Line) Focused() bool                             { return l.focused }
-func (l *Line) SetFocused(f bool)                         { l.focused = f }
-func (l *Line) SetTheme(t tuikit.Theme)                   { l.theme = t }
+func (l *Line) KeyBindings() []tuikit.KeyBind { return nil }
+func (l *Line) SetSize(w, h int)              { l.width = w; l.height = h }
+func (l *Line) Focused() bool                 { return l.focused }
+func (l *Line) SetFocused(f bool)             { l.focused = f }
+func (l *Line) SetTheme(t tuikit.Theme)       { l.theme = t }
 
 // seriesColor returns the lipgloss color for series i.
 func (l *Line) seriesColor(i int) lipgloss.Color {

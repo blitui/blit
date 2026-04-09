@@ -131,11 +131,11 @@ func (d *DetailOverlay[T]) KeyBindings() []KeyBind {
 }
 
 func (d *DetailOverlay[T]) SetSize(w, h int)  { d.width = w; d.height = h }
-func (d *DetailOverlay[T]) Focused() bool      { return d.focused }
-func (d *DetailOverlay[T]) SetFocused(f bool)  { d.focused = f }
-func (d *DetailOverlay[T]) IsActive() bool     { return d.active }
-func (d *DetailOverlay[T]) SetActive(v bool)   { d.active = v }
-func (d *DetailOverlay[T]) Close()             { d.active = false }
+func (d *DetailOverlay[T]) Focused() bool     { return d.focused }
+func (d *DetailOverlay[T]) SetFocused(f bool) { d.focused = f }
+func (d *DetailOverlay[T]) IsActive() bool    { return d.active }
+func (d *DetailOverlay[T]) SetActive(v bool)  { d.active = v }
+func (d *DetailOverlay[T]) Close()            { d.active = false }
 
 // SetTheme implements the Themed interface.
 func (d *DetailOverlay[T]) SetTheme(t Theme) { d.theme = t }

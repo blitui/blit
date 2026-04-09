@@ -42,15 +42,15 @@ func NewGauge(value, max float64, thresholds []float64, label string) *Gauge {
 	}
 }
 
-func (g *Gauge) Init() tea.Cmd                             { return nil }
+func (g *Gauge) Init() tea.Cmd { return nil }
 func (g *Gauge) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
 	return g, nil
 }
-func (g *Gauge) KeyBindings() []tuikit.KeyBind             { return nil }
-func (g *Gauge) SetSize(w, h int)                          { g.width = w; g.height = h }
-func (g *Gauge) Focused() bool                             { return g.focused }
-func (g *Gauge) SetFocused(f bool)                         { g.focused = f }
-func (g *Gauge) SetTheme(t tuikit.Theme)                   { g.theme = t }
+func (g *Gauge) KeyBindings() []tuikit.KeyBind { return nil }
+func (g *Gauge) SetSize(w, h int)              { g.width = w; g.height = h }
+func (g *Gauge) Focused() bool                 { return g.focused }
+func (g *Gauge) SetFocused(f bool)             { g.focused = f }
+func (g *Gauge) SetTheme(t tuikit.Theme)       { g.theme = t }
 
 // bandColor returns the theme color for the band index.
 func (g *Gauge) bandColor(band int) lipgloss.Color {

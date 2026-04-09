@@ -25,8 +25,9 @@ func NewHelp() *Help {
 }
 
 func (h *Help) setRegistry(r *registry) { h.reg = r }
+
 // SetTheme implements the Themed interface.
-func (h *Help) SetTheme(t Theme)        { h.theme = t }
+func (h *Help) SetTheme(t Theme) { h.theme = t }
 
 func (h *Help) Init() tea.Cmd { return nil }
 
@@ -114,7 +115,7 @@ func (h *Help) KeyBindings() []KeyBind {
 }
 
 func (h *Help) SetSize(w, ht int) { h.width = w; h.height = ht }
-func (h *Help) Focused() bool      { return h.focused }
-func (h *Help) SetFocused(f bool)   { h.focused = f }
-func (h *Help) IsActive() bool      { return h.active }
-func (h *Help) Close()              { h.active = false }
+func (h *Help) Focused() bool     { return h.focused }
+func (h *Help) SetFocused(f bool) { h.focused = f }
+func (h *Help) IsActive() bool    { return h.active }
+func (h *Help) Close()            { h.active = false }

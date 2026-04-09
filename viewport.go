@@ -33,7 +33,7 @@ type Viewport struct {
 	focused bool
 	width   int
 	height  int
-	yOffset int   // current scroll position (line index)
+	yOffset int // current scroll position (line index)
 	lines   []string
 	ready   bool
 }
@@ -252,9 +252,9 @@ func (v *Viewport) SetSize(w, h int) {
 	v.clampOffset()
 }
 
-func (v *Viewport) Focused() bool       { return v.focused }
-func (v *Viewport) SetFocused(f bool)   { v.focused = f }
-func (v *Viewport) SetTheme(th Theme)   { v.theme = th }
+func (v *Viewport) Focused() bool     { return v.focused }
+func (v *Viewport) SetFocused(f bool) { v.focused = f }
+func (v *Viewport) SetTheme(th Theme) { v.theme = th }
 
 func (v *Viewport) clampOffset() {
 	if v.yOffset < 0 {

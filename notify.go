@@ -24,7 +24,7 @@ func NotifyCmd(text string, duration time.Duration) tea.Cmd {
 type ToastSeverity int
 
 const (
-	SeverityInfo    ToastSeverity = iota
+	SeverityInfo ToastSeverity = iota
 	SeveritySuccess
 	SeverityWarn
 	SeverityError
@@ -80,19 +80,27 @@ type toastManager struct {
 }
 
 func newToastManager(opts ToastManagerOpts) *toastManager {
-	if opts.MaxVisible <= 0 { opts.MaxVisible = 5 }
-	if opts.AnimDuration <= 0 { opts.AnimDuration = 300 * time.Millisecond }
+	if opts.MaxVisible <= 0 {
+		opts.MaxVisible = 5
+	}
+	if opts.AnimDuration <= 0 {
+		opts.AnimDuration = 300 * time.Millisecond
+	}
 	return &toastManager{opts: opts, theme: DefaultTheme(), noAnim: os.Getenv("TUIKIT_NO_ANIM") == "1"}
 }
 
 func (tm *toastManager) add(msg ToastMsg) {
 	dur := msg.Duration
-	if dur <= 0 { dur = 4 * time.Second }
+	if dur <= 0 {
+		dur = 4 * time.Second
+	}
 	e := &toastEntry{
 		Severity: msg.Severity, Title: msg.Title, Body: msg.Body,
 		Duration: dur, Actions: msg.Actions, expiry: time.Now().Add(dur),
 	}
-	if !tm.noAnim { e.slideOffset = toastPanelWidth }
+	if !tm.noAnim {
+		e.slideOffset = toastPanelWidth
+	}
 	tm.toasts = append(tm.toasts, e)
 	if len(tm.toasts) > tm.opts.MaxVisible {
 		tm.toasts = tm.toasts[len(tm.toasts)-tm.opts.MaxVisible:]
@@ -100,11 +108,15 @@ func (tm *toastManager) add(msg ToastMsg) {
 }
 
 func (tm *toastManager) dismissTop() {
-	if len(tm.toasts) > 0 { tm.toasts = tm.toasts[:len(tm.toasts)-1] }
+	if len(tm.toasts) > 0 {
+		tm.toasts = tm.toasts[:len(tm.toasts)-1]
+	}
 }
 
 func (tm *toastManager) dismissAt(idx int) {
-	if idx < 0 || idx >= len(tm.toasts) { return }
+	if idx < 0 || idx >= len(tm.toasts) {
+		return
+	}
 	tm.toasts = append(tm.toasts[:idx], tm.toasts[idx+1:]...)
 }
 
@@ -120,9 +132,13 @@ func (tm *toastManager) tick(now time.Time) bool {
 		}
 		if !tm.noAnim && e.slideOffset > 0 {
 			step := e.slideOffset / 3
-			if step < 1 { step = 1 }
+			if step < 1 {
+				step = 1
+			}
 			e.slideOffset -= step
-			if e.slideOffset < 0 { e.slideOffset = 0 }
+			if e.slideOffset < 0 {
+				e.slideOffset = 0
+			}
 			changed = true
 		}
 		i++
@@ -134,28 +150,40 @@ func (tm *toastManager) hasActive() bool { return len(tm.toasts) > 0 }
 
 func severityIcon(s ToastSeverity) string {
 	switch s {
-	case SeveritySuccess: return "✓"
-	case SeverityWarn: return "⚠"
-	case SeverityError: return "✗"
-	default: return "i"
+	case SeveritySuccess:
+		return "✓"
+	case SeverityWarn:
+		return "⚠"
+	case SeverityError:
+		return "✗"
+	default:
+		return "i"
 	}
 }
 
 func (tm *toastManager) severityColor(s ToastSeverity) lipgloss.Color {
 	switch s {
-	case SeveritySuccess: return tm.theme.Positive
-	case SeverityWarn: return tm.theme.Flash
-	case SeverityError: return tm.theme.Negative
-	default: return tm.theme.Accent
+	case SeveritySuccess:
+		return tm.theme.Positive
+	case SeverityWarn:
+		return tm.theme.Flash
+	case SeverityError:
+		return tm.theme.Negative
+	default:
+		return tm.theme.Accent
 	}
 }
 
 const toastPanelWidth = 40
 
 func (tm *toastManager) view(screenWidth int) string {
-	if len(tm.toasts) == 0 { return "" }
+	if len(tm.toasts) == 0 {
+		return ""
+	}
 	var panels []string
-	for _, e := range tm.toasts { panels = append(panels, tm.renderEntry(e, screenWidth)) }
+	for _, e := range tm.toasts {
+		panels = append(panels, tm.renderEntry(e, screenWidth))
+	}
 	return strings.Join(panels, "\n")
 }
 
@@ -170,7 +198,9 @@ func (tm *toastManager) renderEntry(e *toastEntry, screenWidth int) string {
 	var lines []string
 	lines = append(lines, accentBar+header)
 	if e.Body != "" {
-		for _, l := range wrapText(e.Body, innerWidth) { lines = append(lines, accentBar+bodyStyle.Render(l)) }
+		for _, l := range wrapText(e.Body, innerWidth) {
+			lines = append(lines, accentBar+bodyStyle.Render(l))
+		}
 	}
 	for _, a := range e.Actions {
 		lines = append(lines, accentBar+lipgloss.NewStyle().Foreground(color).Underline(true).Render("["+a.Label+"]"))
@@ -202,19 +232,34 @@ func (tm *toastManager) renderEntry(e *toastEntry, screenWidth int) string {
 
 func truncate(s string, maxLen int) string {
 	runes := []rune(s)
-	if len(runes) <= maxLen { return s }
-	if maxLen <= 1 { return "…" }
+	if len(runes) <= maxLen {
+		return s
+	}
+	if maxLen <= 1 {
+		return "…"
+	}
 	return string(runes[:maxLen-1]) + "…"
 }
 
 func wrapText(text string, width int) []string {
-	if width <= 0 { return []string{text} }
+	if width <= 0 {
+		return []string{text}
+	}
 	words := strings.Fields(text)
 	var lines []string
 	cur := ""
 	for _, w := range words {
-		if cur == "" { cur = w } else if len(cur)+1+len(w) <= width { cur += " " + w } else { lines = append(lines, cur); cur = w }
+		if cur == "" {
+			cur = w
+		} else if len(cur)+1+len(w) <= width {
+			cur += " " + w
+		} else {
+			lines = append(lines, cur)
+			cur = w
+		}
 	}
-	if cur != "" { lines = append(lines, cur) }
+	if cur != "" {
+		lines = append(lines, cur)
+	}
 	return lines
 }

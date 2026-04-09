@@ -82,13 +82,13 @@ type infoPane struct {
 	height  int
 }
 
-func (p *infoPane) Init() tea.Cmd                                      { return nil }
-func (p *infoPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd)     { return p, nil }
-func (p *infoPane) KeyBindings() []tuikit.KeyBind                      { return nil }
-func (p *infoPane) SetSize(w, h int)                                   { p.width = w; p.height = h }
-func (p *infoPane) Focused() bool                                      { return p.focused }
-func (p *infoPane) SetFocused(f bool)                                  { p.focused = f }
-func (p *infoPane) SetTheme(t tuikit.Theme)                            { p.theme = t }
+func (p *infoPane) Init() tea.Cmd                                                      { return nil }
+func (p *infoPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return p, nil }
+func (p *infoPane) KeyBindings() []tuikit.KeyBind                                      { return nil }
+func (p *infoPane) SetSize(w, h int)                                                   { p.width = w; p.height = h }
+func (p *infoPane) Focused() bool                                                      { return p.focused }
+func (p *infoPane) SetFocused(f bool)                                                  { p.focused = f }
+func (p *infoPane) SetTheme(t tuikit.Theme)                                            { p.theme = t }
 
 func (p *infoPane) View() string {
 	accent := lipgloss.NewStyle().Foreground(lipgloss.Color(p.theme.Accent)).Bold(true)

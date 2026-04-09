@@ -175,9 +175,9 @@ type anySignalFlusher struct {
 
 // signalBus coalesces dirty signals and wakes the App. One bus per App.
 type signalBus struct {
-	mu      sync.Mutex
-	pending []anySignalFlusher
-	send    func(tea.Msg) // set by App.Run (nil until then); enqueue still works
+	mu        sync.Mutex
+	pending   []anySignalFlusher
+	send      func(tea.Msg) // set by App.Run (nil until then); enqueue still works
 	scheduled bool
 }
 
