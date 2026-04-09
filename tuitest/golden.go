@@ -52,7 +52,20 @@ func AssertGolden(t testing.TB, s *Screen, name string) {
 			GoldenExpected: string(expected),
 			GoldenActual:   actual,
 		})
+		// Write the new content to <original>.golden.new so `tuitest review`
+		// can present a review queue without clobbering the accepted golden.
+		newPath := goldenPath + ".new"
+		if err := os.WriteFile(newPath, []byte(actual), 0o644); err != nil {
+			t.Logf("tuitest: could not write pending golden %s: %v", newPath, err)
+		}
 		t.Errorf("screen content does not match golden file %s\nwant:\n%s\ngot:\n%s",
 			goldenPath, string(expected), actual)
 	}
+}
+
+// PendingGoldenPath returns the path of the pending-review file for a golden.
+// The pending file is <goldenPath>.new and is written by AssertGolden on
+// mismatch so that `tuitest review` can enumerate it.
+func PendingGoldenPath(goldenPath string) string {
+	return goldenPath + ".new"
 }
