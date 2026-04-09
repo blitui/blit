@@ -32,6 +32,14 @@ import (
 )
 
 func main() {
+	// Sub-commands handled before flag parsing.
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "coverage":
+			os.Exit(readCoverage())
+		}
+	}
+
 	var (
 		filter   = flag.String("filter", "", "run only tests matching regexp (maps to go test -run)")
 		update   = flag.Bool("update", false, "regenerate tuitest snapshots (passes -tuitest.update to tests)")
@@ -40,12 +48,17 @@ func main() {
 		parallel = flag.Int("parallel", 0, "maximum number of tests to run in parallel (maps to go test -parallel)")
 		watch    = flag.Bool("watch", false, "watch the working tree for changes and re-run on modification")
 		verbose  = flag.Bool("v", false, "verbose go test output")
+		coverage = flag.Bool("coverage", false, "run go test with -coverprofile and display a coverage summary panel")
 	)
 	flag.Parse()
 
 	packages := flag.Args()
 	if len(packages) == 0 {
 		packages = []string{"./..."}
+	}
+
+	if *coverage {
+		os.Exit(runCoverage(packages))
 	}
 
 	runOnce := func() int {
