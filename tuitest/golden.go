@@ -46,6 +46,12 @@ func AssertGolden(t testing.TB, s *Screen, name string) {
 	}
 
 	if string(expected) != actual {
+		SaveFailureCapture(t, FailureCapture{
+			Kind:           FailureGolden,
+			GoldenPath:     goldenPath,
+			GoldenExpected: string(expected),
+			GoldenActual:   actual,
+		})
 		t.Errorf("screen content does not match golden file %s\nwant:\n%s\ngot:\n%s",
 			goldenPath, string(expected), actual)
 	}

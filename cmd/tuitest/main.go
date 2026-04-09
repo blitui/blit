@@ -4,6 +4,10 @@
 // specific tests, -parallel to set parallelism, and -watch to re-run on
 // file changes.
 //
+// Subcommands:
+//
+//	tuitest diff <testname>   show the failure diff for a named test
+//
 // Usage:
 //
 //	tuitest [flags] [packages...]
@@ -20,6 +24,7 @@
 //	tuitest -update ./tuitest/...             # regenerate snapshots
 //	tuitest -junit out/junit.xml -parallel 4  # parallel run + junit output
 //	tuitest -watch                            # re-run on file changes (1s poll)
+//	tuitest diff TestFoo                      # show diff for TestFoo failure
 //	tuitest record dashboard -- ./bin/dashboard
 //	tuitest replay dashboard --speed 2x
 package main
@@ -32,6 +37,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/moneycaringcoder/tuikit-go/tuitest"
 )
 
 func main() {
@@ -39,6 +47,9 @@ func main() {
 	// don't collide with the top-level flag set.
 	if len(os.Args) >= 2 {
 		switch os.Args[1] {
+		case "diff":
+			runDiffSubcommand(os.Args[2:])
+			return
 		case "record":
 			os.Exit(runRecord(os.Args[2:]))
 		case "replay":
@@ -83,7 +94,11 @@ func main() {
 	}
 
 	runOnce := func() int {
-		return runGoTest(*filter, *update, *junit, *htmlOut, *parallel, *verbose, *keep, packages)
+		code := runGoTest(*filter, *update, *junit, *htmlOut, *parallel, *verbose, *keep, packages)
+		if code != 0 && *watch {
+			printFailureDiffHints()
+		}
+		return code
 	}
 
 	if !*watch {
@@ -94,6 +109,73 @@ func main() {
 	if err := RunWatchMode(packages); err != nil {
 		fmt.Fprintf(os.Stderr, "[tuitest] watch mode error: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+// runDiffSubcommand implements `tuitest diff [testname]`.
+// Without a testname it lists all available failure captures.
+// With a testname it prints the diff to stdout using DiffViewer's text output.
+func runDiffSubcommand(args []string) {
+	if len(args) == 0 {
+		// List available captures.
+		names, err := tuitest.ListFailureCaptures()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[tuitest diff] error: %v\n", err)
+			os.Exit(1)
+		}
+		if len(names) == 0 {
+			fmt.Println("[tuitest diff] no failure captures found (run tests first)")
+			return
+		}
+		fmt.Println("Available failure captures:")
+		for _, n := range names {
+			fmt.Println("  " + n)
+		}
+		return
+	}
+
+	testName := strings.Join(args, " ")
+	fc, err := tuitest.LoadFailureCapture(testName)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[tuitest diff] %v\n", err)
+		os.Exit(1)
+	}
+
+	dv := tuitest.NewDiffViewer(fc)
+	dv.SetSize(120, 40)
+	printDiffViewerModes(dv, fc)
+}
+
+// printDiffViewerModes renders all three modes of the DiffViewer to stdout.
+func printDiffViewerModes(dv *tuitest.DiffViewer, fc *tuitest.FailureCapture) {
+	modes := []struct {
+		key  string
+		mode tuitest.DiffMode
+	}{
+		{"s", tuitest.DiffModeSideBySide},
+		{"u", tuitest.DiffModeUnified},
+		{"d", tuitest.DiffModeCellsOnly},
+	}
+	// Show side-by-side by default; user can re-run to see other modes.
+	_ = modes
+	// For one-shot CLI we just render side-by-side then unified then cells.
+	for _, m := range modes {
+		dv.SetMode(m.mode)
+		fmt.Println(dv.View())
+		fmt.Println(strings.Repeat("─", 80))
+	}
+}
+
+// printFailureDiffHints prints a hint after a failed watch-mode run showing
+// which test failures have diff captures available.
+func printFailureDiffHints() {
+	names, err := tuitest.ListFailureCaptures()
+	if err != nil || len(names) == 0 {
+		return
+	}
+	fmt.Fprintln(os.Stderr, "[tuitest] failure diffs available — view with:")
+	for _, n := range names {
+		fmt.Fprintf(os.Stderr, "  tuitest diff %s\n", n)
 	}
 }
 
