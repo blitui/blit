@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -378,5 +379,55 @@ func TestTableRowStylerBackgroundCoversContent(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("could not find any line containing 'Alice' in table view")
+	}
+}
+
+// B3: cursor tween tests
+
+func TestTable_CursorTweenStartsOnMove(t *testing.T) {
+	cols := []Column{{Title: "Name", Width: 20}}
+	rows := []Row{{"Alice"}, {"Bob"}, {"Carol"}}
+	tb := NewTable(cols, rows, TableOpts{})
+	tb.SetSize(80, 10)
+	tb.SetFocused(true)
+
+	// Tween should not be running before any movement
+	if tb.cursorTween.Running() {
+		t.Fatal("tween should not be running before cursor moves")
+	}
+
+	// Move cursor down — tween must start
+	tb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+	if !tb.cursorTween.Running() {
+		t.Error("tween should be running after cursor move")
+	}
+
+	// Verify tween finishes within its 120ms window (Progress drains running state)
+	time.Sleep(130 * time.Millisecond)
+	prog := tb.cursorTween.Progress(time.Now())
+	if prog != 1.0 {
+		t.Errorf("tween progress should be 1.0 after 130ms, got %f", prog)
+	}
+	if tb.cursorTween.Running() {
+		t.Error("tween should have finished after 130ms")
+	}
+}
+
+func TestTable_CursorTweenSnapOnNoAnim(t *testing.T) {
+	animDisabled = true
+	defer func() { animDisabled = false }()
+
+	cols := []Column{{Title: "Name", Width: 20}}
+	rows := []Row{{"Alice"}, {"Bob"}}
+	tb := NewTable(cols, rows, TableOpts{})
+	tb.SetSize(80, 10)
+	tb.SetFocused(true)
+
+	tb.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+
+	// With animDisabled, Progress() returns 1.0 immediately regardless of elapsed time
+	tval := tb.cursorTween.Progress(time.Now())
+	if tval != 1.0 {
+		t.Errorf("expected tween progress 1.0 when animDisabled, got %f", tval)
 	}
 }

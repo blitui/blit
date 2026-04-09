@@ -1,24 +1,48 @@
 package tuikit
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"math"
+	"sync"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
 
 // Theme defines semantic color tokens for consistent styling across components.
 // Components reference these tokens instead of raw colors.
 type Theme struct {
-	Positive    lipgloss.Color // Green: gains, success, online
-	Negative    lipgloss.Color // Red: losses, errors, offline
-	Accent      lipgloss.Color // Highlights, active elements
-	Muted       lipgloss.Color // Dimmed text, secondary info
-	Text        lipgloss.Color // Primary text
-	TextInverse lipgloss.Color // Text on colored backgrounds
-	Cursor      lipgloss.Color // Cursor/selection highlight
-	Border      lipgloss.Color // Borders, separators
-	Flash       lipgloss.Color // Temporary notification background
+	Positive    lipgloss.Color            // Green: gains, success, online
+	Negative    lipgloss.Color            // Red: losses, errors, offline
+	Accent      lipgloss.Color            // Highlights, active elements
+	Muted       lipgloss.Color            // Dimmed text, secondary info
+	Text        lipgloss.Color            // Primary text
+	TextInverse lipgloss.Color            // Text on colored backgrounds
+	Cursor      lipgloss.Color            // Cursor/selection highlight
+	Border      lipgloss.Color            // Borders, separators
+	Flash       lipgloss.Color            // Temporary notification background
 	Extra       map[string]lipgloss.Color // App-specific color tokens
+	Glyphs      *Glyphs                   // Optional glyph override; nil uses DefaultGlyphs
+	Borders     *BorderSet                // Optional border override; nil uses DefaultBorders
+}
+
+// glyphsOrDefault returns the theme glyphs or DefaultGlyphs if nil.
+func (t Theme) glyphsOrDefault() Glyphs {
+	if t.Glyphs != nil {
+		return *t.Glyphs
+	}
+	return DefaultGlyphs()
+}
+
+// bordersOrDefault returns the theme borders or DefaultBorders if nil.
+func (t Theme) bordersOrDefault() BorderSet {
+	if t.Borders != nil {
+		return *t.Borders
+	}
+	return DefaultBorders()
 }
 
 // Color returns an app-specific color from Extra by key, falling back to
-// the provided default if the key doesn't exist.
+// the provided default if the key does not exist.
 func (t Theme) Color(key string, fallback lipgloss.Color) lipgloss.Color {
 	if t.Extra != nil {
 		if c, ok := t.Extra[key]; ok {
@@ -26,6 +50,26 @@ func (t Theme) Color(key string, fallback lipgloss.Color) lipgloss.Color {
 		}
 	}
 	return fallback
+}
+
+// BorderSet groups named lipgloss border styles for consistent component use.
+type BorderSet struct {
+	Rounded lipgloss.Border
+	Double  lipgloss.Border
+	Thick   lipgloss.Border
+	Ascii   lipgloss.Border
+	Minimal lipgloss.Border
+}
+
+// DefaultBorders returns the standard lipgloss border set.
+func DefaultBorders() BorderSet {
+	return BorderSet{
+		Rounded: lipgloss.RoundedBorder(),
+		Double:  lipgloss.DoubleBorder(),
+		Thick:   lipgloss.ThickBorder(),
+		Ascii:   lipgloss.ASCIIBorder(),
+		Minimal: lipgloss.NormalBorder(),
+	}
 }
 
 // DefaultTheme returns a dark theme suitable for most terminal backgrounds.
@@ -59,9 +103,8 @@ func LightTheme() Theme {
 }
 
 // ThemeFromMap creates a Theme from a map of color names to hex values.
-// Missing keys fall back to DefaultTheme values. This is config-format-agnostic:
-// your app reads YAML/JSON/TOML and passes the color map here.
-// Keys not matching a built-in token are placed in the Extra map.
+// Missing keys fall back to DefaultTheme values. Keys not matching a built-in
+// token are placed in the Extra map.
 func ThemeFromMap(m map[string]string) Theme {
 	t := DefaultTheme()
 	builtins := map[string]*lipgloss.Color{
@@ -86,4 +129,68 @@ func ThemeFromMap(m map[string]string) Theme {
 		}
 	}
 	return t
+}
+
+// --- Theme registry ---
+
+var (
+	themeMu       sync.RWMutex
+	themeRegistry = map[string]Theme{}
+)
+
+// Register adds a named theme to the global preset registry.
+func Register(name string, t Theme) {
+	themeMu.Lock()
+	defer themeMu.Unlock()
+	themeRegistry[name] = t
+}
+
+// Presets returns a copy of the global theme registry.
+func Presets() map[string]Theme {
+	themeMu.RLock()
+	defer themeMu.RUnlock()
+	out := make(map[string]Theme, len(themeRegistry))
+	for k, v := range themeRegistry {
+		out[k] = v
+	}
+	return out
+}
+
+// --- WCAG contrast ---
+
+// Contrast computes the WCAG 2.1 contrast ratio between bg and fg colors.
+// Returns a value in [1, 21]; 4.5 satisfies WCAG AA for normal text.
+func Contrast(bg, fg lipgloss.Color) float64 {
+	l1 := relativeLuminance(string(bg))
+	l2 := relativeLuminance(string(fg))
+	if l1 < l2 {
+		l1, l2 = l2, l1
+	}
+	return (l1 + 0.05) / (l2 + 0.05)
+}
+
+func relativeLuminance(hex string) float64 {
+	r, g, b := parseHex(hex)
+	return 0.2126*linearise(float64(r)/255) +
+		0.7152*linearise(float64(g)/255) +
+		0.0722*linearise(float64(b)/255)
+}
+
+func linearise(c float64) float64 {
+	if c <= 0.03928 {
+		return c / 12.92
+	}
+	return math.Pow((c+0.055)/1.055, 2.4)
+}
+
+// --- Runtime theme switching ---
+
+// SetThemeMsg is a Bubble Tea message that asks the App to swap its theme.
+type SetThemeMsg struct {
+	Theme Theme
+}
+
+// SetThemeCmd returns a tea.Cmd that emits a SetThemeMsg.
+func SetThemeCmd(t Theme) func() tea.Msg {
+	return func() tea.Msg { return SetThemeMsg{Theme: t} }
 }

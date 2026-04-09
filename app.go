@@ -1,4 +1,4 @@
-package tuikit
+﻿package tuikit
 
 import (
 	"fmt"
@@ -78,6 +78,17 @@ func WithFocusCycleKey(key string) Option {
 	return func(a *appModel) { a.focusCycleKey = key }
 }
 
+// WithAnimations enables or disables the internal animation tick bus (~60fps).
+// Setting TUIKIT_NO_ANIM=1 in the environment overrides this to false.
+func WithAnimations(enabled bool) Option {
+	return func(a *appModel) {
+		if animDisabled {
+			enabled = false
+		}
+		a.animationsEnabled = enabled
+	}
+}
+
 // TickMsg is sent to all components at the configured tick interval.
 // Use it for animations, countdowns, polling, and flash effects.
 type TickMsg struct {
@@ -116,7 +127,9 @@ type appModel struct {
 	notifyMsg      string
 	notifyExpiry   time.Time
 	updateConfig  *UpdateConfig
-	pendingNotify string
+	pendingNotify     string
+	toasts            *toastManager
+	animationsEnabled bool
 }
 
 // newAppModel creates an appModel for testing (does not start tea.Program).
@@ -126,6 +139,7 @@ func newAppModel(opts ...Option) *appModel {
 		overlays:      newOverlayStack(),
 		registry:      newRegistry(),
 		focusCycleKey: "tab",
+		toasts:        newToastManager(ToastManagerOpts{}),
 	}
 	for _, opt := range opts {
 		opt(a)
@@ -262,6 +276,16 @@ func (a *appModel) cycleFocus() {
 	a.setFocus(next)
 }
 
+func (a *appModel) animTickCmd() tea.Cmd {
+	if animDisabled || !a.animationsEnabled {
+		return nil
+	}
+	const animFrameInterval = 16 * time.Millisecond
+	return tea.Tick(animFrameInterval, func(t time.Time) tea.Msg {
+		return animTickMsg{time: t}
+	})
+}
+
 func (a *appModel) tickCmd() tea.Cmd {
 	if a.tickInterval <= 0 {
 		return nil
@@ -289,6 +313,9 @@ func (a *appModel) Init() tea.Cmd {
 		}
 	}
 	if cmd := a.tickCmd(); cmd != nil {
+		cmds = append(cmds, cmd)
+	}
+	if cmd := a.animTickCmd(); cmd != nil {
 		cmds = append(cmds, cmd)
 	}
 	if a.pendingNotify != "" {
@@ -322,6 +349,34 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			dur = 2 * time.Second
 		}
 		a.notifyExpiry = time.Now().Add(dur)
+		if a.toasts != nil {
+			a.toasts.theme = a.theme
+			a.toasts.add(ToastMsg{Severity: SeverityInfo, Title: msg.Text, Duration: dur})
+		}
+		a.resize()
+		return a, nil
+
+	case ToastMsg:
+		if a.toasts != nil {
+			a.toasts.theme = a.theme
+			a.toasts.add(msg)
+		}
+		return a, nil
+
+	case dismissTopToastMsg:
+		if a.toasts != nil {
+			a.toasts.dismissTop()
+		}
+		return a, nil
+
+	case dismissToastMsg:
+		if a.toasts != nil {
+			a.toasts.dismissAt(msg.index)
+		}
+		return a, nil
+	case SetThemeMsg:
+		a.theme = msg.Theme
+		a.setup()
 		a.resize()
 		return a, nil
 	}
@@ -358,6 +413,9 @@ func (a *appModel) handleTick(msg TickMsg) (tea.Model, tea.Cmd) {
 		a.notifyMsg = ""
 		a.resize()
 	}
+	if a.toasts != nil {
+		a.toasts.tick(msg.Time)
+	}
 
 	var cmds []tea.Cmd
 	cmds = append(cmds, a.broadcastMsg(msg))
@@ -367,6 +425,15 @@ func (a *appModel) handleTick(msg TickMsg) (tea.Model, tea.Cmd) {
 
 	a.checkOverlayActivation()
 
+	return a, tea.Batch(cmds...)
+}
+
+func (a *appModel) handleAnimTick(msg animTickMsg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+	cmds = append(cmds, a.broadcastMsg(msg))
+	if cmd := a.animTickCmd(); cmd != nil {
+		cmds = append(cmds, cmd)
+	}
 	return a, tea.Batch(cmds...)
 }
 
@@ -460,6 +527,11 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch key {
 	case "q", "ctrl+c":
 		return a, tea.Quit
+	case "esc":
+		if a.toasts != nil && a.toasts.hasActive() {
+			a.toasts.dismissTop()
+			return a, nil
+		}
 	case "?":
 		if a.help != nil {
 			a.help.active = true
@@ -496,9 +568,15 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	// 6. User-defined global keybindings with handlers
 	for _, kb := range a.globalBindings {
-		if kb.Key == key && kb.Handler != nil {
-			kb.Handler()
-			return a, nil
+		if kb.Key == key {
+			if kb.HandlerCmd != nil {
+				cmd := kb.HandlerCmd()
+				return a, cmd
+			}
+			if kb.Handler != nil {
+				kb.Handler()
+				return a, nil
+			}
 		}
 	}
 
