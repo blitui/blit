@@ -43,12 +43,12 @@ type reviewErrMsg struct{ err error }
 
 // reviewModel is the bubbletea model for the review TUI.
 type reviewModel struct {
-	items    []tuitest.PendingGolden
-	cursor   int
-	width    int
-	height   int
-	viewer   *tuitest.DiffViewer
-	done     bool
+	items     []tuitest.PendingGolden
+	cursor    int
+	width     int
+	height    int
+	viewer    *tuitest.DiffViewer
+	done      bool
 	statusMsg string
 }
 

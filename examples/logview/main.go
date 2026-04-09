@@ -28,8 +28,8 @@ type tickMsg struct{}
 
 // model is the root Bubble Tea model.
 type model struct {
-	lv    *tuikit.LogViewer
-	width int
+	lv     *tuikit.LogViewer
+	width  int
 	height int
 }
 

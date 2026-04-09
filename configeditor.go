@@ -236,8 +236,8 @@ func (c *ConfigEditor) KeyBindings() []KeyBind {
 	}
 }
 
-func (c *ConfigEditor) SetSize(w, h int) { c.width = w; c.height = h }
+func (c *ConfigEditor) SetSize(w, h int)  { c.width = w; c.height = h }
 func (c *ConfigEditor) Focused() bool     { return c.focused }
-func (c *ConfigEditor) SetFocused(f bool)  { c.focused = f }
-func (c *ConfigEditor) IsActive() bool     { return c.active }
-func (c *ConfigEditor) Close()             { c.active = false; c.editing = false; c.errMsg = "" }
+func (c *ConfigEditor) SetFocused(f bool) { c.focused = f }
+func (c *ConfigEditor) IsActive() bool    { return c.active }
+func (c *ConfigEditor) Close()            { c.active = false; c.editing = false; c.errMsg = "" }

@@ -80,7 +80,8 @@ func (s *StatusBar) View() string {
 
 func (s *StatusBar) KeyBindings() []KeyBind { return nil }
 func (s *StatusBar) SetSize(w, h int)       { s.width = w; s.height = h }
-func (s *StatusBar) Focused() bool           { return s.focused }
-func (s *StatusBar) SetFocused(f bool)       { s.focused = f }
+func (s *StatusBar) Focused() bool          { return s.focused }
+func (s *StatusBar) SetFocused(f bool)      { s.focused = f }
+
 // SetTheme implements the Themed interface.
-func (s *StatusBar) SetTheme(t Theme)        { s.theme = t }
+func (s *StatusBar) SetTheme(t Theme) { s.theme = t }

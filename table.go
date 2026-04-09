@@ -909,7 +909,8 @@ func (t *Table) startCursorTween() {
 	t.cursorTween.Start(time.Now())
 }
 
-func (t *Table) Focused() bool    { return t.focused }
+func (t *Table) Focused() bool     { return t.focused }
 func (t *Table) SetFocused(f bool) { t.focused = f }
+
 // SetTheme implements the Themed interface.
 func (t *Table) SetTheme(th Theme) { t.theme = th }

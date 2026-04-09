@@ -420,7 +420,7 @@ type fakeTB struct {
 	message string
 }
 
-func (f *fakeTB) Helper()                       {}
+func (f *fakeTB) Helper()                        {}
 func (f *fakeTB) Error(a ...any)                 { f.failed = true }
 func (f *fakeTB) Errorf(format string, a ...any) { f.failed = true }
 func (f *fakeTB) Fatal(a ...any)                 { f.failed = true }

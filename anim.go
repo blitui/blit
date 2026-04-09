@@ -1,4 +1,4 @@
-﻿package tuikit
+package tuikit
 
 import (
 	"math"

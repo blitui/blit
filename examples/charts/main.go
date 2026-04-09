@@ -104,8 +104,8 @@ func (d *dashboard) SetSize(w, h int) {
 	d.height = h
 	d.layout()
 }
-func (d *dashboard) Focused() bool      { return d.focused }
-func (d *dashboard) SetFocused(f bool)  { d.focused = f }
+func (d *dashboard) Focused() bool     { return d.focused }
+func (d *dashboard) SetFocused(f bool) { d.focused = f }
 func (d *dashboard) SetTheme(t tuikit.Theme) {
 	d.theme = t
 	d.barV.SetTheme(t)

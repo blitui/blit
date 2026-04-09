@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	barWidth   = 20
-	barFilled  = "█"
-	barEmpty   = "░"
+	barWidth  = 20
+	barFilled = "█"
+	barEmpty  = "░"
 )
 
 // Progress shows a progress bar that updates as work completes.

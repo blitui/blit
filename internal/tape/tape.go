@@ -27,7 +27,7 @@ func Generate(sess *tuitest.Session) string {
 	var sb strings.Builder
 
 	// Preamble: terminal dimensions.
-	fmt.Fprintf(&sb, "Set Width %d\n", sess.Cols*8)  // VHS uses pixels; approximate 8px per col
+	fmt.Fprintf(&sb, "Set Width %d\n", sess.Cols*8)    // VHS uses pixels; approximate 8px per col
 	fmt.Fprintf(&sb, "Set Height %d\n", sess.Lines*16) // approximate 16px per line
 	sb.WriteString("Set FontSize 14\n")
 	sb.WriteString("\n")

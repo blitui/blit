@@ -18,7 +18,7 @@ type flexStub struct {
 
 func newFlexStub(label string) *flexStub { return &flexStub{label: label} }
 
-func (s *flexStub) Init() tea.Cmd                           { return nil }
+func (s *flexStub) Init() tea.Cmd                                        { return nil }
 func (s *flexStub) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) { return s, nil }
 func (s *flexStub) View() string {
 	line := s.label

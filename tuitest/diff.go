@@ -151,13 +151,13 @@ const (
 
 // CellDiff holds the comparison result for a single terminal cell.
 type CellDiff struct {
-	Row          int
-	Col          int
-	ExpectedText string
-	ActualText   string
+	Row           int
+	Col           int
+	ExpectedText  string
+	ActualText    string
 	ExpectedStyle CellStyle
 	ActualStyle   CellStyle
-	Kind         CellKind
+	Kind          CellKind
 }
 
 // ScreenCellDiff performs a per-cell comparison between two screens,

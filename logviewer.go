@@ -44,15 +44,15 @@ type LogViewer struct {
 	allLines      []LogLine
 	filteredLines []LogLine
 
-	viewport    viewport.Model
-	ready       bool
-	width       int
-	height      int
-	focused     bool
-	theme       Theme
+	viewport viewport.Model
+	ready    bool
+	width    int
+	height   int
+	focused  bool
+	theme    Theme
 
 	// auto-scroll state
-	paused    bool
+	paused       bool
 	userScrolled bool
 
 	// filter state

@@ -32,4 +32,3 @@ func (s *overlayStack) active() Overlay {
 	}
 	return s.stack[len(s.stack)-1]
 }
-

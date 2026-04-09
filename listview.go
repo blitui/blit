@@ -293,9 +293,9 @@ func (l *ListView[T]) viewportHeight() int {
 	return h
 }
 
-func (l *ListView[T]) Focused() bool      { return l.focused }
-func (l *ListView[T]) SetFocused(f bool)   { l.focused = f; l.rebuildContent() }
-func (l *ListView[T]) SetTheme(th Theme)   { l.theme = th }
+func (l *ListView[T]) Focused() bool     { return l.focused }
+func (l *ListView[T]) SetFocused(f bool) { l.focused = f; l.rebuildContent() }
+func (l *ListView[T]) SetTheme(th Theme) { l.theme = th }
 
 func (l *ListView[T]) startCursorTween() {
 	l.cursorTween = Tween{Duration: 120 * time.Millisecond}

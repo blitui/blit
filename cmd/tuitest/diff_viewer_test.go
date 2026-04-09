@@ -20,11 +20,11 @@ func failingFixture() *tuitest.FailureCapture {
 // goldenFixture returns a FailureCapture representing a golden file mismatch.
 func goldenFixture() *tuitest.FailureCapture {
 	return &tuitest.FailureCapture{
-		TestName:        "TestDiffViewerGolden",
-		Kind:            tuitest.FailureGolden,
-		GoldenPath:      "testdata/fixture.golden",
-		GoldenExpected:  "line one\nline two",
-		GoldenActual:    "line one\nline TWO",
+		TestName:       "TestDiffViewerGolden",
+		Kind:           tuitest.FailureGolden,
+		GoldenPath:     "testdata/fixture.golden",
+		GoldenExpected: "line one\nline two",
+		GoldenActual:   "line one\nline TWO",
 	}
 }
 

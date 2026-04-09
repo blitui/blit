@@ -221,15 +221,11 @@ func (t *Tree) View() string {
 			glyph = glyph + " "
 		}
 
-		label := connector + arrow + " " + glyph + node.Title
-
 		var line string
 		if isCursor {
-			line = accentStyle.Render(arrow) + cursorStyle.Render(" "+glyph+node.Title)
 			// re-render with connector prepended (not styled so connector remains muted)
 			prefixStyled := mutedStyle.Render(connector)
 			line = prefixStyled + accentStyle.Render(arrow) + cursorStyle.Render(" "+glyph+node.Title)
-			_ = label
 		} else {
 			line = mutedStyle.Render(connector+arrow+" ") + normalStyle.Render(glyph+node.Title)
 		}

@@ -15,16 +15,16 @@ type stubOverlay struct {
 	height  int
 }
 
-func (s *stubOverlay) Init() tea.Cmd                           { return nil }
+func (s *stubOverlay) Init() tea.Cmd                                        { return nil }
 func (s *stubOverlay) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) { return s, nil }
-func (s *stubOverlay) View() string                            { return s.name }
-func (s *stubOverlay) KeyBindings() []KeyBind                  { return nil }
-func (s *stubOverlay) SetSize(w, h int)                        { s.width = w; s.height = h }
-func (s *stubOverlay) Focused() bool                           { return s.focused }
-func (s *stubOverlay) SetFocused(f bool)                       { s.focused = f }
-func (s *stubOverlay) IsActive() bool                          { return s.active }
-func (s *stubOverlay) SetActive(v bool)                        { s.active = v }
-func (s *stubOverlay) Close()                                  { s.active = false }
+func (s *stubOverlay) View() string                                         { return s.name }
+func (s *stubOverlay) KeyBindings() []KeyBind                               { return nil }
+func (s *stubOverlay) SetSize(w, h int)                                     { s.width = w; s.height = h }
+func (s *stubOverlay) Focused() bool                                        { return s.focused }
+func (s *stubOverlay) SetFocused(f bool)                                    { s.focused = f }
+func (s *stubOverlay) IsActive() bool                                       { return s.active }
+func (s *stubOverlay) SetActive(v bool)                                     { s.active = v }
+func (s *stubOverlay) Close()                                               { s.active = false }
 
 func TestOverlayStackEmpty(t *testing.T) {
 	stack := newOverlayStack()

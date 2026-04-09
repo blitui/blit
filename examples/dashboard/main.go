@@ -24,17 +24,20 @@ import (
 
 // MissionControl is a sidebar panel showing delivery stats.
 type MissionControl struct {
-	theme   tuikit.Theme
-	focused bool
+	theme         tuikit.Theme
+	focused       bool
 	width, height int
-	stats   missionStats
+	stats         missionStats
 }
 
-type missionStats struct{ total, delivered, lost int; topDriver string }
+type missionStats struct {
+	total, delivered, lost int
+	topDriver              string
+}
 
 func newMissionControl(s missionStats) *MissionControl { return &MissionControl{stats: s} }
 
-func (m *MissionControl) Init() tea.Cmd                                { return nil }
+func (m *MissionControl) Init() tea.Cmd { return nil }
 func (m *MissionControl) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
 	return m, nil
 }
