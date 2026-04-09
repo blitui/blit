@@ -38,14 +38,22 @@ import (
 
 // SessionFormatVersion is the on-disk version marker. Bump whenever the
 // step schema changes in a backwards-incompatible way.
-const SessionFormatVersion = 1
+//
+// History:
+//
+//	v1 – initial format (tuikit-go ≤ v0.7.1)
+//	v2 – adds Name, RecordedAt, Command metadata fields (tuikit-go v0.11+)
+const SessionFormatVersion = 2
 
 // Session is the on-disk representation of a .tuisess file.
 type Session struct {
-	Version int           `json:"version"`
-	Cols    int           `json:"cols"`
-	Lines   int           `json:"lines"`
-	Steps   []SessionStep `json:"steps"`
+	Version    int           `json:"version"`
+	Cols       int           `json:"cols"`
+	Lines      int           `json:"lines"`
+	Name       string        `json:"name,omitempty"`        // v2+: logical session name
+	RecordedAt string        `json:"recorded_at,omitempty"` // v2+: RFC3339 timestamp
+	Command    []string      `json:"command,omitempty"`     // v2+: recorded command args
+	Steps      []SessionStep `json:"steps"`
 }
 
 // SessionStep is a single input or screen assertion.
@@ -122,7 +130,8 @@ func (r *SessionRecorder) Save(path string) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
-// LoadSession reads a .tuisess file.
+// LoadSession reads a .tuisess file. Versions 1 and 2 are both accepted;
+// v1 files are loaded without the metadata fields introduced in v2.
 func LoadSession(path string) (*Session, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -132,8 +141,8 @@ func LoadSession(path string) (*Session, error) {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return nil, fmt.Errorf("parse %s: %w", path, err)
 	}
-	if s.Version != SessionFormatVersion {
-		return nil, fmt.Errorf("unsupported session version %d (want %d)", s.Version, SessionFormatVersion)
+	if s.Version != 1 && s.Version != SessionFormatVersion {
+		return nil, fmt.Errorf("unsupported session version %d (want 1 or %d)", s.Version, SessionFormatVersion)
 	}
 	return &s, nil
 }
