@@ -334,6 +334,12 @@ type UpdateConfig struct {
 	// APIBaseURL overrides the GitHub API URL. Leave empty for production.
 	// Exported for testing; not intended for consumer use.
 	APIBaseURL string
+
+	// EnableDeltaUpdates opts in to the bsdiff-based delta update path.
+	// When true, SelfUpdate first looks for a patch asset matching the
+	// current version and applies it locally, falling back to a full
+	// archive download on any failure. Default is false.
+	EnableDeltaUpdates bool
 }
 
 // ValidateConfig checks that cfg has all required fields set.
@@ -607,6 +613,33 @@ func SelfUpdate(cfg UpdateConfig) error {
 		return fmt.Errorf("fetching release: %w", err)
 	}
 
+	client := &http.Client{Timeout: 120 * time.Second}
+
+	// Opt-in delta update path. Any failure falls back to full download so
+	// the user is never left in a broken state.
+	if cfg.EnableDeltaUpdates {
+		exePath, exeErr := os.Executable()
+		if exeErr == nil {
+			exePath, exeErr = filepath.EvalSymlinks(exePath)
+		}
+		if exeErr == nil {
+			newBinary, _, derr := tryDeltaUpdate(cfg, rel, exePath, client)
+			if derr == nil {
+				if err := replaceBinary(exePath, newBinary); err != nil {
+					if cfg.OnUpdateError != nil {
+						cfg.OnUpdateError(err)
+					}
+					return err
+				}
+				if cfg.OnAfterUpdate != nil {
+					cfg.OnAfterUpdate(cfg.Version, rel.TagName)
+				}
+				return nil
+			}
+			deltaUpdateLogf("delta path failed, falling back to full download: %v", derr)
+		}
+	}
+
 	asset, err := MatchAsset(rel.Assets, cfg.BinaryName, runtime.GOOS, runtime.GOARCH)
 	if err != nil {
 		return fmt.Errorf("matching asset: %w", err)
@@ -619,7 +652,6 @@ func SelfUpdate(cfg UpdateConfig) error {
 
 	fmt.Printf("Downloading %s...\n", asset.Name)
 
-	client := &http.Client{Timeout: 120 * time.Second}
 	assetData, err := downloadURLWithProgress(client, asset.DownloadURL, cfg.OnProgress)
 	if err != nil {
 		return fmt.Errorf("downloading asset: %w", err)
