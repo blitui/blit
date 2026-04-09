@@ -7,6 +7,8 @@
 // Usage:
 //
 //	tuitest [flags] [packages...]
+//	tuitest record <name> -- <command> [args...]
+//	tuitest replay [--speed 1x] <name>
 //
 // Packages default to "./..." when none are provided. The default reporter
 // is the vitest-style runner already wired into the test code.
@@ -18,6 +20,8 @@
 //	tuitest -update ./tuitest/...             # regenerate snapshots
 //	tuitest -junit out/junit.xml -parallel 4  # parallel run + junit output
 //	tuitest -watch                            # re-run on file changes (1s poll)
+//	tuitest record dashboard -- ./bin/dashboard
+//	tuitest replay dashboard --speed 2x
 package main
 
 import (
@@ -36,6 +40,10 @@ func main() {
 	// don't collide with the top-level flag set.
 	if len(os.Args) >= 2 {
 		switch os.Args[1] {
+		case "record":
+			os.Exit(runRecord(os.Args[2:]))
+		case "replay":
+			os.Exit(runReplay(os.Args[2:]))
 		case "gen":
 			os.Exit(runGen(os.Args[2:]))
 		case "history":
