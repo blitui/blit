@@ -1,6 +1,6 @@
 module github.com/moneycaringcoder/tuikit-go
 
-go 1.26.1
+go 1.24.2
 
 require (
 	github.com/charmbracelet/bubbletea v1.3.10
