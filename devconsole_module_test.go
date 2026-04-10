@@ -245,3 +245,73 @@ func dcContainsText(rendered, text string) bool {
 	}
 	return false
 }
+
+// --- DebugProviderWithLifecycle tests ---
+
+type mockLifecycleProvider struct {
+	name      string
+	inited    bool
+	destroyed bool
+}
+
+func (m *mockLifecycleProvider) Name() string                      { return m.name }
+func (m *mockLifecycleProvider) View(w, h int, theme Theme) string { return "mock" }
+func (m *mockLifecycleProvider) Init() error                       { m.inited = true; return nil }
+func (m *mockLifecycleProvider) Destroy() error                    { m.destroyed = true; return nil }
+
+func TestDebugProviderWithLifecycle_Interface(t *testing.T) {
+	var _ DebugProviderWithLifecycle = (*mockLifecycleProvider)(nil)
+}
+
+func TestDevConsole_InitProviders(t *testing.T) {
+	dc := newDevConsole()
+	lp := &mockLifecycleProvider{name: "lifecycle"}
+	dc.providers = append(dc.providers, lp)
+
+	dc.initProviders()
+
+	if !lp.inited {
+		t.Error("expected lifecycle provider Init to be called")
+	}
+}
+
+func TestDevConsole_DestroyProviders(t *testing.T) {
+	dc := newDevConsole()
+	lp := &mockLifecycleProvider{name: "lifecycle"}
+	dc.providers = append(dc.providers, lp)
+
+	dc.destroyProviders()
+
+	if !lp.destroyed {
+		t.Error("expected lifecycle provider Destroy to be called")
+	}
+}
+
+func TestDevConsole_ExportJSON(t *testing.T) {
+	dc := newDevConsole()
+	dc.active = true
+
+	err := dc.exportJSON()
+	if err != nil {
+		t.Fatalf("exportJSON: %v", err)
+	}
+}
+
+func TestDevConsole_ExportJSON_KeyBind(t *testing.T) {
+	dc := newDevConsole()
+	dc.active = true
+	dc.SetTheme(DefaultTheme())
+	dc.SetSize(120, 40)
+
+	binds := dc.KeyBindings()
+	found := false
+	for _, b := range binds {
+		if b.Key == "ctrl+e" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("expected ctrl+e keybind in DevConsole KeyBindings")
+	}
+}
