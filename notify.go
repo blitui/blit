@@ -52,6 +52,26 @@ func ToastCmd(severity ToastSeverity, title, body string, duration time.Duration
 	}
 }
 
+// ToastInfo returns a tea.Cmd that shows an informational toast with a 4s duration.
+func ToastInfo(title, body string) tea.Cmd {
+	return ToastCmd(SeverityInfo, title, body, 4*time.Second)
+}
+
+// ToastSuccess returns a tea.Cmd that shows a success toast with a 4s duration.
+func ToastSuccess(title, body string) tea.Cmd {
+	return ToastCmd(SeveritySuccess, title, body, 4*time.Second)
+}
+
+// ToastWarn returns a tea.Cmd that shows a warning toast with a 6s duration.
+func ToastWarn(title, body string) tea.Cmd {
+	return ToastCmd(SeverityWarn, title, body, 6*time.Second)
+}
+
+// ToastError returns a tea.Cmd that shows an error toast with a 6s duration.
+func ToastError(title, body string) tea.Cmd {
+	return ToastCmd(SeverityError, title, body, 6*time.Second)
+}
+
 type dismissTopToastMsg struct{}
 type dismissToastMsg struct{ index int }
 
