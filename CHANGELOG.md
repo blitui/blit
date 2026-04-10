@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.12.5] - 2026-04-10
+
+### Fixed
+- Resolved all golangci-lint warnings (errcheck, singleCaseSwitch, ifElseChain, unused code)
+- Corrected Go version references across docs (1.21/1.26 → 1.24)
+- Fixed missing imports in cookbook recipes
+- Fixed broken hero GIF link and example count in README
+- Updated deprecated viewport API calls in LogViewer
+
+### Changed
+- Exported `Registry` type (was unexported `registry`) for `Context.Hotkeys` field
+- Rewrote README as concise landing page (570 → ~150 lines)
+- Deleted ~70 lines of dead code (unused types, functions, variables)
+
+### Added
+- Package-level godoc (`doc.go`) for pkg.go.dev
+- Component documentation pages (Form, Tree, Split, Charts, FilePicker)
+- MIT license, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
+- GitHub issue/PR templates
+- golangci-lint CI workflow with coverage reporting
+- Expanded API reference with Registry, FilePicker, Breadcrumbs, Viewport
+
 ## [0.12.0] - 2026-04-09
 
 ### Added
