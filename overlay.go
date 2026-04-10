@@ -25,6 +25,27 @@ func (s *overlayStack) pop() {
 	s.stack = s.stack[:len(s.stack)-1]
 }
 
+// contains reports whether the overlay is anywhere in the stack.
+func (s *overlayStack) contains(o Overlay) bool {
+	for _, item := range s.stack {
+		if item == o {
+			return true
+		}
+	}
+	return false
+}
+
+// remove removes a specific overlay from the stack without closing it.
+func (s *overlayStack) remove(o Overlay) {
+	filtered := s.stack[:0]
+	for _, item := range s.stack {
+		if item != o {
+			filtered = append(filtered, item)
+		}
+	}
+	s.stack = filtered
+}
+
 // active returns the top overlay, or nil if the stack is empty.
 func (s *overlayStack) active() Overlay {
 	if len(s.stack) == 0 {

@@ -635,7 +635,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		_, cmd := overlay.Update(msg, a.ctx())
 		// If the overlay closed itself (e.g., CommandBar after executing), pop it
 		if !overlay.IsActive() {
-			a.overlays.stack = a.overlays.stack[:len(a.overlays.stack)-1]
+			a.overlays.remove(overlay)
 			a.resize()
 		}
 		if isConsumed(cmd) {
@@ -741,16 +741,9 @@ func (a *appModel) toggleDevConsole() tea.Cmd {
 		a.devConsole.SetSize(a.width, a.height)
 	}
 	if a.devConsole.active {
-		// Close: pop from overlay stack
+		// Close: remove from overlay stack
 		a.devConsole.active = false
-		// Remove from overlay stack if present
-		stack := a.overlays.stack[:0]
-		for _, o := range a.overlays.stack {
-			if o != a.devConsole {
-				stack = append(stack, o)
-			}
-		}
-		a.overlays.stack = stack
+		a.overlays.remove(a.devConsole)
 	} else {
 		a.devConsole.active = true
 		a.devConsole.SetSize(a.width, a.height)
@@ -848,19 +841,9 @@ func (a *appModel) openOverlay(o Overlay) {
 // outside of the normal trigger-key flow (e.g., via component calling Show()).
 func (a *appModel) checkOverlayActivation() {
 	for _, no := range a.namedOverlays {
-		if no.overlay.IsActive() && a.overlays.active() != no.overlay {
-			// Check it's not already somewhere in the stack
-			found := false
-			for _, stacked := range a.overlays.stack {
-				if stacked == no.overlay {
-					found = true
-					break
-				}
-			}
-			if !found {
-				no.overlay.SetSize(a.width, a.height)
-				a.overlays.push(no.overlay)
-			}
+		if no.overlay.IsActive() && !a.overlays.contains(no.overlay) {
+			no.overlay.SetSize(a.width, a.height)
+			a.overlays.push(no.overlay)
 		}
 	}
 }
