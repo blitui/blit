@@ -576,6 +576,14 @@ func (a *appModel) handleAnimTick(msg animTickMsg) (tea.Model, tea.Cmd) {
 }
 
 func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	// Ignore pure motion events (no button held) — hover should not trigger
+	// focus changes or component interactions.
+	isClick := msg.Button != tea.MouseButtonNone && msg.Action == tea.MouseActionPress
+	isScroll := msg.Button == tea.MouseButtonWheelUp || msg.Button == tea.MouseButtonWheelDown
+	if !isClick && !isScroll && msg.Action != tea.MouseActionRelease {
+		return a, nil
+	}
+
 	// Route mouse events to the correct pane based on X position
 	if a.dualPane != nil && a.dualPane.Side != nil {
 		main, _, sideVisible := a.dualPane.compute(a.width, 0)
@@ -595,8 +603,8 @@ func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 				target = 1 // side
 			}
 
-			// Switch focus to clicked pane
-			if target != a.focusIdx {
+			// Switch focus only on actual clicks, not scroll or release
+			if isClick && target != a.focusIdx {
 				a.setFocus(target)
 			}
 

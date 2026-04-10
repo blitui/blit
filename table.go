@@ -555,7 +555,7 @@ func (t *Table) renderHeader(cols []Column, origIdxs []int, widths []int) string
 }
 
 func (t *Table) renderRow(row Row, idx int, cols []Column, origIdxs []int, widths []int) string {
-	isCursor := idx == t.cursor && t.focused
+	isCursor := idx == t.cursor
 
 	// Determine row-level style first so separators can be styled too
 	var rowStyle *lipgloss.Style
@@ -859,12 +859,10 @@ func (t *Table) clampCursor() {
 }
 
 func (t *Table) renderDetail() string {
-	if t.focused {
-		if row := t.CursorRow(); row != nil {
-			detail := t.opts.DetailFunc(row, t.cursor, t.width, t.theme)
-			if detail != "" {
-				return detail
-			}
+	if row := t.CursorRow(); row != nil {
+		detail := t.opts.DetailFunc(row, t.cursor, t.width, t.theme)
+		if detail != "" {
+			return detail
 		}
 	}
 	// Reserve blank space to prevent jitter
