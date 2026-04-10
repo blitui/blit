@@ -117,8 +117,14 @@ func (p *Picker) Init() tea.Cmd {
 func (p *Picker) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	var cmds []tea.Cmd
 
-	if msg, ok := msg.(tea.KeyMsg); ok {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
 		cmd := p.handleKey(msg)
+		if cmd != nil {
+			cmds = append(cmds, cmd)
+		}
+	case tea.MouseMsg:
+		cmd := p.handleMouse(msg)
 		if cmd != nil {
 			cmds = append(cmds, cmd)
 		}
@@ -133,6 +139,28 @@ func (p *Picker) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	p.rebuildFiltered()
 
 	return p, tea.Batch(cmds...)
+}
+
+func (p *Picker) handleMouse(msg tea.MouseMsg) tea.Cmd {
+	// Ignore events outside component bounds.
+	if msg.X < 0 || msg.X >= p.width || msg.Y < 0 || msg.Y >= p.height {
+		return nil
+	}
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		if p.cursor > 0 {
+			p.cursor--
+			p.invalidatePreview()
+		}
+		return Consumed()
+	case tea.MouseButtonWheelDown:
+		if p.cursor < len(p.filtered)-1 {
+			p.cursor++
+			p.invalidatePreview()
+		}
+		return Consumed()
+	}
+	return nil
 }
 
 func (p *Picker) handleKey(msg tea.KeyMsg) tea.Cmd {

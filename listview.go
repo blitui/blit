@@ -154,11 +154,39 @@ func (l *ListView[T]) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	case tea.KeyMsg:
 		cmd := l.HandleKey(msg)
 		return l, cmd
+	case tea.MouseMsg:
+		return l.handleMouse(msg)
 	case animTickMsg:
 		if l.cursorTween.Running() {
 			l.rebuildContent()
 			return l, nil
 		}
+	}
+	return l, nil
+}
+
+func (l *ListView[T]) handleMouse(msg tea.MouseMsg) (Component, tea.Cmd) {
+	// Ignore events outside component bounds.
+	if msg.X < 0 || msg.X >= l.width || msg.Y < 0 || msg.Y >= l.height {
+		return l, nil
+	}
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		if l.cursor > 0 {
+			l.cursor--
+			l.startCursorTween()
+		}
+		l.rebuildContent()
+		l.ensureCursorVisible()
+		return l, Consumed()
+	case tea.MouseButtonWheelDown:
+		if l.cursor < len(l.items)-1 {
+			l.cursor++
+			l.startCursorTween()
+		}
+		l.rebuildContent()
+		l.ensureCursorVisible()
+		return l, Consumed()
 	}
 	return l, nil
 }

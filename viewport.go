@@ -109,6 +109,10 @@ func (v *Viewport) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 		cmd := v.HandleKey(msg)
 		return v, cmd
 	case tea.MouseMsg:
+		// Ignore events outside component bounds.
+		if msg.X < 0 || msg.X >= v.width || msg.Y < 0 || msg.Y >= v.height {
+			return v, nil
+		}
 		switch msg.Button {
 		case tea.MouseButtonWheelUp:
 			v.ScrollBy(-3)
