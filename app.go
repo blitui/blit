@@ -422,6 +422,9 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TickMsg:
 		return a.handleTick(msg)
 
+	case animTickMsg:
+		return a.handleAnimTick(msg)
+
 	case NotifyMsg:
 		a.notifyMsg = msg.Text
 		dur := msg.Duration

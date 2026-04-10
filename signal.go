@@ -1,6 +1,7 @@
 package tuikit
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -289,6 +290,6 @@ func toStringSource(v any) StringSource {
 	case func() string:
 		return funcStringSource{fn: x}
 	default:
-		panic("tuikit: unsupported string source type")
+		return funcStringSource{fn: func() string { return fmt.Sprintf("[unsupported source: %T]", v) }}
 	}
 }
