@@ -57,3 +57,51 @@ func TestStopProcess_Nil(t *testing.T) {
 	// stopProcess should not panic on nil.
 	stopProcess(nil)
 }
+
+func TestSnapshotConfigTree(t *testing.T) {
+	dir := t.TempDir()
+
+	// Empty directory should return empty hash.
+	h1 := snapshotConfigTree(dir)
+	if h1 != "" {
+		t.Errorf("expected empty hash for empty dir, got %q", h1)
+	}
+
+	// Create a YAML file.
+	if err := os.WriteFile(filepath.Join(dir, "config.yaml"), []byte("key: val"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	h2 := snapshotConfigTree(dir)
+	if h2 == "" {
+		t.Error("expected non-empty hash after adding config.yaml")
+	}
+
+	// Create a JSON file — hash should change.
+	if err := os.WriteFile(filepath.Join(dir, "theme.json"), []byte("{}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	h3 := snapshotConfigTree(dir)
+	if h3 == h2 {
+		t.Error("expected hash to change after adding theme.json")
+	}
+
+	// .go files should be ignored.
+	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte("package main"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	h4 := snapshotConfigTree(dir)
+	if h4 != h3 {
+		t.Error("expected hash unchanged after adding .go file")
+	}
+}
+
+func TestConfigExts(t *testing.T) {
+	for _, ext := range []string{".yaml", ".yml", ".json", ".toml"} {
+		if !configExts[ext] {
+			t.Errorf("expected %q in configExts", ext)
+		}
+	}
+	if configExts[".go"] {
+		t.Error(".go should not be in configExts")
+	}
+}
