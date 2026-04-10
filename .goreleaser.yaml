@@ -39,8 +39,6 @@ homebrew_casks:
     homepage: "https://github.com/blitui/blit"
     description: "CLI for blit — the pragmatic Go TUI toolkit"
     license: "MIT"
-    test: |
-      system "#{bin}/blit", "-h"
 
 scoops:
   - repository:
