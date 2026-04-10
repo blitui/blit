@@ -397,3 +397,30 @@ func TestListView_CursorTweenSnapOnNoAnim(t *testing.T) {
 		}
 	}
 }
+
+func TestListView_EmptyText(t *testing.T) {
+	lv := NewListView(ListViewOpts[string]{
+		RenderItem: func(item string, idx int, isCursor bool, theme Theme) string { return item },
+		EmptyText:  "No items yet",
+	})
+	lv.SetTheme(DefaultTheme())
+	lv.SetSize(40, 10)
+
+	view := lv.View()
+	if !strings.Contains(view, "No items yet") {
+		t.Errorf("empty list should show EmptyText, got %q", view)
+	}
+}
+
+func TestListView_EmptyTextNotSet(t *testing.T) {
+	lv := NewListView(ListViewOpts[string]{
+		RenderItem: func(item string, idx int, isCursor bool, theme Theme) string { return item },
+	})
+	lv.SetTheme(DefaultTheme())
+	lv.SetSize(40, 10)
+
+	view := lv.View()
+	if strings.Contains(view, "No items") {
+		t.Errorf("empty list without EmptyText should not show placeholder, got %q", view)
+	}
+}
