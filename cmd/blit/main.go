@@ -98,6 +98,11 @@ func main() {
 		packages = []string{"./..."}
 	}
 
+	if *jsonOut && *failOnly {
+		fmt.Fprintln(os.Stderr, "[blit] --json and --fail cannot be used together (--fail filters plain-text output)")
+		os.Exit(1)
+	}
+
 	if *coverage {
 		os.Exit(runCoverage(packages))
 	}
