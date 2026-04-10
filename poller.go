@@ -411,11 +411,12 @@ func (d *pollerDebugProvider) View(width, height int, theme Theme) string {
 
 	fmt.Fprintf(&b, "Poller: %s\n", s.Name)
 	fmt.Fprintf(&b, "Interval: %s\n", s.Interval)
-	if s.IsPaused {
+	switch {
+	case s.IsPaused:
 		b.WriteString("Status: PAUSED\n")
-	} else if s.IsRateLimited {
+	case s.IsRateLimited:
 		fmt.Fprintf(&b, "Status: RATE LIMITED (reset %s)\n", s.RateLimitReset.Format(time.RFC3339))
-	} else {
+	default:
 		b.WriteString("Status: Active\n")
 	}
 	if !s.LastPoll.IsZero() {
