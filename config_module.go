@@ -265,6 +265,91 @@ func (c *Config[T]) Editor() *ConfigEditor {
 	return NewConfigEditor(fields)
 }
 
+// CLICommand is a config subcommand that can be invoked from a CLI.
+type CLICommand func(args []string) error
+
+// CLICommands returns a command registry for config CLI integration.
+// Commands use the yaml tag name (or lowercased Go field name) as keys.
+//
+// Supported commands:
+//   - get <field>: print the current value of a field
+//   - set <field> <value>: update a field and save
+//   - list: print all fields and their current values
+func (c *Config[T]) CLICommands() map[string]CLICommand {
+	lookup := c.fieldLookup()
+
+	return map[string]CLICommand{
+		"get": func(args []string) error {
+			if len(args) < 1 {
+				return fmt.Errorf("usage: config get <field>")
+			}
+			goName, ok := lookup[args[0]]
+			if !ok {
+				return fmt.Errorf("unknown field: %s", args[0])
+			}
+			fmt.Println(getFieldString(&c.Value, goName))
+			return nil
+		},
+		"set": func(args []string) error {
+			if len(args) < 2 {
+				return fmt.Errorf("usage: config set <field> <value>")
+			}
+			goName, ok := lookup[args[0]]
+			if !ok {
+				return fmt.Errorf("unknown field: %s", args[0])
+			}
+			if err := setFieldString(&c.Value, goName, args[1]); err != nil {
+				return err
+			}
+			c.dirty = true
+			return c.Save()
+		},
+		"list": func(args []string) error {
+			rv := reflect.ValueOf(&c.Value).Elem()
+			rt := rv.Type()
+			for i := 0; i < rt.NumField(); i++ {
+				f := rt.Field(i)
+				if !f.IsExported() {
+					continue
+				}
+				key := yamlFieldName(f)
+				fmt.Printf("%s: %s\n", key, getFieldString(&c.Value, f.Name))
+			}
+			return nil
+		},
+	}
+}
+
+// fieldLookup builds a map from yaml/lowercase field name to Go field name.
+func (c *Config[T]) fieldLookup() map[string]string {
+	rt := reflect.TypeOf(c.Value)
+	if rt.Kind() == reflect.Ptr {
+		rt = rt.Elem()
+	}
+	lookup := make(map[string]string, rt.NumField())
+	for i := 0; i < rt.NumField(); i++ {
+		f := rt.Field(i)
+		if !f.IsExported() {
+			continue
+		}
+		key := yamlFieldName(f)
+		lookup[key] = f.Name
+	}
+	return lookup
+}
+
+// yamlFieldName returns the yaml tag name for a struct field, or the
+// lowercased Go field name if no yaml tag is present.
+func yamlFieldName(f reflect.StructField) string {
+	if tag, ok := f.Tag.Lookup("yaml"); ok {
+		name, _, _ := strings.Cut(tag, ",")
+		if name != "" && name != "-" {
+			return name
+		}
+	}
+	return strings.ToLower(f.Name)
+}
+
 // parseBlitTag parses a blit:"..." struct tag into a fieldMeta.
 func parseBlitTag(tag string) fieldMeta {
 	var m fieldMeta
