@@ -28,8 +28,9 @@ func (RealClock) Sleep(d time.Duration) { time.Sleep(d) }
 // FakeClock is a deterministic Clock for tests. Create one with NewFakeClock
 // and advance it with Advance. Now and Sleep are safe for concurrent use.
 type FakeClock struct {
-	mu  sync.Mutex
-	now time.Time
+	mu     sync.Mutex
+	now    time.Time
+	timers []*FakeTimer
 }
 
 // NewFakeClock returns a FakeClock anchored at the given time. If t is the
@@ -49,14 +50,16 @@ func (f *FakeClock) Now() time.Time {
 	return f.now
 }
 
-// Advance moves the fake clock forward by d. Negative durations are ignored.
+// Advance moves the fake clock forward by d and fires any timers whose
+// deadline has been reached. Negative durations are ignored.
 func (f *FakeClock) Advance(d time.Duration) {
 	if d <= 0 {
 		return
 	}
 	f.mu.Lock()
-	defer f.mu.Unlock()
 	f.now = f.now.Add(d)
+	f.mu.Unlock()
+	f.fireTimers()
 }
 
 // Set moves the fake clock to an absolute time.
@@ -71,4 +74,72 @@ func (f *FakeClock) Set(t time.Time) {
 // "time passes" rather than "goroutine sleeps".
 func (f *FakeClock) Sleep(d time.Duration) {
 	f.Advance(d)
+}
+
+// AfterFunc registers a function to be called when the clock advances past
+// the deadline (Now() + d). Returns a Timer that can be stopped. The function
+// fires during the next Advance call that crosses the deadline.
+func (f *FakeClock) AfterFunc(d time.Duration, fn func()) *FakeTimer {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	t := &FakeTimer{
+		deadline: f.now.Add(d),
+		fn:       fn,
+	}
+	f.timers = append(f.timers, t)
+	return t
+}
+
+// Pending returns the number of timers waiting to fire.
+func (f *FakeClock) Pending() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	count := 0
+	for _, t := range f.timers {
+		if !t.stopped {
+			count++
+		}
+	}
+	return count
+}
+
+// fireTimers fires any timers whose deadline has been reached. Must be called
+// with the lock NOT held, as timer callbacks may call back into the clock.
+func (f *FakeClock) fireTimers() {
+	f.mu.Lock()
+	var ready []*FakeTimer
+	var remaining []*FakeTimer
+	for _, t := range f.timers {
+		if t.stopped {
+			continue
+		}
+		if !f.now.Before(t.deadline) {
+			ready = append(ready, t)
+		} else {
+			remaining = append(remaining, t)
+		}
+	}
+	f.timers = remaining
+	f.mu.Unlock()
+
+	for _, t := range ready {
+		t.fn()
+	}
+}
+
+// FakeTimer is a timer registered with FakeClock.AfterFunc.
+type FakeTimer struct {
+	deadline time.Time
+	fn       func()
+	stopped  bool
+}
+
+// Stop prevents the timer from firing. Returns true if the timer was stopped
+// before it fired.
+func (t *FakeTimer) Stop() bool {
+	if t.stopped {
+		return false
+	}
+	t.stopped = true
+	return true
 }
