@@ -386,10 +386,7 @@ func TestEmptyAppWithModulesOnly(t *testing.T) {
 	}
 
 	// View should not panic with no components
-	view := a.View()
-	if view == "" {
-		// Empty view is acceptable — just verify no panic
-	}
+	_ = a.View()
 }
 
 func TestModulesReceiveTickMsg(t *testing.T) {
