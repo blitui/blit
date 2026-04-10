@@ -290,7 +290,7 @@ func runGoTest(opts runOpts, packages []string) int {
 
 		if opts.jsonOut && !reportMode {
 			// User just wants raw JSON output.
-			os.Stdout.Write(out)
+			_, _ = os.Stdout.Write(out)
 		} else {
 			// Parse events and generate reports.
 			events := parseTestEvents(strings.NewReader(string(out)))
