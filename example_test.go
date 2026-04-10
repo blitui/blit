@@ -126,6 +126,28 @@ func ExampleConfig_Editor() {
 	// Output:
 }
 
+func ExampleConfig_AsSignal() {
+	type AppConfig struct {
+		Interval int    `yaml:"interval" blit:"label=Interval (sec),group=Polling,default=30,min=5"`
+		Theme    string `yaml:"theme"    blit:"label=Theme,group=Appearance,default=dark"`
+	}
+
+	cfg := &blit.Config[AppConfig]{
+		Value: AppConfig{Interval: 30, Theme: "dark"},
+	}
+
+	// AsSignal returns a reactive signal that tracks config changes.
+	sig := cfg.AsSignal()
+	fmt.Println(sig.Get().Theme)
+
+	// SetValue updates both cfg.Value and the signal.
+	_ = cfg.SetValue(func(v *AppConfig) { v.Theme = "light" })
+	fmt.Println(sig.Get().Theme)
+	// Output:
+	// dark
+	// light
+}
+
 func ExampleNewSignal() {
 	status := blit.NewSignal("starting...")
 
