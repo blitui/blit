@@ -129,6 +129,13 @@ func (f Flex) SetSize(w, h int)       { f.C.SetSize(w, h) }
 func (f Flex) Focused() bool          { return f.C.Focused() }
 func (f Flex) SetFocused(foc bool)    { f.C.SetFocused(foc) }
 
+// SetTheme implements Themed by delegating to the wrapped component.
+func (f Flex) SetTheme(th Theme) {
+	if t, ok := f.C.(Themed); ok {
+		t.SetTheme(th)
+	}
+}
+
 // flexItem is an internal resolved slot used during layout computation.
 type flexItem struct {
 	c       Component
@@ -232,6 +239,15 @@ func (h *HBox) SetFocused(focused bool) {
 	}
 }
 
+// SetTheme implements Themed by propagating to all children.
+func (h *HBox) SetTheme(th Theme) {
+	for _, item := range h.Items {
+		if c := unwrapFlexComponent(item); c != nil {
+			applyTheme(c, th)
+		}
+	}
+}
+
 // Init implements Component.
 func (v *VBox) Init() tea.Cmd {
 	var cmds []tea.Cmd
@@ -298,6 +314,15 @@ func (v *VBox) SetFocused(focused bool) {
 	for _, item := range v.Items {
 		if c := unwrapFlexComponent(item); c != nil {
 			c.SetFocused(focused)
+		}
+	}
+}
+
+// SetTheme implements Themed by propagating to all children.
+func (v *VBox) SetTheme(th Theme) {
+	for _, item := range v.Items {
+		if c := unwrapFlexComponent(item); c != nil {
+			applyTheme(c, th)
 		}
 	}
 }
