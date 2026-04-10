@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"fmt"
@@ -103,5 +103,5 @@ func tryDeltaUpdate(cfg UpdateConfig, rel *Release, exePath string, client *http
 // deltaUpdateLogf logs delta updater events to stderr. Kept minimal so the
 // updater package does not take a logging dependency.
 func deltaUpdateLogf(format string, args ...any) {
-	fmt.Fprintf(os.Stderr, "tuikit updater [delta]: "+format+"\n", args...)
+	fmt.Fprintf(os.Stderr, "blit updater [delta]: "+format+"\n", args...)
 }

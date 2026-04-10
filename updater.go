@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"archive/tar"
@@ -721,26 +721,26 @@ func SelfUpdate(cfg UpdateConfig) error {
 // Every action that would normally perform I/O is logged via log.Printf
 // so operators can verify what an update would do.
 func runDryRunUpdate(cfg UpdateConfig) error {
-	log.Printf("tuikit updater [dryrun]: would validate config for %s/%s", cfg.Owner, cfg.Repo)
+	log.Printf("blit updater [dryrun]: would validate config for %s/%s", cfg.Owner, cfg.Repo)
 	if err := ValidateConfig(cfg); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
-	log.Printf("tuikit updater [dryrun]: would fetch latest release from %s", cfg.githubBaseURL())
+	log.Printf("blit updater [dryrun]: would fetch latest release from %s", cfg.githubBaseURL())
 	rel, err := FetchLatestRelease(cfg.githubBaseURL(), cfg.Owner, cfg.Repo)
 	if err != nil {
-		log.Printf("tuikit updater [dryrun]: fetch failed: %v", err)
+		log.Printf("blit updater [dryrun]: fetch failed: %v", err)
 		return nil // dry-run never returns network errors
 	}
-	log.Printf("tuikit updater [dryrun]: latest=%s current=%s", rel.TagName, cfg.Version)
+	log.Printf("blit updater [dryrun]: latest=%s current=%s", rel.TagName, cfg.Version)
 	asset, err := MatchAsset(rel.Assets, cfg.BinaryName, runtime.GOOS, runtime.GOARCH)
 	if err != nil {
-		log.Printf("tuikit updater [dryrun]: no matching asset: %v", err)
+		log.Printf("blit updater [dryrun]: no matching asset: %v", err)
 		return nil
 	}
-	log.Printf("tuikit updater [dryrun]: would download %s", asset.Name)
-	log.Printf("tuikit updater [dryrun]: would verify checksum and replace binary")
+	log.Printf("blit updater [dryrun]: would download %s", asset.Name)
+	log.Printf("blit updater [dryrun]: would verify checksum and replace binary")
 	if cfg.OnAfterUpdate != nil {
-		log.Printf("tuikit updater [dryrun]: would call OnAfterUpdate(%s, %s)", cfg.Version, rel.TagName)
+		log.Printf("blit updater [dryrun]: would call OnAfterUpdate(%s, %s)", cfg.Version, rel.TagName)
 	}
 	return nil
 }

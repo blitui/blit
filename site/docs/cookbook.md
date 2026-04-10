@@ -1,6 +1,6 @@
 # Cookbook
 
-Five complete recipes for common tuikit-go patterns.
+Five complete recipes for common blit patterns.
 
 ---
 
@@ -16,26 +16,26 @@ import (
     "time"
 
     "github.com/charmbracelet/lipgloss"
-    tuikit "github.com/moneycaringcoder/tuikit-go"
+    blit "github.com/blitui/blit"
 )
 
 func main() {
-    table := tuikit.NewTable(
-        []tuikit.Column{
+    table := blit.NewTable(
+        []blit.Column{
             {Title: "Service", Width: 20, Sortable: true},
             {Title: "Status",  Width: 12},
-            {Title: "Latency", Width: 10, Align: tuikit.Right, Sortable: true},
+            {Title: "Latency", Width: 10, Align: blit.Right, Sortable: true},
         },
-        []tuikit.Row{
+        []blit.Row{
             {"api-gateway",  "online",  "12ms"},
             {"auth-service", "online",  "8ms"},
             {"db-primary",   "online",  "2ms"},
             {"cache",        "degraded","45ms"},
         },
-        tuikit.TableOpts{
+        blit.TableOpts{
             Sortable:   true,
             Filterable: true,
-            CellRenderer: func(row tuikit.Row, col int, isCursor bool, th tuikit.Theme) string {
+            CellRenderer: func(row blit.Row, col int, isCursor bool, th blit.Theme) string {
                 if col == 1 {
                     color := th.Positive
                     if row[1] != "online" { color = th.Flash }
@@ -46,11 +46,11 @@ func main() {
         },
     )
 
-    detail := tuikit.NewListView[string](tuikit.ListViewOpts[string]{
-        RenderItem: func(s string, _ int, _ bool, th tuikit.Theme) string { return s },
+    detail := blit.NewListView[string](blit.ListViewOpts[string]{
+        RenderItem: func(s string, _ int, _ bool, th blit.Theme) string { return s },
     })
 
-    table.Opts().OnCursorChange = func(row tuikit.Row, _ int) {
+    table.Opts().OnCursorChange = func(row blit.Row, _ int) {
         detail.SetItems([]string{
             "Service: " + row[0],
             "Status:  " + row[1],
@@ -58,9 +58,9 @@ func main() {
         })
     }
 
-    app := tuikit.NewApp(
-        tuikit.WithTheme(tuikit.DefaultTheme()),
-        tuikit.WithLayout(&tuikit.DualPane{
+    app := blit.NewApp(
+        blit.WithTheme(blit.DefaultTheme()),
+        blit.WithLayout(&blit.DualPane{
             Main:         table,
             Side:         detail,
             SideWidth:    28,
@@ -68,12 +68,12 @@ func main() {
             SideRight:    true,
             ToggleKey:    "p",
         }),
-        tuikit.WithStatusBar(
+        blit.WithStatusBar(
             func() string { return " ? help  s sort  / search  p panel  q quit" },
             func() string { return fmt.Sprintf(" %d services", table.RowCount()) },
         ),
-        tuikit.WithHelp(),
-        tuikit.WithTickInterval(5*time.Second),
+        blit.WithHelp(),
+        blit.WithTickInterval(5*time.Second),
     )
     app.Run()
 }
@@ -86,15 +86,15 @@ func main() {
 Wire binary self-update into an existing app with three lines:
 
 ```go
-app := tuikit.NewApp(
-    tuikit.WithTheme(tuikit.DefaultTheme()),
-    tuikit.WithComponent("main", myMainComponent),
-    tuikit.WithAutoUpdate(tuikit.UpdateConfig{
+app := blit.NewApp(
+    blit.WithTheme(blit.DefaultTheme()),
+    blit.WithComponent("main", myMainComponent),
+    blit.WithAutoUpdate(blit.UpdateConfig{
         Owner:      "myorg",
         Repo:       "mytool",
         BinaryName: "mytool",
         Version:    version, // injected via: -ldflags "-X main.version=v1.2.3"
-        Mode:       tuikit.UpdateNotify,
+        Mode:       blit.UpdateNotify,
         CacheTTL:   24 * time.Hour,
     }),
 )
@@ -104,7 +104,7 @@ Add cleanup at the top of `main()` for the `.old` backup left by a previous upda
 
 ```go
 func main() {
-    tuikit.CleanupOldBinary()
+    blit.CleanupOldBinary()
     // ...
 }
 ```
@@ -113,40 +113,40 @@ func main() {
 
 ## 3. Testing a TUI
 
-Use `tuitest` to assert on rendered screen content without a real terminal:
+Use `blit` to assert on rendered screen content without a real terminal:
 
 ```go
 func TestTable(t *testing.T) {
-    table := tuikit.NewTable(
-        []tuikit.Column{{Title: "Name", Width: 20}},
-        []tuikit.Row{{"Alice"}, {"Bob"}},
-        tuikit.TableOpts{Filterable: true},
+    table := blit.NewTable(
+        []blit.Column{{Title: "Name", Width: 20}},
+        []blit.Row{{"Alice"}, {"Bob"}},
+        blit.TableOpts{Filterable: true},
     )
 
-    tm := tuitest.NewTestModel(t, wrapInApp(table), 80, 24)
+    tm := blit.NewTestModel(t, wrapInApp(table), 80, 24)
 
     // Header visible
-    tuitest.AssertRowContains(t, tm.Screen(), 0, "Name")
+    blit.AssertRowContains(t, tm.Screen(), 0, "Name")
 
     // Navigate down
     tm.SendKey("j")
-    tuitest.AssertContains(t, tm.Screen(), "Bob")
+    blit.AssertContains(t, tm.Screen(), "Bob")
 
     // Filter
     tm.SendKey("/")
     tm.Type("ali")
-    tuitest.AssertContains(t, tm.Screen(), "Alice")
-    tuitest.AssertNotContains(t, tm.Screen(), "Bob")
+    blit.AssertContains(t, tm.Screen(), "Alice")
+    blit.AssertNotContains(t, tm.Screen(), "Bob")
 
     // Golden snapshot
-    tuitest.AssertGolden(t, tm.Screen(), "table-filtered")
+    blit.AssertGolden(t, tm.Screen(), "table-filtered")
 }
 ```
 
 Regenerate golden files:
 
 ```bash
-tuitest -update ./...
+blit -update ./...
 ```
 
 ---
@@ -162,10 +162,10 @@ Load a theme from a TOML/YAML config file at startup:
 // positive = "#9ece6a"
 
 cfg := loadConfig("config.toml")
-theme := tuikit.ThemeFromMap(cfg.Theme)
+theme := blit.ThemeFromMap(cfg.Theme)
 
-app := tuikit.NewApp(
-    tuikit.WithTheme(theme),
+app := blit.NewApp(
+    blit.WithTheme(theme),
     ...
 )
 ```
@@ -182,7 +182,7 @@ Edit `mytheme.json` and the app reloads the theme without restart.
 
 ## 5. SSH-Served TUI
 
-Serve your tuikit-go app over SSH using [Wish](https://github.com/charmbracelet/wish) so remote users can access it without installing anything:
+Serve your blit app over SSH using [Wish](https://github.com/charmbracelet/wish) so remote users can access it without installing anything:
 
 ```go
 package main
@@ -197,7 +197,7 @@ import (
     "github.com/charmbracelet/ssh"
     "github.com/charmbracelet/wish"
     "github.com/charmbracelet/wish/bubbletea"
-    tuikit "github.com/moneycaringcoder/tuikit-go"
+    blit "github.com/blitui/blit"
 )
 
 func main() {
@@ -206,10 +206,10 @@ func main() {
         wish.WithHostKeyPath(".ssh/id_ed25519"),
         wish.WithMiddleware(
             bubbletea.Middleware(func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
-                table := tuikit.NewTable(columns, rows, tuikit.TableOpts{Sortable: true})
-                app := tuikit.NewApp(
-                    tuikit.WithTheme(tuikit.DefaultTheme()),
-                    tuikit.WithComponent("main", table),
+                table := blit.NewTable(columns, rows, blit.TableOpts{Sortable: true})
+                app := blit.NewApp(
+                    blit.WithTheme(blit.DefaultTheme()),
+                    blit.WithComponent("main", table),
                 )
                 return app.Model(), []tea.ProgramOption{tea.WithAltScreen()}
             }),

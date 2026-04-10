@@ -5,14 +5,14 @@ Multi-field form with keyboard navigation, inline validation, optional grouping,
 ## Construction
 
 ```go
-form := tuikit.NewForm(tuikit.FormOpts{
-    Groups: []tuikit.FormGroup{
+form := blit.NewForm(blit.FormOpts{
+    Groups: []blit.FormGroup{
         {
             Title: "Account",
-            Fields: []tuikit.Field{
-                tuikit.TextField("username", "Username", tuikit.Required()),
-                tuikit.TextField("email", "Email", tuikit.MatchRegex(`^.+@.+$`, "invalid email")),
-                tuikit.PasswordField("password", "Password", tuikit.MinLen(8)),
+            Fields: []blit.Field{
+                blit.TextField("username", "Username", blit.Required()),
+                blit.TextField("email", "Email", blit.MatchRegex(`^.+@.+$`, "invalid email")),
+                blit.PasswordField("password", "Password", blit.MinLen(8)),
             },
         },
     },

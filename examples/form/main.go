@@ -1,4 +1,4 @@
-// Package main demonstrates the tuikit Form component with validators and wizard mode.
+// Package main demonstrates the blit Form component with validators and wizard mode.
 //
 // Press 'w' to toggle between normal and wizard modes.
 // Press 'q' to quit.
@@ -11,49 +11,49 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
-func buildForm(wizard bool, onSubmit func(map[string]string)) *tuikit.Form {
-	return tuikit.NewForm(tuikit.FormOpts{
+func buildForm(wizard bool, onSubmit func(map[string]string)) *blit.Form {
+	return blit.NewForm(blit.FormOpts{
 		WizardMode: wizard,
 		OnSubmit:   onSubmit,
-		Groups: []tuikit.FormGroup{
+		Groups: []blit.FormGroup{
 			{
 				Title: "Account",
-				Fields: []tuikit.Field{
-					tuikit.NewTextField("username", "Username").
+				Fields: []blit.Field{
+					blit.NewTextField("username", "Username").
 						WithPlaceholder("e.g. alice123").
 						WithRequired().
-						WithValidator(tuikit.ComposeValidators(
-							tuikit.MinLength(3),
-							tuikit.MaxLength(20),
-							tuikit.RegexValidator(`^[a-zA-Z0-9_]+$`, "only letters, digits, and underscores"),
+						WithValidator(blit.ComposeValidators(
+							blit.MinLength(3),
+							blit.MaxLength(20),
+							blit.RegexValidator(`^[a-zA-Z0-9_]+$`, "only letters, digits, and underscores"),
 						)),
-					tuikit.NewTextField("email", "Email").
+					blit.NewTextField("email", "Email").
 						WithPlaceholder("you@example.com").
 						WithRequired().
-						WithValidator(tuikit.EmailValidator()),
-					tuikit.NewPasswordField("password", "Password").
+						WithValidator(blit.EmailValidator()),
+					blit.NewPasswordField("password", "Password").
 						WithPlaceholder("min 8 characters").
 						WithRequired().
-						WithValidator(tuikit.MinLength(8)),
+						WithValidator(blit.MinLength(8)),
 				},
 			},
 			{
 				Title: "Profile",
-				Fields: []tuikit.Field{
-					tuikit.NewSelectField("role", "Role",
+				Fields: []blit.Field{
+					blit.NewSelectField("role", "Role",
 						[]string{"Developer", "Designer", "Manager", "Other"}).
 						WithHint("Your primary role"),
-					tuikit.NewMultiSelectField("interests", "Interests",
+					blit.NewMultiSelectField("interests", "Interests",
 						[]string{"Go", "TUI", "CLI", "Web", "DevOps"}).
 						WithHint("Select all that apply"),
-					tuikit.NewNumberField("age", "Age").
+					blit.NewNumberField("age", "Age").
 						WithPlaceholder("18-120").
 						WithMin(18).
 						WithMax(120),
-					tuikit.NewConfirmField("newsletter", "Subscribe to newsletter").
+					blit.NewConfirmField("newsletter", "Subscribe to newsletter").
 						WithDefault(true),
 				},
 			},
@@ -62,17 +62,17 @@ func buildForm(wizard bool, onSubmit func(map[string]string)) *tuikit.Form {
 }
 
 type model struct {
-	form      *tuikit.Form
+	form      *blit.Form
 	wizard    bool
 	submitted bool
 	result    map[string]string
-	theme     tuikit.Theme
+	theme     blit.Theme
 	width     int
 	height    int
 }
 
 func newModel() model {
-	theme := tuikit.DefaultTheme()
+	theme := blit.DefaultTheme()
 	m := model{theme: theme}
 	m.form = buildForm(false, func(vals map[string]string) {
 		m.submitted = true
@@ -109,13 +109,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.form.SetSize(m.width-4, m.height-6)
 			return m, m.form.Init()
 		}
-	case tuikit.FormSubmitMsg:
+	case blit.FormSubmitMsg:
 		m.submitted = true
 		m.result = msg.Values
 		return m, nil
 	}
-	comp, cmd := m.form.Update(msg, tuikit.Context{})
-	m.form = comp.(*tuikit.Form)
+	comp, cmd := m.form.Update(msg, blit.Context{})
+	m.form = comp.(*blit.Form)
 	return m, cmd
 }
 

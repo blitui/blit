@@ -1,4 +1,4 @@
-// Package main is the entry point for myapp, a tuikit-go starter application.
+// Package main is the entry point for myapp, a blit-go starter application.
 package main
 
 import (
@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 	"github.com/OWNER/myapp/internal/updatewire"
 )
 
@@ -19,15 +19,15 @@ func main() {
 		"Item Five",
 	}
 
-	list := tuikit.NewListView(tuikit.ListViewOpts[string]{
-		RenderItem: func(item string, idx int, isCursor bool, theme tuikit.Theme) string {
+	list := blit.NewListView(blit.ListViewOpts[string]{
+		RenderItem: func(item string, idx int, isCursor bool, theme blit.Theme) string {
 			style := lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Text))
 			if isCursor {
 				style = style.Foreground(lipgloss.Color(theme.Accent)).Bold(true)
 			}
 			return style.Render(fmt.Sprintf("  %d. %s", idx+1, item))
 		},
-		HeaderFunc: func(theme tuikit.Theme) string {
+		HeaderFunc: func(theme blit.Theme) string {
 			return lipgloss.NewStyle().
 				Foreground(lipgloss.Color(theme.Accent)).
 				Bold(true).
@@ -36,15 +36,15 @@ func main() {
 	})
 	list.SetItems(items)
 
-	app := tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithComponent("list", list),
-		tuikit.WithStatusBar(
+	app := blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithComponent("list", list),
+		blit.WithStatusBar(
 			func() string { return " ↑/↓ navigate  ? help  q quit" },
 			func() string { return fmt.Sprintf(" %d items ", len(items)) },
 		),
-		tuikit.WithHelp(),
-		tuikit.WithAutoUpdate(updatewire.Config()),
+		blit.WithHelp(),
+		blit.WithAutoUpdate(updatewire.Config()),
 	)
 
 	if err := app.Run(); err != nil {

@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"strconv"
@@ -8,7 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/moneycaringcoder/tuikit-go/internal/fuzzy"
+	"github.com/blitui/blit/internal/fuzzy"
 )
 
 // PickerItem is a single entry in a Picker.

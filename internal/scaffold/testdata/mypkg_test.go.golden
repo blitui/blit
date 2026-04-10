@@ -3,17 +3,17 @@ package mypkg_test
 import (
 	"testing"
 
+	"github.com/blitui/blit/btest"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/moneycaringcoder/tuikit-go/tuitest"
 )
 
 // TestMypkg is a generated test stub. Replace the stub model with a
 // real tea.Model from your package and extend the assertions.
 func TestMypkg(t *testing.T) {
 	// TODO: replace &stubMypkg{} with your model, e.g. mypkg.NewMypkg().
-	tm := tuitest.NewTestModel(t, &stubMypkg{}, 80, 24)
+	tm := btest.NewTestModel(t, &stubMypkg{}, 80, 24)
 
-	tm.RequireScreen(func(t testing.TB, s *tuitest.Screen) {
+	tm.RequireScreen(func(t testing.TB, s *btest.Screen) {
 		if s.String() == "" {
 			t.Log("screen is empty — wire up your model and add assertions here")
 		}

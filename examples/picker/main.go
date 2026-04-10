@@ -1,4 +1,4 @@
-// Package main demonstrates the tuikit Picker as a file browser.
+// Package main demonstrates the blit Picker as a file browser.
 //
 // Navigate with up/down, type to fuzzy-filter file names, and press enter to
 // select. The right pane shows a preview of the selected file content.
@@ -13,7 +13,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 func main() {
@@ -30,21 +30,21 @@ func main() {
 
 	var selectedMsg string
 
-	picker := tuikit.NewPicker(items, tuikit.PickerOpts{
+	picker := blit.NewPicker(items, blit.PickerOpts{
 		Placeholder: "Type to filter files...",
 		Preview:     true,
-		OnConfirm: func(item tuikit.PickerItem) {
+		OnConfirm: func(item blit.PickerItem) {
 			selectedMsg = "Selected: " + item.Title
 		},
 	})
 
 	status := &helpStatus{msg: "Press ctrl+p to open the file picker"}
 
-	app := tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithComponent("main", status),
-		tuikit.WithOverlay("File Picker", "ctrl+p", picker),
-		tuikit.WithStatusBar(
+	app := blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithComponent("main", status),
+		blit.WithOverlay("File Picker", "ctrl+p", picker),
+		blit.WithStatusBar(
 			func() string {
 				if selectedMsg != "" {
 					return " " + selectedMsg
@@ -61,13 +61,13 @@ func main() {
 	}
 }
 
-func buildFileItems(dir string) ([]tuikit.PickerItem, error) {
+func buildFileItems(dir string) ([]blit.PickerItem, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	var items []tuikit.PickerItem
+	var items []blit.PickerItem
 	for _, e := range entries {
 		name := e.Name()
 		fullPath := filepath.Join(dir, name)
@@ -89,7 +89,7 @@ func buildFileItems(dir string) ([]tuikit.PickerItem, error) {
 		}
 
 		path := fullPath
-		items = append(items, tuikit.PickerItem{
+		items = append(items, blit.PickerItem{
 			Title:    name,
 			Subtitle: subtitle,
 			Glyph:    glyph,
@@ -149,21 +149,21 @@ func isBinary(data []byte) bool {
 
 type helpStatus struct {
 	msg     string
-	theme   tuikit.Theme
+	theme   blit.Theme
 	focused bool
 	width   int
 	height  int
 }
 
 func (s *helpStatus) Init() tea.Cmd { return nil }
-func (s *helpStatus) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (s *helpStatus) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return s, nil
 }
-func (s *helpStatus) KeyBindings() []tuikit.KeyBind { return nil }
+func (s *helpStatus) KeyBindings() []blit.KeyBind { return nil }
 func (s *helpStatus) SetSize(w, h int)              { s.width = w; s.height = h }
 func (s *helpStatus) Focused() bool                 { return s.focused }
 func (s *helpStatus) SetFocused(f bool)             { s.focused = f }
-func (s *helpStatus) SetTheme(t tuikit.Theme)       { s.theme = t }
+func (s *helpStatus) SetTheme(t blit.Theme)       { s.theme = t }
 
 func (s *helpStatus) View() string {
 	style := lipgloss.NewStyle().

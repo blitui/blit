@@ -19,8 +19,8 @@
 ## Built-In Themes
 
 ```go
-tuikit.DefaultTheme() // dark — teal accent on dark background
-tuikit.LightTheme()   // light — dark text on white background
+blit.DefaultTheme() // dark — teal accent on dark background
+blit.LightTheme()   // light — dark text on white background
 ```
 
 ## Theme From a Color Map
@@ -28,7 +28,7 @@ tuikit.LightTheme()   // light — dark text on white background
 Parse theme colors from YAML/JSON/TOML config without hand-constructing the struct:
 
 ```go
-theme := tuikit.ThemeFromMap(map[string]string{
+theme := blit.ThemeFromMap(map[string]string{
     "positive": "#22c55e",
     "negative": "#ef4444",
     "accent":   "#3b82f6",
@@ -53,25 +53,25 @@ color  = theme.Color("missing", theme.Muted) // returns Muted fallback
 
 ## Theme Presets
 
-tuikit-go ships several built-in presets accessible via `ThemePreset`:
+blit ships several built-in presets accessible via `ThemePreset`:
 
 ```go
-theme := tuikit.ThemePreset("dracula")
-theme  = tuikit.ThemePreset("nord")
-theme  = tuikit.ThemePreset("gruvbox")
+theme := blit.ThemePreset("dracula")
+theme  = blit.ThemePreset("nord")
+theme  = blit.ThemePreset("gruvbox")
 ```
 
 ## Hot Reload
 
-Set `TUIKIT_THEME` environment variable to a JSON file path. tuikit-go watches the file and reloads the theme without restarting the app.
+Set `TUIKIT_THEME` environment variable to a JSON file path. blit watches the file and reloads the theme without restarting the app.
 
 ## Custom Glyphs
 
 Override the cursor marker, flash marker, and other glyphs:
 
 ```go
-theme := tuikit.DefaultTheme()
-theme.Glyphs = &tuikit.Glyphs{
+theme := blit.DefaultTheme()
+theme.Glyphs = &blit.Glyphs{
     CursorMarker: "▶",
     FlashMarker:  "★",
 }

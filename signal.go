@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"fmt"
@@ -23,9 +23,9 @@ import (
 //
 // Example:
 //
-//	status := tuikit.NewSignal("starting...")
-//	app := tuikit.NewApp(
-//	    tuikit.WithStatusBarSignal(status, nil),
+//	status := blit.NewSignal("starting...")
+//	app := blit.NewApp(
+//	    blit.WithStatusBarSignal(status, nil),
 //	)
 //	go func() {
 //	    time.Sleep(time.Second)
@@ -49,7 +49,7 @@ type Unsubscribe func()
 // types can be combined.
 type AnySignal interface {
 	// subscribeAny registers a generic callback fired after each flush.
-	// It is unexported so only the tuikit package builds graphs.
+	// It is unexported so only the blit package builds graphs.
 	subscribeAny(fn func()) Unsubscribe
 	// attach binds this signal to a bus so its subscribers fire on the UI
 	// goroutine. Called by the App during setup.

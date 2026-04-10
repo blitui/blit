@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [0.12.0] - 2026-04-09
 
 ### Added
-- SSH serve via Charm Wish — host any tuikit app over SSH
+- SSH serve via Charm Wish — host any blit app over SSH
 - Cosign ed25519 signature verification for self-update
 - Delta binary patching for smaller update downloads
 - MkDocs Material documentation site
@@ -39,10 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [0.11.0] - 2026-04-09
 
 ### Added
-- tuitest snapshot review UI
+- blit snapshot review UI
 - VHS tape integration for automated GIF generation
 - Screen diff viewer for visual test comparison
-- tuitest CLI with vitest-style reporter, JUnit/HTML output, watch mode
+- blit CLI with vitest-style reporter, JUnit/HTML output, watch mode
 
 ## [0.10.0] - 2026-04-09
 
@@ -128,17 +128,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Table component with sorting, filtering, and cursor navigation
 - ListView component
 - App framework with functional options
-- tuitest virtual terminal testing framework
+- blit virtual terminal testing framework
 
-[0.12.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.11.0...v0.12.0
-[0.11.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.10.0...v0.11.0
-[0.10.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.9.0...v0.10.0
-[0.9.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/moneycaringcoder/tuikit-go/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/moneycaringcoder/tuikit-go/releases/tag/v0.1.0
+[0.12.0]: https://github.com/blitui/blit/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/blitui/blit/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/blitui/blit/compare/v0.9.0...v0.10.0
+[0.9.0]: https://github.com/blitui/blit/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/blitui/blit/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/blitui/blit/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/blitui/blit/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/blitui/blit/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/blitui/blit/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/blitui/blit/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/blitui/blit/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/blitui/blit/releases/tag/v0.1.0

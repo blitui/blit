@@ -5,8 +5,8 @@ Resizable split pane that divides space between two child components with a visi
 ## Construction
 
 ```go
-split := tuikit.NewSplit(
-    tuikit.Horizontal,  // left/right split
+split := blit.NewSplit(
+    blit.Horizontal,  // left/right split
     0.5,                // 50/50 ratio
     leftComponent,
     rightComponent,
@@ -30,8 +30,8 @@ type Split struct {
 
 | Value | Layout |
 |-------|--------|
-| `tuikit.Horizontal` | A on left, B on right |
-| `tuikit.Vertical` | A on top, B on bottom |
+| `blit.Horizontal` | A on left, B on right |
+| `blit.Vertical` | A on top, B on bottom |
 
 ## Keyboard
 

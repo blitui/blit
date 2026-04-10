@@ -7,7 +7,7 @@ Implements `Component`, `Themed`, and the `Overlay` interface.
 ## Construction
 
 ```go
-tuikit.WithHelp()
+blit.WithHelp()
 ```
 
 That is the entire API. The `App` wires the `Help` instance to the global `?` key and populates it from the keybinding registry automatically.
@@ -36,7 +36,7 @@ type KeyBind struct {
 ## Registering App-Level Bindings
 
 ```go
-tuikit.WithKeyBind(tuikit.KeyBind{
+blit.WithKeyBind(blit.KeyBind{
     Key:   "r",
     Label: "Refresh",
     Group: "DATA",
@@ -53,7 +53,7 @@ The binding appears in the Help overlay under the `DATA` section heading alongsi
 Group names prefixed with `md:` are rendered as inline Markdown. Use this for rich section headings with bold, code spans, or links:
 
 ```go
-tuikit.KeyBind{
+blit.KeyBind{
     Key:   "ctrl+r",
     Label: "Reload config",
     Group: "md:**Configuration** — runtime settings",

@@ -1,4 +1,4 @@
-package tuikit_test
+package blit_test
 
 import (
 	"strings"
@@ -6,13 +6,13 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // TestStyleRegistry_BuiltinStyles verifies all required built-in named styles
 // are present and return non-zero StyleSets.
 func TestStyleRegistry_BuiltinStyles(t *testing.T) {
-	theme := tuikit.DefaultTheme()
+	theme := blit.DefaultTheme()
 
 	builtins := []string{
 		"button.primary",
@@ -41,7 +41,7 @@ func TestStyleRegistry_BuiltinStyles(t *testing.T) {
 
 // TestStyleRegistry_UnknownStyle verifies that an unknown name returns false.
 func TestStyleRegistry_UnknownStyle(t *testing.T) {
-	theme := tuikit.DefaultTheme()
+	theme := blit.DefaultTheme()
 	_, ok := theme.Style("nonexistent.style")
 	if ok {
 		t.Error("expected ok=false for unknown style name")
@@ -51,9 +51,9 @@ func TestStyleRegistry_UnknownStyle(t *testing.T) {
 // TestStyleRegistry_RegisterOverride verifies that RegisterStyle replaces a
 // built-in and that subsequent Style() calls return the new value.
 func TestStyleRegistry_RegisterOverride(t *testing.T) {
-	theme := tuikit.DefaultTheme()
+	theme := blit.DefaultTheme()
 
-	custom := tuikit.StyleSet{
+	custom := blit.StyleSet{
 		Base:  lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000")),
 		Focus: lipgloss.NewStyle().Foreground(lipgloss.Color("#00ff00")),
 	}
@@ -76,9 +76,9 @@ func TestStyleRegistry_RegisterOverride(t *testing.T) {
 // TestStyleRegistry_RegisterCustomName verifies that a brand-new name can be
 // registered and retrieved.
 func TestStyleRegistry_RegisterCustomName(t *testing.T) {
-	theme := tuikit.DefaultTheme()
+	theme := blit.DefaultTheme()
 
-	custom := tuikit.StyleSet{
+	custom := blit.StyleSet{
 		Base: lipgloss.NewStyle().Foreground(lipgloss.Color("#aabbcc")),
 	}
 	theme.RegisterStyle("myapp.special", custom)
@@ -95,10 +95,10 @@ func TestStyleRegistry_RegisterCustomName(t *testing.T) {
 // TestStyleRegistry_IndependentThemes verifies that registering a style on one
 // Theme instance does not affect another instance.
 func TestStyleRegistry_IndependentThemes(t *testing.T) {
-	t1 := tuikit.DefaultTheme()
-	t2 := tuikit.DefaultTheme()
+	t1 := blit.DefaultTheme()
+	t2 := blit.DefaultTheme()
 
-	custom := tuikit.StyleSet{
+	custom := blit.StyleSet{
 		Base: lipgloss.NewStyle().Foreground(lipgloss.Color("#123456")),
 	}
 	t1.RegisterStyle("row.cursor", custom)
@@ -124,18 +124,18 @@ func TestStyleRegistry_IndependentThemes(t *testing.T) {
 // style — confirmed indirectly by verifying Style() on the theme the table
 // received returns our override.
 func TestStyleRegistry_PropagatestoTableRender(t *testing.T) {
-	cols := []tuikit.Column{
+	cols := []blit.Column{
 		{Title: "Name", Width: 1},
 	}
-	rows := []tuikit.Row{{"Alice"}, {"Bob"}}
-	table := tuikit.NewTable(cols, rows, tuikit.TableOpts{})
+	rows := []blit.Row{{"Alice"}, {"Bob"}}
+	table := blit.NewTable(cols, rows, blit.TableOpts{})
 	table.SetSize(40, 10)
 	table.SetFocused(true)
 
 	// Build a custom theme with a recognisable row.cursor override.
-	customTheme := tuikit.DefaultTheme()
+	customTheme := blit.DefaultTheme()
 	wantBg := lipgloss.Color("#abcdef")
-	customTheme.RegisterStyle("row.cursor", tuikit.StyleSet{
+	customTheme.RegisterStyle("row.cursor", blit.StyleSet{
 		Base:  lipgloss.NewStyle().Background(wantBg).Foreground(lipgloss.Color("#ffffff")),
 		Focus: lipgloss.NewStyle().Background(wantBg).Foreground(lipgloss.Color("#ffffff")),
 	})
@@ -161,17 +161,17 @@ func TestStyleRegistry_PropagatestoTableRender(t *testing.T) {
 
 // TestStyleRegistry_PropagatestoPickerRender verifies D5 for Picker.
 func TestStyleRegistry_PropagatestoPickerRender(t *testing.T) {
-	items := []tuikit.PickerItem{
+	items := []blit.PickerItem{
 		{Title: "Alpha"},
 		{Title: "Beta"},
 	}
-	picker := tuikit.NewPicker(items, tuikit.PickerOpts{})
+	picker := blit.NewPicker(items, blit.PickerOpts{})
 	picker.SetSize(40, 10)
 	picker.SetFocused(true)
 
-	customTheme := tuikit.DefaultTheme()
+	customTheme := blit.DefaultTheme()
 	wantBg := lipgloss.Color("#fedcba")
-	customTheme.RegisterStyle("row.cursor", tuikit.StyleSet{
+	customTheme.RegisterStyle("row.cursor", blit.StyleSet{
 		Base:  lipgloss.NewStyle().Background(wantBg).Foreground(lipgloss.Color("#000000")),
 		Focus: lipgloss.NewStyle().Background(wantBg).Foreground(lipgloss.Color("#000000")),
 	})
@@ -198,8 +198,8 @@ func TestStyleRegistry_FormHintUsesLabelHintStyle(t *testing.T) {
 
 	// We just verify that a theme with a custom label.hint style can be set
 	// on a form field without panicking, and that Style() returns the override.
-	customTheme := tuikit.DefaultTheme()
-	customTheme.RegisterStyle("label.hint", tuikit.StyleSet{
+	customTheme := blit.DefaultTheme()
+	customTheme.RegisterStyle("label.hint", blit.StyleSet{
 		Base: lipgloss.NewStyle().Foreground(lipgloss.Color("#112233")),
 	})
 

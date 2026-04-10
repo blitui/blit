@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"fmt"
@@ -1052,7 +1052,7 @@ func (a *appModel) joinPanes(mainView, sideView string, height int) string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, sideView, sep, mainView)
 }
 
-// App is the main entry point for a tuikit application.
+// App is the main entry point for a blit application.
 type App struct {
 	model   *appModel
 	opts    []tea.ProgramOption
@@ -1219,7 +1219,7 @@ func (a *App) Notify(msg string, duration time.Duration) {
 }
 
 // Send sends a message to the running App from outside the Bubble Tea event loop.
-// Model returns the underlying tea.Model for use with tuitest or other
+// Model returns the underlying tea.Model for use with btest or other
 // testing frameworks that need a tea.Model directly.
 func (a *App) Model() tea.Model {
 	return a.model

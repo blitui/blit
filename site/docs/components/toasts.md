@@ -7,8 +7,8 @@ Timed notification panels that slide in from the right edge of the screen. Toast
 Fire a toast from anywhere in the update loop using `ToastCmd`:
 
 ```go
-tuikit.ToastCmd(
-    tuikit.SeverityInfo,
+blit.ToastCmd(
+    blit.SeverityInfo,
     "Deployment started",
     "Pushing to production…",
     4*time.Second,
@@ -18,10 +18,10 @@ tuikit.ToastCmd(
 Return it as a `tea.Cmd` from your component's `Update`:
 
 ```go
-func (m MyModel) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (m MyModel) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
     switch msg.(type) {
     case deployStartedMsg:
-        return m, tuikit.ToastCmd(tuikit.SeverityInfo, "Deploy", "Pushing…", 4*time.Second)
+        return m, blit.ToastCmd(blit.SeverityInfo, "Deploy", "Pushing…", 4*time.Second)
     }
     return m, nil
 }
@@ -41,13 +41,13 @@ func (m MyModel) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.
 Attach labelled action buttons. Handlers are called when the user clicks them:
 
 ```go
-tuikit.ToastCmd(
-    tuikit.SeverityWarn,
+blit.ToastCmd(
+    blit.SeverityWarn,
     "Update available",
     "v2.1.0 is ready",
     0, // 0 = stays until dismissed
-    tuikit.ToastAction{Label: "Update now", Handler: func() { runUpdate() }},
-    tuikit.ToastAction{Label: "Dismiss",    Handler: func() {}},
+    blit.ToastAction{Label: "Update now", Handler: func() { runUpdate() }},
+    blit.ToastAction{Label: "Dismiss",    Handler: func() {}},
 )
 ```
 
@@ -57,8 +57,8 @@ You can also build and send the message struct directly:
 
 ```go
 func() tea.Msg {
-    return tuikit.ToastMsg{
-        Severity: tuikit.SeverityError,
+    return blit.ToastMsg{
+        Severity: blit.SeverityError,
         Title:    "Connection lost",
         Body:     "Reconnecting in 5s…",
         Duration: 5 * time.Second,
@@ -71,7 +71,7 @@ func() tea.Msg {
 For a minimal text banner without severity styling, use `NotifyCmd`:
 
 ```go
-tuikit.NotifyCmd("Saved", 2*time.Second)
+blit.NotifyCmd("Saved", 2*time.Second)
 ```
 
 ## App Configuration
@@ -79,7 +79,7 @@ tuikit.NotifyCmd("Saved", 2*time.Second)
 The ToastManager is enabled by default. Configure it via `WithToastManager`:
 
 ```go
-tuikit.WithToastManager(tuikit.ToastManagerOpts{
+blit.WithToastManager(blit.ToastManagerOpts{
     MaxVisible:   3,                    // max simultaneous toasts (default 5)
     AnimDuration: 200*time.Millisecond, // slide-in animation duration
 })

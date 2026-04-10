@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"encoding/json"

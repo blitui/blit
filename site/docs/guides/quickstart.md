@@ -3,44 +3,44 @@
 ## Install
 
 ```bash
-go get github.com/moneycaringcoder/tuikit-go
+go get github.com/blitui/blit
 ```
 
 Requires Go 1.24+.
 
 ## Minimal App
 
-The smallest possible tuikit-go app registers one component and runs:
+The smallest possible blit app registers one component and runs:
 
 ```go
 package main
 
 import (
     "fmt"
-    tuikit "github.com/moneycaringcoder/tuikit-go"
+    blit "github.com/blitui/blit"
 )
 
 func main() {
-    table := tuikit.NewTable(
-        []tuikit.Column{
+    table := blit.NewTable(
+        []blit.Column{
             {Title: "Name",   Width: 20, Sortable: true},
             {Title: "Status", Width: 15},
         },
-        []tuikit.Row{
+        []blit.Row{
             {"Alice", "Online"},
             {"Bob",   "Away"},
         },
-        tuikit.TableOpts{Sortable: true, Filterable: true},
+        blit.TableOpts{Sortable: true, Filterable: true},
     )
 
-    app := tuikit.NewApp(
-        tuikit.WithTheme(tuikit.DefaultTheme()),
-        tuikit.WithComponent("main", table),
-        tuikit.WithStatusBar(
+    app := blit.NewApp(
+        blit.WithTheme(blit.DefaultTheme()),
+        blit.WithComponent("main", table),
+        blit.WithStatusBar(
             func() string { return " ? help  q quit" },
             func() string { return fmt.Sprintf(" %d items", 2) },
         ),
-        tuikit.WithHelp(),
+        blit.WithHelp(),
     )
 
     app.Run()
@@ -71,4 +71,4 @@ Keys: `j`/`k` to move, `s` to cycle sort, `/` to search, `?` for help, `q` to qu
 
 - [App Structure](app-structure.md) — component interface, slots, key dispatch
 - [Theming](theming.md) — dark/light themes, custom tokens
-- [Testing](testing.md) — tuitest virtual terminal assertions
+- [Testing](testing.md) — blit virtual terminal assertions

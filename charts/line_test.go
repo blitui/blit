@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/charts"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/charts"
 )
 
 func TestLineRender(t *testing.T) {
@@ -15,7 +15,7 @@ func TestLineRender(t *testing.T) {
 	}
 	l := charts.NewLine(series, []string{"#ff0000", "#00ff00"}, false)
 	l.SetSize(40, 10)
-	l.SetTheme(tuikit.DefaultTheme())
+	l.SetTheme(blit.DefaultTheme())
 
 	out := l.View()
 	if out == "" {
@@ -31,7 +31,7 @@ func TestLineSmoothRender(t *testing.T) {
 	series := [][]float64{{0, 5, 2, 8, 3}}
 	l := charts.NewLine(series, nil, true)
 	l.SetSize(30, 8)
-	l.SetTheme(tuikit.DefaultTheme())
+	l.SetTheme(blit.DefaultTheme())
 
 	out := l.View()
 	if out == "" {
@@ -52,7 +52,7 @@ func TestLineSinglePoint(t *testing.T) {
 	series := [][]float64{{42}}
 	l := charts.NewLine(series, nil, false)
 	l.SetSize(20, 5)
-	l.SetTheme(tuikit.DefaultTheme())
+	l.SetTheme(blit.DefaultTheme())
 	// Single point series should render without panic
 	_ = l.View()
 }
@@ -61,7 +61,7 @@ func TestLineDeterministic(t *testing.T) {
 	series := [][]float64{{1, 4, 2, 8, 5, 7, 1, 3}}
 	l := charts.NewLine(series, nil, false)
 	l.SetSize(30, 8)
-	l.SetTheme(tuikit.DefaultTheme())
+	l.SetTheme(blit.DefaultTheme())
 
 	out1 := l.View()
 	out2 := l.View()

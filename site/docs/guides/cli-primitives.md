@@ -3,7 +3,7 @@
 The `cli` package provides interactive prompts for tools that need more than `fmt.Print` but less than a full TUI. Each primitive runs a minimal Bubble Tea program, captures input, and returns the result.
 
 ```go
-import "github.com/moneycaringcoder/tuikit-go/cli"
+import "github.com/blitui/blit/cli"
 ```
 
 ## Prompts

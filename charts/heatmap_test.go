@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/charts"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/charts"
 )
 
 func TestHeatmapSequential(t *testing.T) {
@@ -16,7 +16,7 @@ func TestHeatmapSequential(t *testing.T) {
 	}
 	h := charts.NewHeatmap(grid, charts.PaletteSequential)
 	h.SetSize(30, 8)
-	h.SetTheme(tuikit.DefaultTheme())
+	h.SetTheme(blit.DefaultTheme())
 
 	out := h.View()
 	if out == "" {
@@ -31,7 +31,7 @@ func TestHeatmapDivergent(t *testing.T) {
 	}
 	h := charts.NewHeatmap(grid, charts.PaletteDivergent)
 	h.SetSize(30, 8)
-	h.SetTheme(tuikit.DefaultTheme())
+	h.SetTheme(blit.DefaultTheme())
 
 	out := h.View()
 	if out == "" {
@@ -48,7 +48,7 @@ func TestHeatmapWithLabels(t *testing.T) {
 	h.Labels = []string{"Col A", "Col B"}
 	h.RowLabels = []string{"Row 1", "Row 2"}
 	h.SetSize(30, 8)
-	h.SetTheme(tuikit.DefaultTheme())
+	h.SetTheme(blit.DefaultTheme())
 
 	out := h.View()
 	if !strings.Contains(out, "Col A") {
@@ -83,7 +83,7 @@ func TestHeatmapDeterministic(t *testing.T) {
 	}
 	h := charts.NewHeatmap(grid, charts.PaletteSequential)
 	h.SetSize(40, 10)
-	h.SetTheme(tuikit.DefaultTheme())
+	h.SetTheme(blit.DefaultTheme())
 
 	out1 := h.View()
 	out2 := h.View()

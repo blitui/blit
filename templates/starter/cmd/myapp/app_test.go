@@ -1,6 +1,6 @@
-// Package main_test demonstrates tuitest session tests for myapp.
+// Package main_test demonstrates blit session tests for myapp.
 //
-// These tests use the tuitest.Harness fluent API to drive a tea.Model
+// These tests use the btest.Harness fluent API to drive a tea.Model
 // programmatically and assert on rendered screen output — no real terminal
 // or subprocess required.
 package main_test
@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/moneycaringcoder/tuikit-go/tuitest"
+	"github.com/blitui/blit/btest"
 )
 
 // listModel is a minimal tea.Model that renders a navigable list.
@@ -73,7 +73,7 @@ func (m *listModel) View() string {
 
 // TestNavigation verifies that pressing down moves the cursor.
 func TestNavigation(t *testing.T) {
-	tuitest.NewHarness(t, newListModel(), 80, 24).
+	btest.NewHarness(t, newListModel(), 80, 24).
 		Expect("Item One").
 		Keys("down").
 		Expect("Item Two").
@@ -84,7 +84,7 @@ func TestNavigation(t *testing.T) {
 
 // TestNavigateUp verifies that pressing up after down returns to the first item.
 func TestNavigateUp(t *testing.T) {
-	tuitest.NewHarness(t, newListModel(), 80, 24).
+	btest.NewHarness(t, newListModel(), 80, 24).
 		Keys("down").
 		Keys("up").
 		Expect("> Item One").
@@ -93,7 +93,7 @@ func TestNavigateUp(t *testing.T) {
 
 // TestQuit verifies that pressing q triggers a clean exit.
 func TestQuit(t *testing.T) {
-	tuitest.NewHarness(t, newListModel(), 80, 24).
+	btest.NewHarness(t, newListModel(), 80, 24).
 		Keys("q").
 		Done()
 }

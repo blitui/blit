@@ -1,10 +1,10 @@
-package tuikit_test
+package blit_test
 
 import (
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/updatetest"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/updatetest"
 )
 
 func TestCheckForUpdate_MinimumVersionSetsRequired(t *testing.T) {
@@ -16,13 +16,13 @@ func TestCheckForUpdate_MinimumVersionSetsRequired(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner: "o", Repo: "r", BinaryName: "tool",
 		Version:    "v1.0.0",
 		APIBaseURL: srv.URL,
 		CacheDir:   t.TempDir(),
 	}
-	res, err := tuikit.CheckForUpdate(cfg)
+	res, err := blit.CheckForUpdate(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,13 +42,13 @@ func TestCheckForUpdate_MinimumVersionNotRequired(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner: "o", Repo: "r", BinaryName: "tool",
 		Version:    "v1.6.0",
 		APIBaseURL: srv.URL,
 		CacheDir:   t.TempDir(),
 	}
-	res, err := tuikit.CheckForUpdate(cfg)
+	res, err := blit.CheckForUpdate(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,16 +66,16 @@ func TestCheckForUpdate_SkippedVersionSuppressed(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner: "o", Repo: "r", BinaryName: "tool",
 		Version:    "v1.0.0",
 		APIBaseURL: srv.URL,
 		CacheDir:   t.TempDir(),
 	}
-	if err := tuikit.SkipVersion(cfg, "v2.0.0"); err != nil {
+	if err := blit.SkipVersion(cfg, "v2.0.0"); err != nil {
 		t.Fatal(err)
 	}
-	res, err := tuikit.CheckForUpdate(cfg)
+	res, err := blit.CheckForUpdate(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,14 +92,14 @@ func TestCheckForUpdate_SkipDoesNotOverrideRequired(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner: "o", Repo: "r", BinaryName: "tool",
 		Version:    "v1.0.0",
 		APIBaseURL: srv.URL,
 		CacheDir:   t.TempDir(),
 	}
-	_ = tuikit.SkipVersion(cfg, "v2.0.0")
-	res, err := tuikit.CheckForUpdate(cfg)
+	_ = blit.SkipVersion(cfg, "v2.0.0")
+	res, err := blit.CheckForUpdate(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}

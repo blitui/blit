@@ -1,4 +1,4 @@
-// Package main demonstrates all tuikit chart types in a single dashboard.
+// Package main demonstrates all blit chart types in a single dashboard.
 //
 // Layout: a 2×3 tile grid showing Bar (vertical), Bar (horizontal),
 // Line, Ring, Gauge, Heatmap, and the built-in Sparkline.
@@ -13,13 +13,13 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/charts"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/charts"
 )
 
 // dashboard is the root component that tiles all charts.
 type dashboard struct {
-	theme   tuikit.Theme
+	theme   blit.Theme
 	width   int
 	height  int
 	focused bool
@@ -83,7 +83,7 @@ func newDashboard() *dashboard {
 	}
 
 	return &dashboard{
-		theme:     tuikit.DefaultTheme(),
+		theme:     blit.DefaultTheme(),
 		barV:      barV,
 		barH:      barH,
 		line:      line,
@@ -95,10 +95,10 @@ func newDashboard() *dashboard {
 }
 
 func (d *dashboard) Init() tea.Cmd { return nil }
-func (d *dashboard) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (d *dashboard) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return d, nil
 }
-func (d *dashboard) KeyBindings() []tuikit.KeyBind { return nil }
+func (d *dashboard) KeyBindings() []blit.KeyBind { return nil }
 func (d *dashboard) SetSize(w, h int) {
 	d.width = w
 	d.height = h
@@ -106,7 +106,7 @@ func (d *dashboard) SetSize(w, h int) {
 }
 func (d *dashboard) Focused() bool     { return d.focused }
 func (d *dashboard) SetFocused(f bool) { d.focused = f }
-func (d *dashboard) SetTheme(t tuikit.Theme) {
+func (d *dashboard) SetTheme(t blit.Theme) {
 	d.theme = t
 	d.barV.SetTheme(t)
 	d.barH.SetTheme(t)
@@ -178,12 +178,12 @@ func (d *dashboard) View() string {
 	row3 := lipgloss.JoinHorizontal(lipgloss.Top, r3left, r3right)
 
 	// Sparkline footer
-	spark, _ := tuikit.Sparkline(d.sparkData, d.width-4, nil)
+	spark, _ := blit.Sparkline(d.sparkData, d.width-4, nil)
 	sparkLine := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(d.theme.Accent)).
 		Render("  Sparkline: " + spark)
 
-	header := title.Render("  tuikit charts dashboard — q to quit")
+	header := title.Render("  blit charts dashboard — q to quit")
 
 	return strings.Join([]string{header, row1, row2, row3, sparkLine}, "\n")
 }
@@ -191,14 +191,14 @@ func (d *dashboard) View() string {
 func main() {
 	d := newDashboard()
 
-	app := tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithComponent("charts", d),
-		tuikit.WithStatusBar(
+	app := blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithComponent("charts", d),
+		blit.WithStatusBar(
 			func() string { return " q quit  ctrl+t cycle theme" },
 			func() string { return fmt.Sprintf("  %s ", time.Now().Format("15:04:05")) },
 		),
-		tuikit.WithTickInterval(time.Second),
+		blit.WithTickInterval(time.Second),
 	)
 
 	if err := app.Run(); err != nil {

@@ -3,7 +3,7 @@ package fuzzy_test
 import (
 	"testing"
 
-	"github.com/moneycaringcoder/tuikit-go/internal/fuzzy"
+	"github.com/blitui/blit/internal/fuzzy"
 )
 
 func TestScore_EmptyPattern(t *testing.T) {

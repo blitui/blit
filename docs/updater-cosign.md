@@ -1,6 +1,6 @@
 # Cosign Signature Verification
 
-tuikit's self-updater supports optional detached ed25519 signature verification
+blit's self-updater supports optional detached ed25519 signature verification
 via `UpdateConfig.CosignPublicKey`. When set, `SelfUpdate` fetches the
 `<asset>.sig` release attachment and verifies it before replacing the binary.
 
@@ -46,7 +46,7 @@ GoReleaser can automate this via the `signs:` block in `.goreleaser.yaml`.
 //go:embed cosign.pub
 var cosignPub string
 
-tuikit.WithAutoUpdate(tuikit.UpdateConfig{
+blit.WithAutoUpdate(blit.UpdateConfig{
     Owner:           "myorg",
     Repo:            "myapp",
     BinaryName:      "myapp",

@@ -1,4 +1,4 @@
-// Package main demonstrates tuikit's cli/ package — interactive CLI primitives
+// Package main demonstrates blit's cli/ package — interactive CLI primitives
 // that work without a full-screen TUI.
 package main
 
@@ -8,11 +8,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/moneycaringcoder/tuikit-go/cli"
+	"github.com/blitui/blit/cli"
 )
 
 func main() {
-	cli.Title("tuikit CLI Primitives Demo")
+	cli.Title("blit CLI Primitives Demo")
 
 	// 1. Confirm
 	cli.Step(1, 7, "Confirm prompt")
@@ -35,8 +35,8 @@ func main() {
 
 	// 3. MultiSelect
 	cli.Step(3, 7, "Multi select")
-	features := []string{"Table", "ListView", "ConfigEditor", "Auto-Update", "CLI Primitives", "tuitest"}
-	selected, _, err := cli.MultiSelect("  Which tuikit features do you use?", features)
+	features := []string{"Table", "ListView", "ConfigEditor", "Auto-Update", "CLI Primitives", "blit"}
+	selected, _, err := cli.MultiSelect("  Which blit features do you use?", features)
 	if err != nil {
 		cli.Error(fmt.Sprintf("Cancelled: %v", err))
 		os.Exit(1)

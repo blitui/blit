@@ -2,7 +2,7 @@
 
 ## The Component Interface
 
-Every tuikit-go widget implements `Component`:
+Every blit widget implements `Component`:
 
 ```go
 type Component interface {
@@ -37,7 +37,7 @@ When a key arrives the App dispatches it in this order:
 5. App-level keybindings registered with `WithKeyBind`
 6. Focused component's `Update`
 
-Return `tuikit.Consumed()` from `Update` to stop further dispatch.
+Return `blit.Consumed()` from `Update` to stop further dispatch.
 
 ## Slots
 
@@ -54,7 +54,7 @@ The App organises components into named slots:
 ## Registering Keybindings
 
 ```go
-tuikit.WithKeyBind(tuikit.KeyBind{
+blit.WithKeyBind(blit.KeyBind{
     Key:   "r",
     Label: "Refresh",
     Group: "DATA",
@@ -69,7 +69,7 @@ All registered bindings appear in the auto-generated Help overlay.
 ## Pushing Data from Goroutines
 
 ```go
-app := tuikit.NewApp(...)
+app := blit.NewApp(...)
 go func() {
     for data := range stream {
         app.Send(MyDataMsg{data})

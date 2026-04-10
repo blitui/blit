@@ -1,9 +1,9 @@
-# tuikit-go
+# blit
 
-[![CI](https://github.com/moneycaringcoder/tuikit-go/actions/workflows/ci.yml/badge.svg)](https://github.com/moneycaringcoder/tuikit-go/actions/workflows/ci.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/moneycaringcoder/tuikit-go.svg)](https://pkg.go.dev/github.com/moneycaringcoder/tuikit-go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/moneycaringcoder/tuikit-go)](https://goreportcard.com/report/github.com/moneycaringcoder/tuikit-go)
-[![Latest Release](https://img.shields.io/github/v/release/moneycaringcoder/tuikit-go)](https://github.com/moneycaringcoder/tuikit-go/releases/latest)
+[![CI](https://github.com/blitui/blit/actions/workflows/ci.yml/badge.svg)](https://github.com/blitui/blit/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/blitui/blit.svg)](https://pkg.go.dev/github.com/blitui/blit)
+[![Go Report Card](https://goreportcard.com/badge/github.com/blitui/blit)](https://goreportcard.com/report/github.com/blitui/blit)
+[![Latest Release](https://img.shields.io/github/v/release/blitui/blit)](https://github.com/blitui/blit/releases/latest)
 
 The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https://github.com/charmbracelet/bubbletea) + [Lip Gloss](https://github.com/charmbracelet/lipgloss) with reusable components, a layout engine, a keybinding registry, a theme system, and built-in binary self-update.
 
@@ -15,30 +15,30 @@ The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https:
 - **Keybinding registry** with auto-generated help screen
 - **Dark/light themes** with semantic color tokens, hot-reload, and terminal theme importers
 - **CLI primitives** (confirm, select, input, spinner, progress) for non-TUI workflows
-- **tuitest** virtual terminal testing framework with golden files, snapshot diffing, and a vitest-style CLI runner
+- **blit** virtual terminal testing framework with golden files, snapshot diffing, and a vitest-style CLI runner
 - **Charts** — bar, line, ring, gauge, heatmap, sparkline
 - **Self-update** — binary replacement with SHA256/cosign verification, delta patches, rollback, channels, and rate-limit backoff
-- **SSH serve** — host any tuikit app over SSH via Charm Wish
+- **SSH serve** — host any blit app over SSH via Charm Wish
 - **Notifications, overlays, command bar, breadcrumbs** and other compound components
 
 ## Install
 
 ```bash
-go get github.com/moneycaringcoder/tuikit-go
+go get github.com/blitui/blit
 ```
 
-**tuitest CLI** (optional test runner):
+**blit CLI** (optional test runner):
 
 ```bash
 # Homebrew
-brew install moneycaringcoder/tap/tuitest
+brew install blitui/tap/blit
 
 # Scoop
-scoop bucket add moneycaringcoder https://github.com/moneycaringcoder/scoop-bucket
-scoop install tuitest
+scoop bucket add blitui https://github.com/blitui/scoop-bucket
+scoop install blit
 
 # Go
-go install github.com/moneycaringcoder/tuikit-go/cmd/tuitest@latest
+go install github.com/blitui/blit/cmd/blit@latest
 ```
 
 ## Quick Start
@@ -48,30 +48,30 @@ package main
 
 import (
     "fmt"
-    tuikit "github.com/moneycaringcoder/tuikit-go"
+    blit "github.com/blitui/blit"
 )
 
 func main() {
-    table := tuikit.NewTable(
-        []tuikit.Column{
+    table := blit.NewTable(
+        []blit.Column{
             {Title: "Name", Width: 20, Sortable: true},
             {Title: "Status", Width: 15},
         },
-        []tuikit.Row{
+        []blit.Row{
             {"Alice", "Online"},
             {"Bob", "Away"},
         },
-        tuikit.TableOpts{Sortable: true, Filterable: true},
+        blit.TableOpts{Sortable: true, Filterable: true},
     )
 
-    app := tuikit.NewApp(
-        tuikit.WithTheme(tuikit.DefaultTheme()),
-        tuikit.WithComponent("main", table),
-        tuikit.WithStatusBar(
+    app := blit.NewApp(
+        blit.WithTheme(blit.DefaultTheme()),
+        blit.WithComponent("main", table),
+        blit.WithStatusBar(
             func() string { return " ? help  q quit" },
             func() string { return fmt.Sprintf(" %d items", 2) },
         ),
-        tuikit.WithHelp(),
+        blit.WithHelp(),
     )
 
     app.Run()
@@ -82,9 +82,9 @@ More examples in [`examples/`](examples/).
 
 ## Documentation
 
-- **[Docs site](https://moneycaringcoder.github.io/tuikit-go/)** — guides, component reference, theming, self-update setup
+- **[Docs site](https://blitui.github.io/blit/)** — guides, component reference, theming, self-update setup
 - **[Examples](examples/)** — 15 runnable demos from minimal to full dashboard
-- **[pkg.go.dev](https://pkg.go.dev/github.com/moneycaringcoder/tuikit-go)** — API reference
+- **[pkg.go.dev](https://pkg.go.dev/github.com/blitui/blit)** — API reference
 
 ## Repository Layout
 
@@ -92,7 +92,7 @@ More examples in [`examples/`](examples/).
 |-----------|---------|
 | `charts/` | Chart components (bar, line, ring, gauge, heatmap) |
 | `cli/` | Interactive CLI prompt primitives (non-TUI) |
-| `cmd/` | CLI binaries (`tuitest` runner) |
+| `cmd/` | CLI binaries (`blit` runner) |
 | `docs/` | Design docs and generated GIFs |
 | `examples/` | Runnable example apps |
 | `internal/` | Private packages (fuzzy search, scaffold, tape) |
@@ -100,7 +100,7 @@ More examples in [`examples/`](examples/).
 | `site/` | MkDocs Material documentation site |
 | `templates/` | Starter project template |
 | `testdata/` | Test fixtures (theme files) |
-| `tuitest/` | Virtual terminal testing framework |
+| `blit/` | Virtual terminal testing framework |
 | `updatetest/` | Self-updater test mocks |
 
 ## Used By
@@ -110,7 +110,7 @@ More examples in [`examples/`](examples/).
 
 ## Compatibility
 
-tuikit-go follows [semantic versioning](https://semver.org/). Within a major version, the public API is stable — no breaking changes in minor or patch releases. Pre-v1.0 releases (v0.x) may include breaking changes in minor versions, documented in the [changelog](CHANGELOG.md).
+blit follows [semantic versioning](https://semver.org/). Within a major version, the public API is stable — no breaking changes in minor or patch releases. Pre-v1.0 releases (v0.x) may include breaking changes in minor versions, documented in the [changelog](CHANGELOG.md).
 
 ## Contributing
 

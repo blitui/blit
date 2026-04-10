@@ -1,4 +1,4 @@
-package tuikit_test
+package blit_test
 
 import (
 	"archive/tar"
@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 func TestParseVersion(t *testing.T) {
@@ -41,7 +41,7 @@ func TestParseVersion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			v, err := tuikit.ParseVersion(tt.input)
+			v, err := blit.ParseVersion(tt.input)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("expected error for %q", tt.input)
@@ -61,20 +61,20 @@ func TestParseVersion(t *testing.T) {
 func TestDetectInstallMethod(t *testing.T) {
 	tests := []struct {
 		path string
-		want tuikit.InstallMethod
+		want blit.InstallMethod
 	}{
-		{"/opt/homebrew/Cellar/cryptstream/0.3.0/bin/cryptstream", tuikit.InstallHomebrew},
-		{"/home/linuxbrew/.linuxbrew/Cellar/cryptstream/0.3.0/bin/cryptstream", tuikit.InstallHomebrew},
-		{"/usr/local/Cellar/cryptstream/0.3.0/bin/cryptstream", tuikit.InstallHomebrew},
-		{`C:\Users\user\scoop\apps\cryptstream\current\cryptstream.exe`, tuikit.InstallScoop},
-		{"/usr/local/bin/cryptstream", tuikit.InstallManual},
-		{`C:\Users\user\go\bin\cryptstream.exe`, tuikit.InstallManual},
-		{"/home/user/bin/cryptstream", tuikit.InstallManual},
+		{"/opt/homebrew/Cellar/cryptstream/0.3.0/bin/cryptstream", blit.InstallHomebrew},
+		{"/home/linuxbrew/.linuxbrew/Cellar/cryptstream/0.3.0/bin/cryptstream", blit.InstallHomebrew},
+		{"/usr/local/Cellar/cryptstream/0.3.0/bin/cryptstream", blit.InstallHomebrew},
+		{`C:\Users\user\scoop\apps\cryptstream\current\cryptstream.exe`, blit.InstallScoop},
+		{"/usr/local/bin/cryptstream", blit.InstallManual},
+		{`C:\Users\user\go\bin\cryptstream.exe`, blit.InstallManual},
+		{"/home/user/bin/cryptstream", blit.InstallManual},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
-			got := tuikit.DetectInstallMethod(tt.path)
+			got := blit.DetectInstallMethod(tt.path)
 			if got != tt.want {
 				t.Errorf("DetectInstallMethod(%q) = %v, want %v", tt.path, got, tt.want)
 			}
@@ -97,8 +97,8 @@ func TestVersionNewerThan(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.a+"_vs_"+tt.b, func(t *testing.T) {
-			a, _ := tuikit.ParseVersion(tt.a)
-			b, _ := tuikit.ParseVersion(tt.b)
+			a, _ := blit.ParseVersion(tt.a)
+			b, _ := blit.ParseVersion(tt.b)
 			if got := a.NewerThan(b); got != tt.want {
 				t.Errorf("(%s).NewerThan(%s) = %v, want %v", tt.a, tt.b, got, tt.want)
 			}
@@ -108,7 +108,7 @@ func TestVersionNewerThan(t *testing.T) {
 
 func TestCacheWriteAndRead(t *testing.T) {
 	dir := t.TempDir()
-	cache := tuikit.UpdateCache{
+	cache := blit.UpdateCache{
 		CheckedAt:     time.Now().UTC().Truncate(time.Second),
 		LatestVersion: "v0.5.0",
 		ReleaseURL:    "https://github.com/owner/repo/releases/tag/v0.5.0",
@@ -116,11 +116,11 @@ func TestCacheWriteAndRead(t *testing.T) {
 	}
 
 	path := filepath.Join(dir, "update-check.json")
-	if err := tuikit.WriteCache(path, cache); err != nil {
+	if err := blit.WriteCache(path, cache); err != nil {
 		t.Fatalf("WriteCache: %v", err)
 	}
 
-	got, err := tuikit.ReadCache(path)
+	got, err := blit.ReadCache(path)
 	if err != nil {
 		t.Fatalf("ReadCache: %v", err)
 	}
@@ -136,8 +136,8 @@ func TestCacheWriteAndRead(t *testing.T) {
 }
 
 func TestCacheFreshness(t *testing.T) {
-	fresh := tuikit.UpdateCache{CheckedAt: time.Now().UTC()}
-	stale := tuikit.UpdateCache{CheckedAt: time.Now().UTC().Add(-25 * time.Hour)}
+	fresh := blit.UpdateCache{CheckedAt: time.Now().UTC()}
+	stale := blit.UpdateCache{CheckedAt: time.Now().UTC().Add(-25 * time.Hour)}
 
 	ttl := 24 * time.Hour
 	if !fresh.IsFresh(ttl) {
@@ -149,7 +149,7 @@ func TestCacheFreshness(t *testing.T) {
 }
 
 func TestReadCacheMissingFile(t *testing.T) {
-	_, err := tuikit.ReadCache(filepath.Join(t.TempDir(), "nonexistent.json"))
+	_, err := blit.ReadCache(filepath.Join(t.TempDir(), "nonexistent.json"))
 	if err == nil {
 		t.Error("expected error for missing file")
 	}
@@ -177,7 +177,7 @@ func TestFetchLatestRelease(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	rel, err := tuikit.FetchLatestRelease(srv.URL, "owner", "repo")
+	rel, err := blit.FetchLatestRelease(srv.URL, "owner", "repo")
 	if err != nil {
 		t.Fatalf("FetchLatestRelease: %v", err)
 	}
@@ -195,14 +195,14 @@ func TestFetchLatestReleaseTimeout(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	_, err := tuikit.FetchLatestRelease(srv.URL, "owner", "repo")
+	_, err := blit.FetchLatestRelease(srv.URL, "owner", "repo")
 	if err == nil {
 		t.Error("expected timeout error")
 	}
 }
 
 func TestMatchAsset(t *testing.T) {
-	assets := []tuikit.ReleaseAsset{
+	assets := []blit.ReleaseAsset{
 		{Name: "myapp_0.5.0_linux_amd64.tar.gz", DownloadURL: "https://example.com/linux_amd64.tar.gz"},
 		{Name: "myapp_0.5.0_darwin_arm64.tar.gz", DownloadURL: "https://example.com/darwin_arm64.tar.gz"},
 		{Name: "myapp_0.5.0_windows_amd64.zip", DownloadURL: "https://example.com/windows_amd64.zip"},
@@ -224,7 +224,7 @@ func TestMatchAsset(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.goos+"_"+tt.goarch, func(t *testing.T) {
-			got, err := tuikit.MatchAsset(assets, tt.binary, tt.goos, tt.goarch)
+			got, err := blit.MatchAsset(assets, tt.binary, tt.goos, tt.goarch)
 			if tt.wantErr {
 				if err == nil {
 					t.Error("expected error")
@@ -242,12 +242,12 @@ func TestMatchAsset(t *testing.T) {
 }
 
 func TestMatchChecksumAsset(t *testing.T) {
-	assets := []tuikit.ReleaseAsset{
+	assets := []blit.ReleaseAsset{
 		{Name: "myapp_0.5.0_linux_amd64.tar.gz", DownloadURL: "https://example.com/linux.tar.gz"},
 		{Name: "checksums.txt", DownloadURL: "https://example.com/checksums.txt"},
 	}
 
-	got, err := tuikit.MatchChecksumAsset(assets)
+	got, err := blit.MatchChecksumAsset(assets)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -264,21 +264,21 @@ func TestVerifyChecksum(t *testing.T) {
 	checksumFile := fmt.Sprintf("%s  myapp_0.5.0_linux_amd64.tar.gz\nabc123  other_file.zip\n", hexHash)
 
 	t.Run("valid checksum", func(t *testing.T) {
-		err := tuikit.VerifyChecksum(data, "myapp_0.5.0_linux_amd64.tar.gz", []byte(checksumFile))
+		err := blit.VerifyChecksum(data, "myapp_0.5.0_linux_amd64.tar.gz", []byte(checksumFile))
 		if err != nil {
 			t.Errorf("expected no error, got: %v", err)
 		}
 	})
 
 	t.Run("invalid checksum", func(t *testing.T) {
-		err := tuikit.VerifyChecksum([]byte("tampered"), "myapp_0.5.0_linux_amd64.tar.gz", []byte(checksumFile))
+		err := blit.VerifyChecksum([]byte("tampered"), "myapp_0.5.0_linux_amd64.tar.gz", []byte(checksumFile))
 		if err == nil {
 			t.Error("expected checksum mismatch error")
 		}
 	})
 
 	t.Run("missing asset in checksums", func(t *testing.T) {
-		err := tuikit.VerifyChecksum(data, "nonexistent.tar.gz", []byte(checksumFile))
+		err := blit.VerifyChecksum(data, "nonexistent.tar.gz", []byte(checksumFile))
 		if err == nil {
 			t.Error("expected missing asset error")
 		}
@@ -299,20 +299,20 @@ func TestWithAutoUpdateNotifyMode(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner:      "owner",
 		Repo:       "repo",
 		BinaryName: "myapp",
 		Version:    "v0.3.0",
-		Mode:       tuikit.UpdateNotify,
+		Mode:       blit.UpdateNotify,
 		CacheTTL:   24 * time.Hour,
 		CacheDir:   t.TempDir(),
 		APIBaseURL: srv.URL,
 	}
 
 	// Verify the option can be passed to NewApp without panic
-	app := tuikit.NewApp(
-		tuikit.WithAutoUpdate(cfg),
+	app := blit.NewApp(
+		blit.WithAutoUpdate(cfg),
 	)
 	if app == nil {
 		t.Fatal("expected non-nil app")
@@ -336,7 +336,7 @@ func TestCheckForUpdate(t *testing.T) {
 	dir := t.TempDir()
 
 	t.Run("update available", func(t *testing.T) {
-		cfg := tuikit.UpdateConfig{
+		cfg := blit.UpdateConfig{
 			Owner:      "owner",
 			Repo:       "repo",
 			BinaryName: "myapp",
@@ -345,7 +345,7 @@ func TestCheckForUpdate(t *testing.T) {
 			CacheDir:   dir,
 			APIBaseURL: srv.URL,
 		}
-		result, err := tuikit.CheckForUpdate(cfg)
+		result, err := blit.CheckForUpdate(cfg)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -358,7 +358,7 @@ func TestCheckForUpdate(t *testing.T) {
 	})
 
 	t.Run("no update when current is latest", func(t *testing.T) {
-		cfg := tuikit.UpdateConfig{
+		cfg := blit.UpdateConfig{
 			Owner:      "owner",
 			Repo:       "repo",
 			BinaryName: "myapp",
@@ -367,7 +367,7 @@ func TestCheckForUpdate(t *testing.T) {
 			CacheDir:   filepath.Join(dir, "no-update"),
 			APIBaseURL: srv.URL,
 		}
-		result, err := tuikit.CheckForUpdate(cfg)
+		result, err := blit.CheckForUpdate(cfg)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -377,12 +377,12 @@ func TestCheckForUpdate(t *testing.T) {
 	})
 
 	t.Run("skip when version is dev", func(t *testing.T) {
-		cfg := tuikit.UpdateConfig{
+		cfg := blit.UpdateConfig{
 			Owner:   "owner",
 			Repo:    "repo",
 			Version: "dev",
 		}
-		result, err := tuikit.CheckForUpdate(cfg)
+		result, err := blit.CheckForUpdate(cfg)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -392,11 +392,11 @@ func TestCheckForUpdate(t *testing.T) {
 	})
 
 	t.Run("skip when version is empty", func(t *testing.T) {
-		cfg := tuikit.UpdateConfig{
+		cfg := blit.UpdateConfig{
 			Owner: "owner",
 			Repo:  "repo",
 		}
-		result, err := tuikit.CheckForUpdate(cfg)
+		result, err := blit.CheckForUpdate(cfg)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -408,17 +408,17 @@ func TestCheckForUpdate(t *testing.T) {
 	t.Run("uses cache when fresh", func(t *testing.T) {
 		cacheDir := filepath.Join(dir, "cached")
 		cachePath := filepath.Join(cacheDir, "update-check.json")
-		cache := tuikit.UpdateCache{
+		cache := blit.UpdateCache{
 			CheckedAt:     time.Now().UTC(),
 			LatestVersion: "v0.6.0",
 			ReleaseURL:    "https://example.com",
 		}
-		if err := tuikit.WriteCache(cachePath, cache); err != nil {
+		if err := blit.WriteCache(cachePath, cache); err != nil {
 			t.Fatalf("WriteCache: %v", err)
 		}
 
 		// Server would return v0.5.0, but cache says v0.6.0
-		cfg := tuikit.UpdateConfig{
+		cfg := blit.UpdateConfig{
 			Owner:      "owner",
 			Repo:       "repo",
 			BinaryName: "myapp",
@@ -427,7 +427,7 @@ func TestCheckForUpdate(t *testing.T) {
 			CacheDir:   cacheDir,
 			APIBaseURL: srv.URL,
 		}
-		result, err := tuikit.CheckForUpdate(cfg)
+		result, err := blit.CheckForUpdate(cfg)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -441,12 +441,12 @@ func TestCheckForUpdate(t *testing.T) {
 func TestValidateConfig(t *testing.T) {
 	tests := []struct {
 		name    string
-		cfg     tuikit.UpdateConfig
+		cfg     blit.UpdateConfig
 		wantErr string
 	}{
 		{
 			name: "valid config",
-			cfg: tuikit.UpdateConfig{
+			cfg: blit.UpdateConfig{
 				Owner:      "owner",
 				Repo:       "repo",
 				BinaryName: "myapp",
@@ -455,29 +455,29 @@ func TestValidateConfig(t *testing.T) {
 		},
 		{
 			name:    "missing owner",
-			cfg:     tuikit.UpdateConfig{Repo: "repo", BinaryName: "myapp", Version: "v1.0.0"},
+			cfg:     blit.UpdateConfig{Repo: "repo", BinaryName: "myapp", Version: "v1.0.0"},
 			wantErr: "Owner",
 		},
 		{
 			name:    "missing repo",
-			cfg:     tuikit.UpdateConfig{Owner: "owner", BinaryName: "myapp", Version: "v1.0.0"},
+			cfg:     blit.UpdateConfig{Owner: "owner", BinaryName: "myapp", Version: "v1.0.0"},
 			wantErr: "Repo",
 		},
 		{
 			name:    "missing binary name",
-			cfg:     tuikit.UpdateConfig{Owner: "owner", Repo: "repo", Version: "v1.0.0"},
+			cfg:     blit.UpdateConfig{Owner: "owner", Repo: "repo", Version: "v1.0.0"},
 			wantErr: "BinaryName",
 		},
 		{
 			name:    "missing version",
-			cfg:     tuikit.UpdateConfig{Owner: "owner", Repo: "repo", BinaryName: "myapp"},
+			cfg:     blit.UpdateConfig{Owner: "owner", Repo: "repo", BinaryName: "myapp"},
 			wantErr: "Version",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tuikit.ValidateConfig(tt.cfg)
+			err := blit.ValidateConfig(tt.cfg)
 			if tt.wantErr == "" {
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
@@ -496,25 +496,25 @@ func TestValidateConfig(t *testing.T) {
 
 func TestCheckForUpdateValidatesConfig(t *testing.T) {
 	// Version is non-empty and non-dev, so ValidateConfig runs. Missing Owner should error.
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Version:    "v1.0.0",
 		Repo:       "repo",
 		BinaryName: "myapp",
 	}
-	_, err := tuikit.CheckForUpdate(cfg)
+	_, err := blit.CheckForUpdate(cfg)
 	if err == nil {
 		t.Fatal("expected error for missing Owner, got nil")
 	}
 }
 
 func TestSelfUpdateValidatesConfig(t *testing.T) {
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Version:    "v1.0.0",
 		Repo:       "repo",
 		BinaryName: "myapp",
 		// Owner missing
 	}
-	err := tuikit.SelfUpdate(cfg)
+	err := blit.SelfUpdate(cfg)
 	if err == nil {
 		t.Fatal("expected error for missing Owner, got nil")
 	}
@@ -575,7 +575,7 @@ func TestProgressFuncCalledDuringDownload(t *testing.T) {
 	srvURL = srv.URL
 
 	var calls []struct{ received, total int64 }
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner:      "owner",
 		Repo:       "repo",
 		BinaryName: "myapp",
@@ -589,7 +589,7 @@ func TestProgressFuncCalledDuringDownload(t *testing.T) {
 
 	// SelfUpdate will fail at replaceBinary (no real exe path in tests), but
 	// progress must have been called before that point.
-	_ = tuikit.SelfUpdate(cfg)
+	_ = blit.SelfUpdate(cfg)
 
 	if len(calls) == 0 {
 		t.Fatal("OnProgress was never called")
@@ -621,7 +621,7 @@ func TestProgressFuncNilIsNoOp(t *testing.T) {
 
 	// Use CheckForUpdate path which internally uses downloadURL (no progress).
 	// This is a compile+runtime sanity check that nil progress doesn't panic.
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner:      "owner",
 		Repo:       "repo",
 		BinaryName: "myapp",
@@ -631,7 +631,7 @@ func TestProgressFuncNilIsNoOp(t *testing.T) {
 		// OnProgress deliberately nil
 	}
 	// Server returns invalid JSON — result will be silently ignored. We just want no panic.
-	result, err := tuikit.CheckForUpdate(cfg)
+	result, err := blit.CheckForUpdate(cfg)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -664,7 +664,7 @@ func TestExtractBinaryFromTarGz(t *testing.T) {
 	content := []byte("#!/bin/sh\necho hello")
 	archive := createTestTarGz(t, "myapp", content)
 
-	got, err := tuikit.ExtractBinary(archive, "myapp", "tar.gz")
+	got, err := blit.ExtractBinary(archive, "myapp", "tar.gz")
 	if err != nil {
 		t.Fatalf("ExtractBinary: %v", err)
 	}
@@ -676,7 +676,7 @@ func TestExtractBinaryFromTarGz(t *testing.T) {
 func TestExtractBinaryFromTarGzMissing(t *testing.T) {
 	archive := createTestTarGz(t, "other", []byte("content"))
 
-	_, err := tuikit.ExtractBinary(archive, "myapp", "tar.gz")
+	_, err := blit.ExtractBinary(archive, "myapp", "tar.gz")
 	if err == nil {
 		t.Error("expected error for missing binary")
 	}
@@ -701,7 +701,7 @@ func TestExtractBinaryFromZip(t *testing.T) {
 	content := []byte("windows binary content")
 	archive := createTestZip(t, "myapp.exe", content)
 
-	got, err := tuikit.ExtractBinary(archive, "myapp", "zip")
+	got, err := blit.ExtractBinary(archive, "myapp", "zip")
 	if err != nil {
 		t.Fatalf("ExtractBinary: %v", err)
 	}
@@ -713,7 +713,7 @@ func TestExtractBinaryFromZip(t *testing.T) {
 func TestExtractBinaryFromZipMissing(t *testing.T) {
 	archive := createTestZip(t, "other.exe", []byte("content"))
 
-	_, err := tuikit.ExtractBinary(archive, "myapp", "zip")
+	_, err := blit.ExtractBinary(archive, "myapp", "zip")
 	if err == nil {
 		t.Error("expected error for missing binary")
 	}

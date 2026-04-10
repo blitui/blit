@@ -1,4 +1,4 @@
-// Package main demonstrates the tuikit Tabs component.
+// Package main demonstrates the blit Tabs component.
 //
 // This example nests a Table, a simple list, and a text pane behind three tabs.
 // Keybinds: tab/shift+tab to cycle tabs, 1-3 to jump, mouse click on tab bar.
@@ -11,19 +11,19 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // ── Tab 1: Table ─────────────────────────────────────────────────────────────
 
-func buildTableTab() tuikit.Component {
-	columns := []tuikit.Column{
+func buildTableTab() blit.Component {
+	columns := []blit.Column{
 		{Title: "Language", Width: 18, Sortable: true},
 		{Title: "Paradigm", Width: 20},
-		{Title: "Year", Width: 8, Align: tuikit.Right, Sortable: true},
+		{Title: "Year", Width: 8, Align: blit.Right, Sortable: true},
 		{Title: "Creator", Width: 22},
 	}
-	rows := []tuikit.Row{
+	rows := []blit.Row{
 		{"Go", "Compiled/Concurrent", "2009", "Google"},
 		{"Rust", "Systems/Safe", "2010", "Mozilla"},
 		{"Python", "Dynamic/OOP", "1991", "van Rossum"},
@@ -33,7 +33,7 @@ func buildTableTab() tuikit.Component {
 		{"Elixir", "Functional/Concurrent", "2011", "Valim"},
 		{"Swift", "Multi-paradigm", "2014", "Apple"},
 	}
-	return tuikit.NewTable(columns, rows, tuikit.TableOpts{
+	return blit.NewTable(columns, rows, blit.TableOpts{
 		Sortable:   true,
 		Filterable: true,
 	})
@@ -46,23 +46,23 @@ type noteItem struct {
 	text string
 }
 
-func buildListTab() tuikit.Component {
+func buildListTab() blit.Component {
 	items := []noteItem{
-		{1, "Read the tuikit-go docs"},
+		{1, "Read the blit-go docs"},
 		{2, "Implement Tabs component"},
-		{3, "Write tuitest coverage"},
+		{3, "Write blit coverage"},
 		{4, "Ship v0.8.0"},
 		{5, "Celebrate with pizza"},
 	}
-	lv := tuikit.NewListView[noteItem](tuikit.ListViewOpts[noteItem]{
-		RenderItem: func(item noteItem, idx int, isCursor bool, theme tuikit.Theme) string {
+	lv := blit.NewListView[noteItem](blit.ListViewOpts[noteItem]{
+		RenderItem: func(item noteItem, idx int, isCursor bool, theme blit.Theme) string {
 			check := "○"
 			if item.id%2 == 0 {
 				check = "●"
 			}
 			return fmt.Sprintf("%s  %s", check, item.text)
 		},
-		HeaderFunc: func(theme tuikit.Theme) string {
+		HeaderFunc: func(theme blit.Theme) string {
 			return lipgloss.NewStyle().
 				Foreground(lipgloss.Color(theme.Accent)).
 				Bold(true).
@@ -76,19 +76,19 @@ func buildListTab() tuikit.Component {
 // ── Tab 3: Info pane ─────────────────────────────────────────────────────────
 
 type infoPane struct {
-	theme   tuikit.Theme
+	theme   blit.Theme
 	focused bool
 	width   int
 	height  int
 }
 
 func (p *infoPane) Init() tea.Cmd                                                      { return nil }
-func (p *infoPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) { return p, nil }
-func (p *infoPane) KeyBindings() []tuikit.KeyBind                                      { return nil }
+func (p *infoPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) { return p, nil }
+func (p *infoPane) KeyBindings() []blit.KeyBind                                      { return nil }
 func (p *infoPane) SetSize(w, h int)                                                   { p.width = w; p.height = h }
 func (p *infoPane) Focused() bool                                                      { return p.focused }
 func (p *infoPane) SetFocused(f bool)                                                  { p.focused = f }
-func (p *infoPane) SetTheme(t tuikit.Theme)                                            { p.theme = t }
+func (p *infoPane) SetTheme(t blit.Theme)                                            { p.theme = t }
 
 func (p *infoPane) View() string {
 	accent := lipgloss.NewStyle().Foreground(lipgloss.Color(p.theme.Accent)).Bold(true)
@@ -96,7 +96,7 @@ func (p *infoPane) View() string {
 	text := lipgloss.NewStyle().Foreground(lipgloss.Color(p.theme.Text))
 
 	lines := []string{
-		accent.Render("  tuikit-go Tabs Demo"),
+		accent.Render("  blit Tabs Demo"),
 		"",
 		text.Render("  This pane is tab #3 — a plain component."),
 		text.Render("  Switch tabs with:"),
@@ -114,25 +114,25 @@ func (p *infoPane) View() string {
 // ── main ─────────────────────────────────────────────────────────────────────
 
 func main() {
-	tabs := tuikit.NewTabs([]tuikit.TabItem{
+	tabs := blit.NewTabs([]blit.TabItem{
 		{Title: "Languages", Glyph: "▦", Content: buildTableTab()},
 		{Title: "TODO", Glyph: "✓", Content: buildListTab()},
 		{Title: "About", Glyph: "i", Content: &infoPane{}},
-	}, tuikit.TabsOpts{
+	}, blit.TabsOpts{
 		OnChange: func(i int) {
 			_ = i // could update a status bar here
 		},
 	})
 
-	app := tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithComponent("tabs", tabs),
-		tuikit.WithStatusBar(
+	app := blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithComponent("tabs", tabs),
+		blit.WithStatusBar(
 			func() string { return " tab/shift+tab — cycle  1-3 — jump  q — quit" },
-			func() string { return " tuikit-go tabs demo " },
+			func() string { return " blit tabs demo " },
 		),
-		tuikit.WithHelp(),
-		tuikit.WithMouseSupport(),
+		blit.WithHelp(),
+		blit.WithMouseSupport(),
 	)
 
 	if err := app.Run(); err != nil {

@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 // Named slots for composing an App shell.
 //
@@ -6,11 +6,11 @@ package tuikit
 // juggling separate options for components, layouts, status bars, and
 // overlays, you declare each region by name:
 //
-//	app := tuikit.NewApp(
-//	    tuikit.WithSlot(tuikit.SlotMain, table),
-//	    tuikit.WithSlot(tuikit.SlotSidebar, panel),
-//	    tuikit.WithSlot(tuikit.SlotFooter, statusBar),
-//	    tuikit.WithSlot(tuikit.SlotOverlay, configEditor),
+//	app := blit.NewApp(
+//	    blit.WithSlot(blit.SlotMain, table),
+//	    blit.WithSlot(blit.SlotSidebar, panel),
+//	    blit.WithSlot(blit.SlotFooter, statusBar),
+//	    blit.WithSlot(blit.SlotOverlay, configEditor),
 //	)
 //
 // The legacy options (WithComponent, WithLayout, WithStatusBar, WithOverlay)

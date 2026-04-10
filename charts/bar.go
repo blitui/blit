@@ -1,5 +1,5 @@
-// Package charts provides terminal chart components for tuikit.
-// Each chart implements tuikit.Component and renders to its assigned width/height.
+// Package charts provides terminal chart components for blit.
+// Each chart implements blit.Component and renders to its assigned width/height.
 package charts
 
 import (
@@ -9,7 +9,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // Bar renders a bar chart, either vertical or horizontal.
@@ -24,11 +24,11 @@ type Bar struct {
 	Horizontal bool
 	// Gradient, when non-nil, fills each bar using a start→end color gradient
 	// (reuses the v0.8 Gradient type from the parent package).
-	Gradient *tuikit.Gradient
+	Gradient *blit.Gradient
 	// Colors overrides per-bar colors. Cycles if shorter than Data.
 	Colors []lipgloss.Color
 
-	theme   tuikit.Theme
+	theme   blit.Theme
 	width   int
 	height  int
 	focused bool
@@ -40,19 +40,19 @@ func NewBar(data []float64, labels []string, horizontal bool) *Bar {
 		Data:       data,
 		Labels:     labels,
 		Horizontal: horizontal,
-		theme:      tuikit.DefaultTheme(),
+		theme:      blit.DefaultTheme(),
 	}
 }
 
 func (b *Bar) Init() tea.Cmd { return nil }
-func (b *Bar) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (b *Bar) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return b, nil
 }
-func (b *Bar) KeyBindings() []tuikit.KeyBind { return nil }
+func (b *Bar) KeyBindings() []blit.KeyBind { return nil }
 func (b *Bar) SetSize(w, h int)              { b.width = w; b.height = h }
 func (b *Bar) Focused() bool                 { return b.focused }
 func (b *Bar) SetFocused(f bool)             { b.focused = f }
-func (b *Bar) SetTheme(t tuikit.Theme)       { b.theme = t }
+func (b *Bar) SetTheme(t blit.Theme)       { b.theme = t }
 
 // barColor returns the color for bar i.
 func (b *Bar) barColor(i int) lipgloss.Color {

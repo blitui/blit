@@ -1,14 +1,14 @@
 version: 2
 
-project_name: tuitest
+project_name: blit
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - main: ./cmd/tuitest
-    binary: tuitest
+  - main: ./cmd/blit
+    binary: blit
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
@@ -33,21 +33,21 @@ checksum:
 
 brews:
   - repository:
-      owner: moneycaringcoder
+      owner: blitui
       name: homebrew-tap
     directory: Formula
-    homepage: "https://github.com/moneycaringcoder/tuikit-go"
-    description: "CLI runner for tuitest — the TUI testing framework in tuikit-go"
+    homepage: "https://github.com/blitui/blit"
+    description: "CLI for blit — the pragmatic Go TUI toolkit"
     license: "MIT"
     test: |
-      system "#{bin}/tuitest", "-h"
+      system "#{bin}/blit", "-h"
 
 scoops:
   - repository:
-      owner: moneycaringcoder
+      owner: blitui
       name: scoop-bucket
-    homepage: "https://github.com/moneycaringcoder/tuikit-go"
-    description: "CLI runner for tuitest — the TUI testing framework in tuikit-go"
+    homepage: "https://github.com/blitui/blit"
+    description: "CLI for blit — the pragmatic Go TUI toolkit"
     license: "MIT"
 
 changelog:
@@ -63,29 +63,28 @@ changelog:
 
 release:
   github:
-    owner: moneycaringcoder
-    name: tuikit-go
+    owner: blitui
+    name: blit
   draft: false
   prerelease: auto
   name_template: "{{.Tag}}"
   header: |
-    ## tuitest {{.Tag}}
+    ## blit {{.Tag}}
 
-    CLI runner for tuitest-powered Go test suites. Ships alongside the
-    [tuikit-go](https://github.com/moneycaringcoder/tuikit-go) library.
+    CLI for blit-powered Go TUI applications.
 
     ### Install
 
     ```bash
     # Homebrew
-    brew install moneycaringcoder/tap/tuitest
+    brew install blitui/tap/blit
 
     # Scoop
-    scoop bucket add moneycaringcoder https://github.com/moneycaringcoder/scoop-bucket
-    scoop install tuitest
+    scoop bucket add blitui https://github.com/blitui/scoop-bucket
+    scoop install blit
 
     # Go
-    go install github.com/moneycaringcoder/tuikit-go/cmd/tuitest@{{.Tag}}
+    go install github.com/blitui/blit/cmd/blit@{{.Tag}}
     ```
 
     Or download a prebuilt archive from the assets below.

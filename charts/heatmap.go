@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // Palette names for Heatmap.
@@ -30,7 +30,7 @@ type Heatmap struct {
 	// RowLabels provides optional row labels rendered on the left.
 	RowLabels []string
 
-	theme   tuikit.Theme
+	theme   blit.Theme
 	width   int
 	height  int
 	focused bool
@@ -41,32 +41,32 @@ func NewHeatmap(grid [][]float64, palette string) *Heatmap {
 	return &Heatmap{
 		Grid:    grid,
 		Palette: palette,
-		theme:   tuikit.DefaultTheme(),
+		theme:   blit.DefaultTheme(),
 	}
 }
 
 func (h *Heatmap) Init() tea.Cmd { return nil }
-func (h *Heatmap) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (h *Heatmap) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return h, nil
 }
-func (h *Heatmap) KeyBindings() []tuikit.KeyBind { return nil }
+func (h *Heatmap) KeyBindings() []blit.KeyBind { return nil }
 func (h *Heatmap) SetSize(w, hh int)             { h.width = w; h.height = hh }
 func (h *Heatmap) Focused() bool                 { return h.focused }
 func (h *Heatmap) SetFocused(f bool)             { h.focused = f }
-func (h *Heatmap) SetTheme(t tuikit.Theme)       { h.theme = t }
+func (h *Heatmap) SetTheme(t blit.Theme)       { h.theme = t }
 
 // cellColor returns the background color for a normalized value t ∈ [0, 1].
 func (h *Heatmap) cellColor(t float64) lipgloss.Color {
 	switch h.Palette {
 	case PaletteDivergent:
 		if t < 0.5 {
-			g := tuikit.Gradient{Start: h.theme.Negative, End: h.theme.Muted}
+			g := blit.Gradient{Start: h.theme.Negative, End: h.theme.Muted}
 			return g.RenderAt(t * 2)
 		}
-		g := tuikit.Gradient{Start: h.theme.Muted, End: h.theme.Positive}
+		g := blit.Gradient{Start: h.theme.Muted, End: h.theme.Positive}
 		return g.RenderAt((t - 0.5) * 2)
 	default: // sequential
-		g := tuikit.Gradient{Start: lipgloss.Color("#111111"), End: h.theme.Accent}
+		g := blit.Gradient{Start: lipgloss.Color("#111111"), End: h.theme.Accent}
 		return g.RenderAt(t)
 	}
 }

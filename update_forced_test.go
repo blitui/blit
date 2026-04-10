@@ -1,20 +1,20 @@
-package tuikit_test
+package blit_test
 
 import (
 	"strings"
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/tuitest"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/btest"
 )
 
 func TestForcedUpdateScreen_RendersVersions(t *testing.T) {
-	res := &tuikit.UpdateResult{
+	res := &blit.UpdateResult{
 		CurrentVersion: "v1.0.0",
 		LatestVersion:  "v2.0.0",
 		ReleaseNotes:   "big changes",
 	}
-	gate := tuikit.NewForcedUpdateScreen(res, tuikit.UpdateConfig{BinaryName: "tool"})
+	gate := blit.NewForcedUpdateScreen(res, blit.UpdateConfig{BinaryName: "tool"})
 	// Use the model's View directly: lipgloss.Place with big padding +
 	// a virtual 80x24 can clip content unpredictably across platforms.
 	v := gate.View()
@@ -30,31 +30,31 @@ func TestForcedUpdateScreen_RendersVersions(t *testing.T) {
 }
 
 func TestForcedUpdateScreen_UpdateKey(t *testing.T) {
-	res := &tuikit.UpdateResult{CurrentVersion: "v1.0.0", LatestVersion: "v2.0.0"}
-	gate := tuikit.NewForcedUpdateScreen(res, tuikit.UpdateConfig{})
-	tm := tuitest.NewTestModel(t, gate, 80, 24)
+	res := &blit.UpdateResult{CurrentVersion: "v1.0.0", LatestVersion: "v2.0.0"}
+	gate := blit.NewForcedUpdateScreen(res, blit.UpdateConfig{})
+	tm := btest.NewTestModel(t, gate, 80, 24)
 	tm.SendKey("y")
-	if gate.Choice != tuikit.ForcedChoiceUpdate {
+	if gate.Choice != blit.ForcedChoiceUpdate {
 		t.Errorf("expected ForcedChoiceUpdate, got %v", gate.Choice)
 	}
 }
 
 func TestForcedUpdateScreen_QuitKey(t *testing.T) {
-	res := &tuikit.UpdateResult{CurrentVersion: "v1.0.0", LatestVersion: "v2.0.0"}
-	gate := tuikit.NewForcedUpdateScreen(res, tuikit.UpdateConfig{})
-	tm := tuitest.NewTestModel(t, gate, 80, 24)
+	res := &blit.UpdateResult{CurrentVersion: "v1.0.0", LatestVersion: "v2.0.0"}
+	gate := blit.NewForcedUpdateScreen(res, blit.UpdateConfig{})
+	tm := btest.NewTestModel(t, gate, 80, 24)
 	tm.SendKey("q")
-	if gate.Choice != tuikit.ForcedChoiceQuit {
+	if gate.Choice != blit.ForcedChoiceQuit {
 		t.Errorf("expected ForcedChoiceQuit, got %v", gate.Choice)
 	}
 }
 
 func TestForcedUpdateScreen_EnterIsUpdate(t *testing.T) {
-	res := &tuikit.UpdateResult{CurrentVersion: "v1.0.0", LatestVersion: "v2.0.0"}
-	gate := tuikit.NewForcedUpdateScreen(res, tuikit.UpdateConfig{})
-	tm := tuitest.NewTestModel(t, gate, 80, 24)
+	res := &blit.UpdateResult{CurrentVersion: "v1.0.0", LatestVersion: "v2.0.0"}
+	gate := blit.NewForcedUpdateScreen(res, blit.UpdateConfig{})
+	tm := btest.NewTestModel(t, gate, 80, 24)
 	tm.SendKey("enter")
-	if gate.Choice != tuikit.ForcedChoiceUpdate {
+	if gate.Choice != blit.ForcedChoiceUpdate {
 		t.Errorf("expected ForcedChoiceUpdate, got %v", gate.Choice)
 	}
 }

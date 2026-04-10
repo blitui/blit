@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"bytes"
@@ -81,12 +81,12 @@ func TestApplyDeltaPatchErrors(t *testing.T) {
 func TestMatchDeltaAsset(t *testing.T) {
 	goos, goarch := runtime.GOOS, runtime.GOARCH
 	assets := []ReleaseAsset{
-		{Name: fmt.Sprintf("tuikit_0.11.0_to_0.12.0_%s_%s.bsdiff", goos, goarch), DownloadURL: "https://example.com/p"},
-		{Name: "tuikit_0.12.0_linux_amd64.tar.gz"},
+		{Name: fmt.Sprintf("blit_0.11.0_to_0.12.0_%s_%s.bsdiff", goos, goarch), DownloadURL: "https://example.com/p"},
+		{Name: "blit_0.12.0_linux_amd64.tar.gz"},
 		{Name: "checksums.txt"},
 	}
 
-	got, err := MatchDeltaAsset(assets, "tuikit", "v0.11.0", "v0.12.0", goos, goarch)
+	got, err := MatchDeltaAsset(assets, "blit", "v0.11.0", "v0.12.0", goos, goarch)
 	if err != nil {
 		t.Fatalf("MatchDeltaAsset: %v", err)
 	}
@@ -95,17 +95,17 @@ func TestMatchDeltaAsset(t *testing.T) {
 	}
 
 	// No "v" prefix — should still match.
-	if _, err := MatchDeltaAsset(assets, "tuikit", "0.11.0", "0.12.0", goos, goarch); err != nil {
+	if _, err := MatchDeltaAsset(assets, "blit", "0.11.0", "0.12.0", goos, goarch); err != nil {
 		t.Errorf("bare versions should match: %v", err)
 	}
 
 	// Missing patch asset.
-	if _, err := MatchDeltaAsset(assets, "tuikit", "v0.10.0", "v0.12.0", goos, goarch); err == nil {
+	if _, err := MatchDeltaAsset(assets, "blit", "v0.10.0", "v0.12.0", goos, goarch); err == nil {
 		t.Error("expected error for missing patch asset")
 	}
 
 	// Missing versions.
-	if _, err := MatchDeltaAsset(assets, "tuikit", "", "v0.12.0", goos, goarch); err == nil {
+	if _, err := MatchDeltaAsset(assets, "blit", "", "v0.12.0", goos, goarch); err == nil {
 		t.Error("expected error for empty fromVersion")
 	}
 }

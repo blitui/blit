@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/charts"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/charts"
 )
 
 func TestBarVerticalRender(t *testing.T) {
 	b := charts.NewBar([]float64{1, 2, 3, 4, 5}, []string{"a", "b", "c", "d", "e"}, false)
 	b.SetSize(20, 10)
-	b.SetTheme(tuikit.DefaultTheme())
+	b.SetTheme(blit.DefaultTheme())
 
 	out := b.View()
 	if out == "" {
@@ -27,7 +27,7 @@ func TestBarVerticalRender(t *testing.T) {
 func TestBarHorizontalRender(t *testing.T) {
 	b := charts.NewBar([]float64{10, 50, 100}, []string{"low", "mid", "high"}, true)
 	b.SetSize(30, 5)
-	b.SetTheme(tuikit.DefaultTheme())
+	b.SetTheme(blit.DefaultTheme())
 
 	out := b.View()
 	if out == "" {
@@ -40,14 +40,14 @@ func TestBarHorizontalRender(t *testing.T) {
 }
 
 func TestBarGradient(t *testing.T) {
-	g := &tuikit.Gradient{
+	g := &blit.Gradient{
 		Start: lipgloss.Color("#ff0000"),
 		End:   lipgloss.Color("#0000ff"),
 	}
 	b := charts.NewBar([]float64{1, 5, 3}, nil, false)
 	b.Gradient = g
 	b.SetSize(15, 8)
-	b.SetTheme(tuikit.DefaultTheme())
+	b.SetTheme(blit.DefaultTheme())
 
 	out := b.View()
 	if out == "" {
@@ -77,7 +77,7 @@ func TestBarCustomColors(t *testing.T) {
 	b := charts.NewBar([]float64{1, 2, 3}, nil, false)
 	b.Colors = []lipgloss.Color{"#ff0000", "#00ff00"}
 	b.SetSize(15, 8)
-	b.SetTheme(tuikit.DefaultTheme())
+	b.SetTheme(blit.DefaultTheme())
 	out := b.View()
 	if out == "" {
 		t.Fatal("expected non-empty output with custom colors")
@@ -87,7 +87,7 @@ func TestBarCustomColors(t *testing.T) {
 func TestBarDeterministic(t *testing.T) {
 	b := charts.NewBar([]float64{3, 1, 4, 1, 5}, []string{"a", "b", "c", "d", "e"}, false)
 	b.SetSize(25, 10)
-	b.SetTheme(tuikit.DefaultTheme())
+	b.SetTheme(blit.DefaultTheme())
 
 	out1 := b.View()
 	out2 := b.View()

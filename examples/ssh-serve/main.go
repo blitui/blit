@@ -1,4 +1,4 @@
-// Package main demonstrates hosting a tuikit dashboard over SSH via Charm Wish.
+// Package main demonstrates hosting a blit dashboard over SSH via Charm Wish.
 //
 // Run with:
 //
@@ -22,12 +22,12 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // MissionControl is the sidebar panel showing delivery stats.
 type MissionControl struct {
-	theme         tuikit.Theme
+	theme         blit.Theme
 	focused       bool
 	width, height int
 	stats         missionStats
@@ -41,14 +41,14 @@ type missionStats struct {
 func newMissionControl(s missionStats) *MissionControl { return &MissionControl{stats: s} }
 
 func (m *MissionControl) Init() tea.Cmd { return nil }
-func (m *MissionControl) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (m *MissionControl) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return m, nil
 }
-func (m *MissionControl) KeyBindings() []tuikit.KeyBind { return nil }
+func (m *MissionControl) KeyBindings() []blit.KeyBind { return nil }
 func (m *MissionControl) SetSize(w, h int)              { m.width, m.height = w, h }
 func (m *MissionControl) Focused() bool                 { return m.focused }
 func (m *MissionControl) SetFocused(f bool)             { m.focused = f }
-func (m *MissionControl) SetTheme(t tuikit.Theme)       { m.theme = t }
+func (m *MissionControl) SetTheme(t blit.Theme)       { m.theme = t }
 
 func (m *MissionControl) View() string {
 	title := lipgloss.NewStyle().Foreground(lipgloss.Color(m.theme.Accent)).Bold(true)
@@ -72,12 +72,12 @@ func (m *MissionControl) View() string {
 	return sb.String()
 }
 
-func buildApp() *tuikit.App {
+func buildApp() *blit.App {
 	planets := []string{"Mars", "Jupiter", "Saturn", "Neptune", "Pluto", "Kepler-442b", "Proxima b", "Tatooine", "Arrakis", "Gallifrey", "Vulcan", "Krypton", "Ego"}
 	drivers := []string{"Zorp McBlast", "Captain Pepperoni", "Turbo Jenkins", "Sally Starfighter", "Buzz Crust", "The Dough Knight"}
 	statuses := []string{"In Transit", "Delivered", "Lost in Wormhole", "Dodging Asteroids", "Refueling", "Abducted by Aliens"}
 
-	var rows []tuikit.Row
+	var rows []blit.Row
 	delivered, lost := 0, 0
 	for i := 0; i < 42; i++ {
 		status := statuses[rand.Intn(len(statuses))]
@@ -90,7 +90,7 @@ func buildApp() *tuikit.App {
 			lost++
 			eta = "999"
 		}
-		rows = append(rows, tuikit.Row{
+		rows = append(rows, blit.Row{
 			planets[rand.Intn(len(planets))],
 			drivers[rand.Intn(len(drivers))],
 			status, eta,
@@ -98,15 +98,15 @@ func buildApp() *tuikit.App {
 		})
 	}
 
-	columns := []tuikit.Column{
+	columns := []blit.Column{
 		{Title: "Planet", Width: 20, Sortable: true},
 		{Title: "Driver", Width: 25, Sortable: true},
 		{Title: "Status", Width: 25},
-		{Title: "ETA (light-min)", Width: 15, MinWidth: 100, Align: tuikit.Right, Sortable: true},
-		{Title: "Tip ($)", Width: 10, MinWidth: 120, Align: tuikit.Right, Sortable: true},
+		{Title: "ETA (light-min)", Width: 15, MinWidth: 100, Align: blit.Right, Sortable: true},
+		{Title: "Tip ($)", Width: 10, MinWidth: 120, Align: blit.Right, Sortable: true},
 	}
 
-	cellRenderer := func(row tuikit.Row, colIdx int, isCursor bool, theme tuikit.Theme) string {
+	cellRenderer := func(row blit.Row, colIdx int, isCursor bool, theme blit.Theme) string {
 		if colIdx >= len(row) {
 			return ""
 		}
@@ -139,7 +139,7 @@ func buildApp() *tuikit.App {
 		return style.Render(val)
 	}
 
-	numericSort := func(a, b tuikit.Row, col int, asc bool) bool {
+	numericSort := func(a, b blit.Row, col int, asc bool) bool {
 		va, _ := strconv.ParseFloat(a[col], 64)
 		vb, _ := strconv.ParseFloat(b[col], 64)
 		if asc {
@@ -148,7 +148,7 @@ func buildApp() *tuikit.App {
 		return va > vb
 	}
 
-	table := tuikit.NewTable(columns, rows, tuikit.TableOpts{
+	table := blit.NewTable(columns, rows, blit.TableOpts{
 		Sortable: true, Filterable: true,
 		CellRenderer: cellRenderer, SortFunc: numericSort,
 	})
@@ -159,7 +159,7 @@ func buildApp() *tuikit.App {
 	filterModes := []string{"all", "delivered", "lost"}
 	filterIdx := 0
 
-	table.SetFilter(func(row tuikit.Row) bool {
+	table.SetFilter(func(row blit.Row) bool {
 		if len(row) < 3 {
 			return true
 		}
@@ -172,23 +172,23 @@ func buildApp() *tuikit.App {
 		return true
 	})
 
-	return tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithSlot(tuikit.SlotMain, table),
-		tuikit.WithSlot(tuikit.SlotSidebar, panel),
-		tuikit.WithStatusBar(
+	return blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithSlot(blit.SlotMain, table),
+		blit.WithSlot(blit.SlotSidebar, panel),
+		blit.WithStatusBar(
 			func() string {
 				return fmt.Sprintf(" ? help  / search  s sort  f filter[%s]  q quit", filterModes[filterIdx])
 			},
 			func() string { return "42 active deliveries  Galactic Pizza Corp " },
 		),
-		tuikit.WithHelp(),
-		tuikit.WithKeyBind(tuikit.KeyBind{Key: "f", Label: "Cycle filter", Group: "DATA", Handler: func() {
+		blit.WithHelp(),
+		blit.WithKeyBind(blit.KeyBind{Key: "f", Label: "Cycle filter", Group: "DATA", Handler: func() {
 			filterIdx = (filterIdx + 1) % len(filterModes)
 			table.SetRows(rows)
 		}}),
-		tuikit.WithMouseSupport(),
-		tuikit.WithTickInterval(100*time.Millisecond),
+		blit.WithMouseSupport(),
+		blit.WithTickInterval(100*time.Millisecond),
 	)
 }
 
@@ -202,7 +202,7 @@ func run() int {
 
 	fmt.Println("Starting SSH server on :2222 — connect with: ssh -p 2222 localhost")
 
-	if err := tuikit.Serve(ctx, tuikit.ServeConfig{
+	if err := blit.Serve(ctx, blit.ServeConfig{
 		Addr:    ":2222",
 		Factory: buildApp,
 	}); err != nil && err != context.Canceled {

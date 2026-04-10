@@ -1,4 +1,4 @@
-// Package main demonstrates tuikit's theme hot-reload feature.
+// Package main demonstrates blit's theme hot-reload feature.
 // Edit examples/theme-dev/theme.yaml while this program is running and watch
 // the colors update live without restarting.
 package main
@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 func main() {
@@ -27,15 +27,15 @@ func main() {
 		"Border    — borders and separators",
 	}
 
-	list := tuikit.NewListView(tuikit.ListViewOpts[string]{
-		RenderItem: func(item string, idx int, isCursor bool, theme tuikit.Theme) string {
+	list := blit.NewListView(blit.ListViewOpts[string]{
+		RenderItem: func(item string, idx int, isCursor bool, theme blit.Theme) string {
 			style := lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Text))
 			if isCursor {
 				style = style.Foreground(lipgloss.Color(theme.Accent)).Bold(true)
 			}
 			return style.Render("  " + item)
 		},
-		HeaderFunc: func(theme tuikit.Theme) string {
+		HeaderFunc: func(theme blit.Theme) string {
 			return lipgloss.NewStyle().
 				Foreground(lipgloss.Color(theme.Accent)).
 				Bold(true).
@@ -44,14 +44,14 @@ func main() {
 	})
 	list.SetItems(items)
 
-	app := tuikit.NewApp(
-		tuikit.WithComponent("tokens", list),
-		tuikit.WithStatusBar(
+	app := blit.NewApp(
+		blit.WithComponent("tokens", list),
+		blit.WithStatusBar(
 			func() string { return fmt.Sprintf(" watching: %s", themeFile) },
 			func() string { return " q quit" },
 		),
-		tuikit.WithThemeHotReload(themeFile),
-		tuikit.WithHelp(),
+		blit.WithThemeHotReload(themeFile),
+		blit.WithHelp(),
 	)
 
 	if err := app.Run(); err != nil {

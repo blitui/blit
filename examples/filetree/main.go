@@ -6,11 +6,11 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 type model struct {
-	fp       *tuikit.FilePicker
+	fp       *blit.FilePicker
 	selected string
 	quitting bool
 }
@@ -31,8 +31,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.fp.SetSize(msg.Width, msg.Height-2)
 	}
 
-	updated, cmd := m.fp.Update(msg, tuikit.Context{})
-	m.fp = updated.(*tuikit.FilePicker)
+	updated, cmd := m.fp.Update(msg, blit.Context{})
+	m.fp = updated.(*blit.FilePicker)
 	return m, cmd
 }
 
@@ -54,7 +54,7 @@ func main() {
 	}
 
 	var selected string
-	fp := tuikit.NewFilePicker(tuikit.FilePickerOpts{
+	fp := blit.NewFilePicker(blit.FilePickerOpts{
 		Root:        root,
 		PreviewPane: true,
 		ShowHidden:  false,
@@ -62,7 +62,7 @@ func main() {
 			selected = path
 		},
 	})
-	fp.SetTheme(tuikit.DefaultTheme())
+	fp.SetTheme(blit.DefaultTheme())
 	fp.SetFocused(true)
 
 	m := model{fp: fp}

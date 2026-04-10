@@ -1,33 +1,33 @@
 # Themes
 
-tuikit-go ships 8 built-in theme presets plus a `DefaultTheme` (dark teal) and `LightTheme`. All components update automatically when the theme changes.
+blit ships 8 built-in theme presets plus a `DefaultTheme` (dark teal) and `LightTheme`. All components update automatically when the theme changes.
 
 ## Built-In Presets
 
-Use `tuikit.ThemePreset(name)` or call the constructor directly:
+Use `blit.ThemePreset(name)` or call the constructor directly:
 
 ```go
-theme := tuikit.DraculaTheme()
-theme  = tuikit.CatppuccinMochaTheme()
-theme  = tuikit.TokyoNightTheme()
-theme  = tuikit.NordTheme()
-theme  = tuikit.GruvboxDarkTheme()
-theme  = tuikit.RosePineTheme()
-theme  = tuikit.KanagawaTheme()
-theme  = tuikit.OneDarkTheme()
+theme := blit.DraculaTheme()
+theme  = blit.CatppuccinMochaTheme()
+theme  = blit.TokyoNightTheme()
+theme  = blit.NordTheme()
+theme  = blit.GruvboxDarkTheme()
+theme  = blit.RosePineTheme()
+theme  = blit.KanagawaTheme()
+theme  = blit.OneDarkTheme()
 ```
 
 Or by name (registered in `init()`):
 
 ```go
-theme := tuikit.ThemePreset("dracula")
-theme  = tuikit.ThemePreset("catppuccin-mocha")
-theme  = tuikit.ThemePreset("tokyo-night")
-theme  = tuikit.ThemePreset("nord")
-theme  = tuikit.ThemePreset("gruvbox-dark")
-theme  = tuikit.ThemePreset("rose-pine")
-theme  = tuikit.ThemePreset("kanagawa")
-theme  = tuikit.ThemePreset("one-dark")
+theme := blit.ThemePreset("dracula")
+theme  = blit.ThemePreset("catppuccin-mocha")
+theme  = blit.ThemePreset("tokyo-night")
+theme  = blit.ThemePreset("nord")
+theme  = blit.ThemePreset("gruvbox-dark")
+theme  = blit.ThemePreset("rose-pine")
+theme  = blit.ThemePreset("kanagawa")
+theme  = blit.ThemePreset("one-dark")
 ```
 
 ## Preset Color Tokens
@@ -46,8 +46,8 @@ theme  = tuikit.ThemePreset("one-dark")
 ## Default and Light Themes
 
 ```go
-tuikit.DefaultTheme() // dark teal, accent #14b8a6
-tuikit.LightTheme()   // light background with dark text
+blit.DefaultTheme() // dark teal, accent #14b8a6
+blit.LightTheme()   // light background with dark text
 ```
 
 ## Building a Custom Theme
@@ -56,7 +56,7 @@ Construct a `Theme` directly or parse from a color map:
 
 ```go
 // Direct construction
-theme := tuikit.Theme{
+theme := blit.Theme{
     Positive:    lipgloss.Color("#22c55e"),
     Negative:    lipgloss.Color("#ef4444"),
     Accent:      lipgloss.Color("#3b82f6"),
@@ -69,7 +69,7 @@ theme := tuikit.Theme{
 }
 
 // From a map (e.g. parsed YAML/TOML config)
-theme = tuikit.ThemeFromMap(map[string]string{
+theme = blit.ThemeFromMap(map[string]string{
     "positive": "#22c55e",
     "negative": "#ef4444",
     "accent":   "#3b82f6",
@@ -84,8 +84,8 @@ theme = tuikit.ThemeFromMap(map[string]string{
 Pass the theme when creating the app:
 
 ```go
-app := tuikit.NewApp(
-    tuikit.WithTheme(tuikit.DraculaTheme()),
+app := blit.NewApp(
+    blit.WithTheme(blit.DraculaTheme()),
     ...
 )
 ```
@@ -93,12 +93,12 @@ app := tuikit.NewApp(
 Switch at runtime (e.g. from a settings menu):
 
 ```go
-app.SetTheme(tuikit.TokyoNightTheme())
+app.SetTheme(blit.TokyoNightTheme())
 ```
 
 ## Hot Reload
 
-Set `TUIKIT_THEME` to a JSON file path. tuikit-go watches the file and reloads the theme without restarting:
+Set `TUIKIT_THEME` to a JSON file path. blit watches the file and reloads the theme without restarting:
 
 ```bash
 TUIKIT_THEME=~/.config/mytool/theme.json mytool
@@ -109,8 +109,8 @@ TUIKIT_THEME=~/.config/mytool/theme.json mytool
 Override the cursor marker and flash marker glyphs:
 
 ```go
-theme := tuikit.DefaultTheme()
-theme.Glyphs = &tuikit.Glyphs{
+theme := blit.DefaultTheme()
+theme.Glyphs = &blit.Glyphs{
     CursorMarker: "▶",
     FlashMarker:  "★",
 }

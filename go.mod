@@ -1,4 +1,4 @@
-module github.com/moneycaringcoder/tuikit-go
+module github.com/blitui/blit
 
 go 1.25.0
 

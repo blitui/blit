@@ -1,4 +1,4 @@
-# Contributing to tuikit-go
+# Contributing to blit
 
 ## Prerequisites
 
@@ -12,10 +12,10 @@ go build ./...
 go test ./...
 ```
 
-For TUI component tests, tuikit uses a virtual terminal framework (`tuitest/`) — no real terminal needed. Run the tuitest CLI for a nicer test runner experience:
+For TUI component tests, blit uses a virtual terminal framework (`blit/`) — no real terminal needed. Run the blit CLI for a nicer test runner experience:
 
 ```bash
-go run ./cmd/tuitest ./...
+go run ./cmd/blit ./...
 ```
 
 ## Commits

@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/moneycaringcoder/tuikit-go/internal/fuzzy"
+	"github.com/blitui/blit/internal/fuzzy"
 )
 
 // FilePickerOpts configures FilePicker behaviour.
