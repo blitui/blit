@@ -56,6 +56,8 @@ func main() {
 			os.Exit(runRecord(os.Args[2:]))
 		case "replay":
 			os.Exit(runReplay(os.Args[2:]))
+		case "init":
+			os.Exit(runInit(os.Args[2:]))
 		case "gen":
 			os.Exit(runGen(os.Args[2:]))
 		case "history":
