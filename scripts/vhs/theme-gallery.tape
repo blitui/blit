@@ -1,4 +1,4 @@
-# theme-gallery.tape — tuikit-go 8-preset theme gallery cycle
+# theme-gallery.tape — blit 8-preset theme gallery cycle
 # Run: vhs scripts/vhs/theme-gallery.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

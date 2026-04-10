@@ -1,4 +1,4 @@
-# picker.tape — tuikit-go Picker (fuzzy file picker) demo
+# picker.tape — blit Picker (fuzzy file picker) demo
 # Run: vhs scripts/vhs/picker.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

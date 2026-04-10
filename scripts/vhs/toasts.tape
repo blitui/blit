@@ -1,4 +1,4 @@
-# toasts.tape — tuikit-go Toast / notification manager demo
+# toasts.tape — blit Toast / notification manager demo
 # Run: vhs scripts/vhs/toasts.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

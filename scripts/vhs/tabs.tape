@@ -1,4 +1,4 @@
-# tabs.tape — tuikit-go Tabs component demo
+# tabs.tape — blit Tabs component demo
 # Run: vhs scripts/vhs/tabs.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

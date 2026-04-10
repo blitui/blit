@@ -1,4 +1,4 @@
-# form.tape — tuikit-go Form component / signup flow demo
+# form.tape — blit Form component / signup flow demo
 # Run: vhs scripts/vhs/form.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

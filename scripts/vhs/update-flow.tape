@@ -1,4 +1,4 @@
-# update-flow.tape — tuikit-go self-update progress flow demo
+# update-flow.tape — blit self-update progress flow demo
 # Run: vhs scripts/vhs/update-flow.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

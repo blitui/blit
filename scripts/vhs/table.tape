@@ -1,4 +1,4 @@
-# table.tape — tuikit-go Table component demo
+# table.tape — blit Table component demo
 # Run: vhs scripts/vhs/table.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #
