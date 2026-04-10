@@ -54,10 +54,15 @@ func termSize() (cols, lines int) {
 	return int(ws.Col), int(ws.Row)
 }
 
-// readKeys reads raw bytes from stdin and sends them on ch.
-func readKeys(ch chan<- []byte) {
+// readKeys reads raw bytes from stdin and sends them on ch until done is closed.
+func readKeys(ch chan<- []byte, done <-chan struct{}) {
 	buf := make([]byte, 32)
 	for {
+		select {
+		case <-done:
+			return
+		default:
+		}
 		n, err := os.Stdin.Read(buf)
 		if n > 0 {
 			cp := make([]byte, n)

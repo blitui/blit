@@ -1,6 +1,7 @@
 package blit
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -147,5 +148,78 @@ func TestPoller_LastPollZeroOnCreate(t *testing.T) {
 	p := NewPoller(time.Second, dummyCmd)
 	if !p.LastPoll().IsZero() {
 		t.Errorf("new poller LastPoll = %v, want zero", p.LastPoll())
+	}
+}
+
+// --- RetryCmd tests ---
+
+type testMsg struct{ val string }
+
+func TestRetryCmd_SuccessFirstAttempt(t *testing.T) {
+	calls := 0
+	cmd := RetryCmd(func() (tea.Msg, error) {
+		calls++
+		return testMsg{"ok"}, nil
+	}, RetryOpts{MaxAttempts: 3, Backoff: time.Millisecond})
+
+	msg := cmd()
+	if m, ok := msg.(testMsg); !ok || m.val != "ok" {
+		t.Errorf("got %v, want testMsg{ok}", msg)
+	}
+	if calls != 1 {
+		t.Errorf("calls = %d, want 1", calls)
+	}
+}
+
+func TestRetryCmd_SuccessAfterRetry(t *testing.T) {
+	calls := 0
+	cmd := RetryCmd(func() (tea.Msg, error) {
+		calls++
+		if calls < 3 {
+			return nil, fmt.Errorf("transient error")
+		}
+		return testMsg{"recovered"}, nil
+	}, RetryOpts{MaxAttempts: 3, Backoff: time.Millisecond})
+
+	msg := cmd()
+	if m, ok := msg.(testMsg); !ok || m.val != "recovered" {
+		t.Errorf("got %v, want testMsg{recovered}", msg)
+	}
+	if calls != 3 {
+		t.Errorf("calls = %d, want 3", calls)
+	}
+}
+
+func TestRetryCmd_AllAttemptsFail(t *testing.T) {
+	calls := 0
+	cmd := RetryCmd(func() (tea.Msg, error) {
+		calls++
+		return nil, fmt.Errorf("permanent error")
+	}, RetryOpts{MaxAttempts: 2, Backoff: time.Millisecond})
+
+	msg := cmd()
+	errMsg, ok := msg.(RetryErrorMsg)
+	if !ok {
+		t.Fatalf("got %T, want RetryErrorMsg", msg)
+	}
+	if errMsg.Attempts != 2 {
+		t.Errorf("attempts = %d, want 2", errMsg.Attempts)
+	}
+	if errMsg.Err == nil || errMsg.Err.Error() != "permanent error" {
+		t.Errorf("err = %v, want permanent error", errMsg.Err)
+	}
+	if calls != 2 {
+		t.Errorf("calls = %d, want 2", calls)
+	}
+}
+
+func TestRetryCmd_DefaultOpts(t *testing.T) {
+	cmd := RetryCmd(func() (tea.Msg, error) {
+		return testMsg{"default"}, nil
+	}, RetryOpts{})
+
+	msg := cmd()
+	if m, ok := msg.(testMsg); !ok || m.val != "default" {
+		t.Errorf("got %v, want testMsg{default}", msg)
 	}
 }

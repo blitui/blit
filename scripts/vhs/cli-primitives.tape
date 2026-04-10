@@ -1,4 +1,4 @@
-# cli-primitives.tape — tuikit-go CLI primitives showcase
+# cli-primitives.tape — blit CLI primitives showcase
 # Run: vhs scripts/vhs/cli-primitives.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #
@@ -27,7 +27,7 @@ Key Enter
 Sleep 500ms
 
 # Input field
-Type "tuikit-go"
+Type "blit"
 Sleep 300ms
 Key Enter
 Sleep 500ms

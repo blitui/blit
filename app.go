@@ -135,7 +135,7 @@ func WithFocusCycleKey(key string) Option {
 }
 
 // WithAnimations enables or disables the internal animation tick bus (~60fps).
-// Setting TUIKIT_NO_ANIM=1 in the environment overrides this to false.
+// Setting BLIT_NO_ANIM=1 in the environment overrides this to false.
 func WithAnimations(enabled bool) Option {
 	return func(a *appModel) {
 		if animDisabled {
@@ -220,7 +220,7 @@ func newAppModel(opts ...Option) *appModel {
 		opt(a)
 	}
 	// Auto-enable dev console from environment even without WithDevConsole option.
-	if a.devConsole == nil && os.Getenv("TUIKIT_DEVCONSOLE") == "1" {
+	if a.devConsole == nil && os.Getenv("BLIT_DEVCONSOLE") == "1" {
 		a.devConsole = newDevConsole()
 	}
 	a.materialiseSlots()
@@ -635,7 +635,7 @@ func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		_, cmd := overlay.Update(msg, a.ctx())
 		// If the overlay closed itself (e.g., CommandBar after executing), pop it
 		if !overlay.IsActive() {
-			a.overlays.stack = a.overlays.stack[:len(a.overlays.stack)-1]
+			a.overlays.remove(overlay)
 			a.resize()
 		}
 		if isConsumed(cmd) {
@@ -741,16 +741,9 @@ func (a *appModel) toggleDevConsole() tea.Cmd {
 		a.devConsole.SetSize(a.width, a.height)
 	}
 	if a.devConsole.active {
-		// Close: pop from overlay stack
+		// Close: remove from overlay stack
 		a.devConsole.active = false
-		// Remove from overlay stack if present
-		stack := a.overlays.stack[:0]
-		for _, o := range a.overlays.stack {
-			if o != a.devConsole {
-				stack = append(stack, o)
-			}
-		}
-		a.overlays.stack = stack
+		a.overlays.remove(a.devConsole)
 	} else {
 		a.devConsole.active = true
 		a.devConsole.SetSize(a.width, a.height)
@@ -848,19 +841,9 @@ func (a *appModel) openOverlay(o Overlay) {
 // outside of the normal trigger-key flow (e.g., via component calling Show()).
 func (a *appModel) checkOverlayActivation() {
 	for _, no := range a.namedOverlays {
-		if no.overlay.IsActive() && a.overlays.active() != no.overlay {
-			// Check it's not already somewhere in the stack
-			found := false
-			for _, stacked := range a.overlays.stack {
-				if stacked == no.overlay {
-					found = true
-					break
-				}
-			}
-			if !found {
-				no.overlay.SetSize(a.width, a.height)
-				a.overlays.push(no.overlay)
-			}
+		if no.overlay.IsActive() && !a.overlays.contains(no.overlay) {
+			no.overlay.SetSize(a.width, a.height)
+			a.overlays.push(no.overlay)
 		}
 	}
 }

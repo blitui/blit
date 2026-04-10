@@ -19,9 +19,10 @@ type ConfigField struct {
 	Label  string             // Display label
 	Group  string             // Group heading (e.g., "General", "Display")
 	Hint   string             // Help text shown below the field
-	Get    func() string      // Legacy getter. Ignored when Source is set.
-	Source any                // Optional: func() string, *Signal[string], or StringSource.
-	Set    func(string) error // Sets a new value, returns error if invalid
+	Get      func() string      // Legacy getter. Ignored when Source is set.
+	Source   any                // Optional: func() string, *Signal[string], or StringSource.
+	Set      func(string) error // Sets a new value, returns error if invalid
+	Validate func(string) error // Optional: validates input before Set is called
 }
 
 // currentValue returns the field's current value, preferring Source over
@@ -106,6 +107,12 @@ func (c *ConfigEditor) handleEditKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 	switch msg.Type {
 	case tea.KeyEnter:
 		f := c.fields[c.cursor]
+		if f.Validate != nil {
+			if err := f.Validate(c.editBuf); err != nil {
+				c.errMsg = err.Error()
+				return c, Consumed()
+			}
+		}
 		if f.Set != nil {
 			if err := f.Set(c.editBuf); err != nil {
 				c.errMsg = err.Error()

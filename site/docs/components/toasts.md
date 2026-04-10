@@ -85,4 +85,4 @@ blit.WithToastManager(blit.ToastManagerOpts{
 })
 ```
 
-Set `TUIKIT_NO_ANIM=1` to disable all toast animations.
+Set `BLIT_NO_ANIM=1` to disable all toast animations.

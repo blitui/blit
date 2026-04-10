@@ -1,4 +1,4 @@
-# quickstart.tape — tuikit-go quick-start demo (minimal ListView)
+# quickstart.tape — blit quick-start demo (minimal ListView)
 # Run: vhs scripts/vhs/quickstart.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

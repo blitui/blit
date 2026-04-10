@@ -102,8 +102,9 @@ func TestToastManager_AutoExpire(t *testing.T) {
 	tm := newToastManager(ToastManagerOpts{})
 	tm.noAnim = true
 	tm.add(ToastMsg{Title: "x", Duration: 10 * time.Millisecond})
-	time.Sleep(20 * time.Millisecond)
-	if !tm.tick(time.Now()) {
+	// Use a future time instead of sleeping to make the test deterministic.
+	future := time.Now().Add(time.Second)
+	if !tm.tick(future) {
 		t.Error("changed should be true")
 	}
 	if tm.hasActive() {
@@ -216,5 +217,45 @@ func TestAppNotifyRoutesToToast(t *testing.T) {
 	}
 	if a.toasts.toasts[0].Severity != SeverityInfo {
 		t.Error()
+	}
+}
+
+func TestToastInfo(t *testing.T) {
+	msg := ToastInfo("hi", "body")().(ToastMsg)
+	if msg.Severity != SeverityInfo {
+		t.Errorf("got %d, want SeverityInfo", msg.Severity)
+	}
+	if msg.Duration != 4*time.Second {
+		t.Errorf("got %v, want 4s", msg.Duration)
+	}
+}
+
+func TestToastSuccess(t *testing.T) {
+	msg := ToastSuccess("ok", "done")().(ToastMsg)
+	if msg.Severity != SeveritySuccess {
+		t.Errorf("got %d, want SeveritySuccess", msg.Severity)
+	}
+	if msg.Duration != 4*time.Second {
+		t.Errorf("got %v, want 4s", msg.Duration)
+	}
+}
+
+func TestToastWarn(t *testing.T) {
+	msg := ToastWarn("caution", "watch out")().(ToastMsg)
+	if msg.Severity != SeverityWarn {
+		t.Errorf("got %d, want SeverityWarn", msg.Severity)
+	}
+	if msg.Duration != 6*time.Second {
+		t.Errorf("got %v, want 6s", msg.Duration)
+	}
+}
+
+func TestToastError(t *testing.T) {
+	msg := ToastError("fail", "oops")().(ToastMsg)
+	if msg.Severity != SeverityError {
+		t.Errorf("got %d, want SeverityError", msg.Severity)
+	}
+	if msg.Duration != 6*time.Second {
+		t.Errorf("got %v, want 6s", msg.Duration)
 	}
 }

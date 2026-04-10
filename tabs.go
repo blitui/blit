@@ -283,7 +283,7 @@ func (t *Tabs) renderHorizontalBar() string {
 
 	// Build underline row: accent chars under active tab, dashes elsewhere.
 	underlineParts := t.buildUnderline(parts)
-	underlineRow := strings.Join(underlineParts, "┼")
+	underlineRow := strings.Join(underlineParts, "┴")
 
 	borderLine := lipgloss.NewStyle().Foreground(lipgloss.Color(t.theme.Border)).Render(
 		strings.Repeat("─", t.width),

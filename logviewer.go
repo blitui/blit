@@ -39,7 +39,7 @@ type LogLine struct {
 //
 // It implements Component and Themed.
 type LogViewer struct {
-	mu sync.Mutex
+	mu sync.RWMutex
 
 	allLines      []LogLine
 	filteredLines []LogLine
@@ -92,8 +92,8 @@ func (lv *LogViewer) Clear() {
 
 // Lines returns a snapshot of all lines currently stored.
 func (lv *LogViewer) Lines() []LogLine {
-	lv.mu.Lock()
-	defer lv.mu.Unlock()
+	lv.mu.RLock()
+	defer lv.mu.RUnlock()
 	out := make([]LogLine, len(lv.allLines))
 	copy(out, lv.allLines)
 	return out
@@ -134,13 +134,17 @@ func (lv *LogViewer) View() string {
 		return ""
 	}
 
+	// Snapshot viewport under read-lock to avoid racing with Append().
+	lv.mu.RLock()
+	vpView := strings.TrimRight(lv.viewport.View(), "\n")
+	lv.mu.RUnlock()
+
 	var sections []string
 
 	// Status bar: pause indicator + level filter + search text
 	sections = append(sections, lv.renderStatusBar())
 
 	// Viewport
-	vpView := strings.TrimRight(lv.viewport.View(), "\n")
 	sections = append(sections, vpView)
 
 	// Filter input (shown when in filtering mode)
@@ -405,12 +409,10 @@ func (lv *LogViewer) renderStatusBar() string {
 		parts = append(parts, muted.Render("filter:")+accent.Render(lv.filterText))
 	}
 
+	lv.mu.RLock()
 	total := len(lv.filteredLines)
-	all := func() int {
-		lv.mu.Lock()
-		defer lv.mu.Unlock()
-		return len(lv.allLines)
-	}()
+	all := len(lv.allLines)
+	lv.mu.RUnlock()
 	parts = append(parts, muted.Render(fmt.Sprintf("%d/%d lines", total, all)))
 
 	return strings.Join(parts, muted.Render("  ·  "))

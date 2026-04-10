@@ -95,3 +95,54 @@ func (p *Poller) IsPaused() bool { return p.paused }
 
 // LastPoll returns the time of the last successful poll.
 func (p *Poller) LastPoll() time.Time { return p.lastPoll }
+
+// RetryOpts configures retry behavior for RetryCmd.
+type RetryOpts struct {
+	// MaxAttempts is the total number of attempts (including the first).
+	// Must be >= 1. Default: 3.
+	MaxAttempts int
+
+	// Backoff is the initial delay between retries. Each subsequent retry
+	// doubles the delay (exponential backoff). Default: 500ms.
+	Backoff time.Duration
+}
+
+// RetryErrorMsg is returned when all retry attempts are exhausted.
+type RetryErrorMsg struct {
+	Err      error
+	Attempts int
+}
+
+// RetryCmd wraps a fallible function with exponential backoff retry.
+// On the first successful call, the resulting tea.Msg is returned.
+// If all attempts fail, a RetryErrorMsg is returned.
+//
+// Usage with Poller:
+//
+//	poller := NewPoller(30*time.Second, func() tea.Cmd {
+//	    return RetryCmd(fetchData, RetryOpts{MaxAttempts: 3, Backoff: 500 * time.Millisecond})
+//	})
+func RetryCmd(fn func() (tea.Msg, error), opts RetryOpts) tea.Cmd {
+	if opts.MaxAttempts < 1 {
+		opts.MaxAttempts = 3
+	}
+	if opts.Backoff <= 0 {
+		opts.Backoff = 500 * time.Millisecond
+	}
+	return func() tea.Msg {
+		var lastErr error
+		backoff := opts.Backoff
+		for attempt := 0; attempt < opts.MaxAttempts; attempt++ {
+			msg, err := fn()
+			if err == nil {
+				return msg
+			}
+			lastErr = err
+			if attempt < opts.MaxAttempts-1 {
+				time.Sleep(backoff)
+				backoff *= 2
+			}
+		}
+		return RetryErrorMsg{Err: lastErr, Attempts: opts.MaxAttempts}
+	}
+}

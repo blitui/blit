@@ -59,4 +59,4 @@ Use this to skip `SelfUpdate` when the binary is managed by a package manager.
 - **Minimum version markers** — add `minimum_version: v1.5.0` to release notes to auto-promote to `UpdateForced`
 - **Update channels** — stable / beta / nightly via `Channel` field in `UpdateConfig`
 - **Rate-limit backoff** — exponential backoff when GitHub API returns 429
-- **Kill switch** — set `TUIKIT_UPDATE_DISABLE=1` to disable all update checks
+- **Kill switch** — set `BLIT_UPDATE_DISABLE=1` to disable all update checks

@@ -1,4 +1,4 @@
-# tuitest-runner.tape — tuikit-go tuitest vitest-style reporter demo
+# tuitest-runner.tape — blit tuitest vitest-style reporter demo
 # Run: vhs scripts/vhs/tuitest-runner.tape
 # Requires: vhs (brew install vhs / go install github.com/charmbracelet/vhs@latest)
 #

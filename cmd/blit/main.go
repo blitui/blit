@@ -87,6 +87,9 @@ func main() {
 		verbose  = flag.Bool("v", false, "verbose go test output")
 		keep     = flag.Int("keep", defaultKeep, "max history entries to keep (prune older runs)")
 		coverage = flag.Bool("coverage", false, "run go test with -coverprofile and display a coverage summary panel")
+		timeout  = flag.String("timeout", "", "per-test timeout (e.g., 30s, 2m); passed to go test -timeout")
+		jsonOut  = flag.Bool("json", false, "emit test results as JSON lines (uses go test -json)")
+		failOnly = flag.Bool("fail", false, "only print failing tests; suppress passing test output")
 	)
 	flag.Parse()
 
@@ -95,12 +98,28 @@ func main() {
 		packages = []string{"./..."}
 	}
 
+	if *jsonOut && *failOnly {
+		fmt.Fprintln(os.Stderr, "[blit] --json and --fail cannot be used together (--fail filters plain-text output)")
+		os.Exit(1)
+	}
+
 	if *coverage {
 		os.Exit(runCoverage(packages))
 	}
 
 	runOnce := func() int {
-		code := runGoTest(*filter, *update, *junit, *htmlOut, *parallel, *verbose, *keep, packages)
+		code := runGoTest(runOpts{
+			filter:   *filter,
+			update:   *update,
+			junit:    *junit,
+			htmlOut:  *htmlOut,
+			parallel: *parallel,
+			verbose:  *verbose,
+			keep:     *keep,
+			timeout:  *timeout,
+			jsonOut:  *jsonOut,
+			failOnly: *failOnly,
+		}, packages)
 		if code != 0 && *watch {
 			printFailureDiffHints()
 		}
@@ -185,40 +204,78 @@ func printFailureDiffHints() {
 	}
 }
 
-func runGoTest(filter string, update bool, junit, htmlOut string, parallel int, verbose bool, keep int, packages []string) int {
+// runOpts holds configuration for a single go test invocation.
+type runOpts struct {
+	filter   string
+	update   bool
+	junit    string
+	htmlOut  string
+	parallel int
+	verbose  bool
+	keep     int
+	timeout  string
+	jsonOut  bool
+	failOnly bool
+}
+
+func runGoTest(opts runOpts, packages []string) int {
 	args := []string{"test"}
-	if verbose {
+	if opts.jsonOut {
+		args = append(args, "-json")
+	}
+	if opts.verbose {
 		args = append(args, "-v")
 	}
-	if filter != "" {
-		args = append(args, "-run", filter)
+	if opts.filter != "" {
+		args = append(args, "-run", opts.filter)
 	}
-	if parallel > 0 {
-		args = append(args, "-parallel", fmt.Sprintf("%d", parallel))
+	if opts.parallel > 0 {
+		args = append(args, "-parallel", fmt.Sprintf("%d", opts.parallel))
+	}
+	if opts.timeout != "" {
+		args = append(args, "-timeout", opts.timeout)
 	}
 	args = append(args, packages...)
-	if update || junit != "" || htmlOut != "" {
+	if opts.update || opts.junit != "" || opts.htmlOut != "" {
 		args = append(args, "-args")
-		if update {
+		if opts.update {
 			args = append(args, "-btest.update")
 		}
-		if junit != "" {
-			args = append(args, "-btest.junit="+junit)
+		if opts.junit != "" {
+			args = append(args, "-btest.junit="+opts.junit)
 		}
-		if htmlOut != "" {
-			args = append(args, "-btest.html="+htmlOut)
+		if opts.htmlOut != "" {
+			args = append(args, "-btest.html="+opts.htmlOut)
 		}
 	}
 
 	start := time.Now()
 	cmd := exec.Command("go", args...)
+
+	if opts.failOnly {
+		// Capture output and filter to failures only.
+		out, runErr := cmd.CombinedOutput()
+		duration := time.Since(start).Seconds()
+		exitCode := 0
+		if runErr != nil {
+			if exit, ok := runErr.(*exec.ExitError); ok {
+				exitCode = exit.ExitCode()
+			} else {
+				fmt.Fprintf(os.Stderr, "[blit] run failed: %v\n", runErr)
+				return 1
+			}
+		}
+		printFailuresOnly(string(out))
+		writeRunRecord(duration, exitCode, opts.keep, packages)
+		return exitCode
+	}
+
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	runErr := cmd.Run()
 	duration := time.Since(start).Seconds()
 
 	exitCode := 0
-	failed := 0
 	if runErr != nil {
 		if exit, ok := runErr.(*exec.ExitError); ok {
 			exitCode = exit.ExitCode()
@@ -226,11 +283,39 @@ func runGoTest(filter string, update bool, junit, htmlOut string, parallel int, 
 			fmt.Fprintf(os.Stderr, "[blit] run failed: %v\n", runErr)
 			return 1
 		}
-		if exitCode != 0 {
-			failed = 1 // at least one failure; exact counts require JSON output parsing
-		}
 	}
 
+	writeRunRecord(duration, exitCode, opts.keep, packages)
+	return exitCode
+}
+
+// printFailuresOnly filters go test output to show only FAIL lines
+// and their associated output, plus the final summary.
+func printFailuresOnly(output string) {
+	lines := strings.Split(output, "\n")
+	inFail := false
+	for _, line := range lines {
+		switch {
+		case strings.HasPrefix(line, "--- FAIL:"):
+			inFail = true
+			fmt.Println(line)
+		case strings.HasPrefix(line, "--- PASS:") || strings.HasPrefix(line, "--- SKIP:"):
+			inFail = false
+		case strings.HasPrefix(line, "FAIL") || strings.HasPrefix(line, "ok "):
+			// Summary lines — always print.
+			fmt.Println(line)
+			inFail = false
+		case inFail:
+			fmt.Println(line)
+		}
+	}
+}
+
+func writeRunRecord(duration float64, exitCode, keep int, packages []string) {
+	failed := 0
+	if exitCode != 0 {
+		failed = 1
+	}
 	passed := 0
 	if failed == 0 {
 		passed = 1
@@ -243,10 +328,7 @@ func runGoTest(filter string, update bool, junit, htmlOut string, parallel int, 
 		Total:    passed + failed,
 		Packages: packages,
 	}
-	// Best-effort: ignore history write errors so tests still work without a writable FS.
 	_ = writeHistory(rec, keep)
-
-	return exitCode
 }
 
 // snapshotTree returns a coarse hash of .go file modification times under

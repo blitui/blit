@@ -173,7 +173,7 @@ app := blit.NewApp(
 For live hot-reload during development:
 
 ```bash
-TUIKIT_THEME=./mytheme.json go run .
+BLIT_THEME=./mytheme.json go run .
 ```
 
 Edit `mytheme.json` and the app reloads the theme without restart.
