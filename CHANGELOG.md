@@ -5,140 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [0.12.5] - 2026-04-10
+## [Unreleased]
 
-### Fixed
-- Resolved all golangci-lint warnings (errcheck, singleCaseSwitch, ifElseChain, unused code)
-- Corrected Go version references across docs (1.21/1.26 → 1.24)
-- Fixed missing imports in cookbook recipes
-- Fixed broken hero GIF link and example count in README
-- Updated deprecated viewport API calls in LogViewer
+## [0.1.0] - 2026-04-10
 
-### Changed
-- Exported `Registry` type (was unexported `registry`) for `Context.Hotkeys` field
-- Rewrote README as concise landing page (570 → ~150 lines)
-- Deleted ~70 lines of dead code (unused types, functions, variables)
+Initial release of blit, migrated from tuikit-go.
 
 ### Added
-- Package-level godoc (`doc.go`) for pkg.go.dev
-- Component documentation pages (Form, Tree, Split, Charts, FilePicker)
-- MIT license, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
-- GitHub issue/PR templates
-- golangci-lint CI workflow with coverage reporting
-- Expanded API reference with Registry, FilePicker, Breadcrumbs, Viewport
+- **Components**: Table (with virtualized scrolling for 1M+ rows), ListView, Tabs, Picker, Tree, Form (with validators and wizard mode), FilePicker, LogViewer, Markdown viewer
+- **Layout**: DualPane with collapsible sidebar, HBox/VBox flex layout, Split pane with draggable divider
+- **Theme system**: Dark/light themes with semantic color tokens, hot-reload via fsnotify, terminal theme importers
+- **Keybinding registry** with auto-generated help overlay
+- **Charts**: Bar, line, ring, gauge, heatmap
+- **CLI primitives**: Confirm, SelectOne, MultiSelect, Input, Password, Spinner, Progress
+- **Self-update**: Binary replacement with SHA256/cosign verification, delta patches, rollback, channels, rate-limit backoff
+- **SSH serve**: Host any blit app over SSH via Charm Wish
+- **blit CLI**: Vitest-style test runner with watch mode, snapshot diffing, JUnit/HTML reports, VHS tape generation
+- **btest**: Virtual terminal testing framework with golden files, session recording/replay
+- **Compound components**: Notifications/toasts, overlays, command bar, breadcrumbs, config editor, detail overlay
+- **Animation engine** with tween bus and easing functions
+- **Dev console** overlay for runtime inspection
+- **Signal/slot** reactive state system
+- **MkDocs Material** documentation site
+- **GoReleaser** with Homebrew tap and Scoop bucket
 
-## [0.12.0] - 2026-04-09
-
-### Added
-- SSH serve via Charm Wish — host any blit app over SSH
-- Cosign ed25519 signature verification for self-update
-- Delta binary patching for smaller update downloads
-- MkDocs Material documentation site
-- Starter project template with GoReleaser and CI wiring
-
-## [0.11.0] - 2026-04-09
-
-### Added
-- blit snapshot review UI
-- VHS tape integration for automated GIF generation
-- Screen diff viewer for visual test comparison
-- blit CLI with vitest-style reporter, JUnit/HTML output, watch mode
-
-## [0.10.0] - 2026-04-09
-
-### Added
-- `Context` struct threaded through `Component.Update` (Theme, Size, Focus, Hotkeys, Clock, Logger)
-- Dev console overlay
-- Theme hot-reload via fsnotify
-
-### Changed
-- **Breaking:** `Component.Update` signature now takes `Context` parameter
-
-## [0.9.0] - 2026-04-09
-
-### Added
-- Tree component with expand/collapse
-- FilePicker component
-- LogViewer with streaming and level filtering
-- Virtualized Table with `TableRowProvider` for 1M+ rows
-- HBox/VBox flex layout
-- Breadcrumbs component
-- Split pane with draggable divider
-
-## [0.8.0] - 2026-04-09
-
-### Added
-- Dark/light theme system with semantic color tokens and `Extra` map
-- Animation engine with tween bus and easing functions
-- Form component with validators and wizard mode
-- Tabs component with horizontal/vertical orientation
-- Picker with fzf-style fuzzy search
-- Toast notifications with severity levels
-- Gradient text rendering
-- VHS tape scripts for README GIFs
-
-## [0.7.0] - 2026-04-09
-
-### Added
-- Markdown rendering via glamour
-- Collapsible sections
-- Detail overlay for row inspection
-
-## [0.6.0] - 2026-04-09
-
-### Added
-- Self-update system with SHA256 checksum verification
-- Skip-version, forced update, and notify modes
-- Rollback on verify failure
-- Rate-limit backoff for GitHub API
-- Homebrew and Scoop install detection
-
-## [0.5.0] - 2026-04-08
-
-### Added
-- CLI primitives package (Confirm, SelectOne, MultiSelect, Input, Password, Spinner, Progress)
-- Styled message helpers (Success, Warning, Error, Info, Title, Step)
-- ConfigEditor overlay
-- CommandBar with completion
-- Update progress overlay
-
-## [0.4.0] - 2026-04-08
-
-### Added
-- Poller for background data with tick-driven refresh
-- Mouse support for Table scroll and click
-
-## [0.3.0] - 2026-04-08
-
-### Added
-- Dual-pane layout with collapsible sidebar
-- Named overlay system with trigger keys
-
-## [0.2.0] - 2026-04-08
-
-### Added
-- StatusBar with left/right content
-- Help overlay auto-generated from keybindings
-- Keybinding registry
-
-## [0.1.0] - 2026-04-08
-
-### Added
-- Initial release
-- Table component with sorting, filtering, and cursor navigation
-- ListView component
-- App framework with functional options
-- blit virtual terminal testing framework
-
-[0.12.0]: https://github.com/blitui/blit/compare/v0.11.0...v0.12.0
-[0.11.0]: https://github.com/blitui/blit/compare/v0.10.0...v0.11.0
-[0.10.0]: https://github.com/blitui/blit/compare/v0.9.0...v0.10.0
-[0.9.0]: https://github.com/blitui/blit/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/blitui/blit/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/blitui/blit/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/blitui/blit/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/blitui/blit/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/blitui/blit/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/blitui/blit/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/blitui/blit/compare/v0.1.0...v0.2.0
+[Unreleased]: https://github.com/blitui/blit/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/blitui/blit/releases/tag/v0.1.0
