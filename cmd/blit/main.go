@@ -80,6 +80,8 @@ func main() {
 			os.Exit(runTheme(os.Args[2:]))
 		case "build":
 			os.Exit(runBuild(os.Args[2:]))
+		case "config":
+			os.Exit(runConfig(os.Args[2:]))
 		case "vhs":
 			os.Exit(runVHS(os.Args[2:]))
 		}
