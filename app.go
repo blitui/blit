@@ -416,7 +416,8 @@ func (a *appModel) Init() tea.Cmd {
 	if cmd := a.animTickCmd(); cmd != nil {
 		cmds = append(cmds, cmd)
 	}
-	// Initialize modules in registration order
+	// Initialize modules in registration order. Each Module.Init is called
+	// exactly once, in the same order the modules were passed to WithModule.
 	for _, m := range a.modules {
 		if cmd := m.Init(); cmd != nil {
 			cmds = append(cmds, cmd)
@@ -429,6 +430,15 @@ func (a *appModel) Init() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
+// Update implements tea.Model. Message dispatch order:
+//  1. Built-in messages (WindowSize, Key, Mouse, Tick, etc.) are handled first.
+//  2. Modules receive messages via dispatchToModules in registration order.
+//     For TickMsg this happens inside handleTick; for custom messages it
+//     happens in the default branch below.
+//  3. Components receive messages via broadcastMsg after modules.
+//
+// If a Module.Update returns a different Module value, it replaces the
+// original at the same index, preserving registration order.
 func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -519,15 +529,8 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.toggleDevConsole()
 	}
 
-	// Dispatch to modules before components
-	var moduleCmds []tea.Cmd
-	for i, m := range a.modules {
-		updated, cmd := m.Update(msg, a.ctx())
-		a.modules[i] = updated
-		if cmd != nil {
-			moduleCmds = append(moduleCmds, cmd)
-		}
-	}
+	// Dispatch to modules in registration order, then broadcast to components.
+	moduleCmds := a.dispatchToModules(msg)
 
 	// Forward unknown messages to all components (for custom app messages)
 	cmd := a.broadcastMsg(msg)
@@ -537,6 +540,22 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, tea.Batch(moduleCmds...)
 	}
 	return a, cmd
+}
+
+// dispatchToModules sends msg to every registered module in registration order.
+// Each module's Update is called with the current Context. If a module returns
+// a replacement Module value, it is stored back at the same index. Commands
+// returned by modules are collected and returned to the caller.
+func (a *appModel) dispatchToModules(msg tea.Msg) []tea.Cmd {
+	var cmds []tea.Cmd
+	for i, m := range a.modules {
+		updated, cmd := m.Update(msg, a.ctx())
+		a.modules[i] = updated
+		if cmd != nil {
+			cmds = append(cmds, cmd)
+		}
+	}
+	return cmds
 }
 
 // ctx builds the ambient Context passed to every component.Update call.
@@ -594,6 +613,8 @@ func (a *appModel) handleTick(msg TickMsg) (tea.Model, tea.Cmd) {
 	}
 
 	var cmds []tea.Cmd
+	// Dispatch to modules so they see TickMsg (same registration-order guarantee).
+	cmds = append(cmds, a.dispatchToModules(msg)...)
 	cmds = append(cmds, a.broadcastMsg(msg))
 	if cmd := a.tickCmd(); cmd != nil {
 		cmds = append(cmds, cmd)
