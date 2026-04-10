@@ -420,6 +420,92 @@ func TestConfig_Defaults(t *testing.T) {
 	}
 }
 
+func TestCamelToUpperSnake(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"Interval", "INTERVAL"},
+		{"Theme", "THEME"},
+		{"MaxRetries", "MAX_RETRIES"},
+		{"appName", "APP_NAME"},
+		{"myapp", "MYAPP"},
+		{"LogLevel", "LOG_LEVEL"},
+		{"X", "X"},
+		{"", ""},
+	}
+	for _, tt := range tests {
+		got := camelToUpperSnake(tt.in)
+		if got != tt.want {
+			t.Errorf("camelToUpperSnake(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
+func TestLoadConfig_EnvOverrides(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	// Write a config with interval=30
+	if err := os.WriteFile(path, []byte("interval: 30\ntheme: dark\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Set env var to override interval
+	t.Setenv("TEST_INTERVAL", "120")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	if cfg.Value.Interval != 120 {
+		t.Errorf("Interval = %d, want 120 (from env)", cfg.Value.Interval)
+	}
+	// Theme should remain from file since no env var set.
+	if cfg.Value.Theme != "dark" {
+		t.Errorf("Theme = %q, want %q", cfg.Value.Theme, "dark")
+	}
+}
+
+func TestLoadConfig_EnvOverridesDefault(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	// No file — defaults apply, then env override on top.
+	t.Setenv("TEST_THEME", "light")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	// Interval should have default 30 (no env override).
+	if cfg.Value.Interval != 30 {
+		t.Errorf("Interval = %d, want 30 (default)", cfg.Value.Interval)
+	}
+	// Theme should be overridden by env var.
+	if cfg.Value.Theme != "light" {
+		t.Errorf("Theme = %q, want %q (from env)", cfg.Value.Theme, "light")
+	}
+}
+
+func TestLoadConfig_EnvOverridesBool(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	t.Setenv("TEST_DEBUG", "true")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	if !cfg.Value.Debug {
+		t.Error("Debug = false, want true (from env)")
+	}
+}
+
 func TestConfig_AsSignal(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "config.yaml")

@@ -3,11 +3,13 @@ package blit
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -92,6 +94,7 @@ func LoadConfig[T any](appName string, opts ...ConfigOption) (*Config[T], error)
 	}
 
 	applyDefaults(&c.Value)
+	applyEnvOverrides(appName, &c.Value)
 
 	return c, nil
 }
@@ -181,6 +184,7 @@ func (c *Config[T]) WatchFile(ctx context.Context, onChange func(T)) error {
 			return // silently ignore reload errors
 		}
 		applyDefaults(&v)
+		applyEnvOverrides(c.appName, &v)
 		c.Value = v
 		c.dirty = false
 		if c.signal != nil {
@@ -367,6 +371,43 @@ func applyDefaults(v any) {
 		}
 		_ = setReflectValue(fv, m.Default)
 	}
+}
+
+// applyEnvOverrides checks environment variables of the form APPNAME_FIELDNAME
+// and overrides the corresponding struct fields. Field names are converted from
+// CamelCase to UPPER_SNAKE_CASE (e.g., MaxRetries → MAX_RETRIES).
+func applyEnvOverrides(appName string, v any) {
+	prefix := camelToUpperSnake(appName) + "_"
+	rv := reflect.ValueOf(v).Elem()
+	rt := rv.Type()
+	for i := 0; i < rt.NumField(); i++ {
+		f := rt.Field(i)
+		if !f.IsExported() {
+			continue
+		}
+		envKey := prefix + camelToUpperSnake(f.Name)
+		val, ok := os.LookupEnv(envKey)
+		if !ok {
+			continue
+		}
+		_ = setReflectValue(rv.Field(i), val)
+	}
+}
+
+// camelToUpperSnake converts a CamelCase string to UPPER_SNAKE_CASE.
+// e.g., "MaxRetries" → "MAX_RETRIES", "appName" → "APP_NAME".
+func camelToUpperSnake(s string) string {
+	var b strings.Builder
+	for i, r := range s {
+		if unicode.IsUpper(r) && i > 0 {
+			prev := rune(s[i-1])
+			if unicode.IsLower(prev) || unicode.IsDigit(prev) {
+				b.WriteByte('_')
+			}
+		}
+		b.WriteRune(unicode.ToUpper(r))
+	}
+	return b.String()
 }
 
 // getFieldString reads a struct field and returns its string representation.
