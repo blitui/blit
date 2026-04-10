@@ -120,6 +120,16 @@ func (fp *FilePicker) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 				cmds = append(cmds, cmd)
 			}
 		}
+
+	case tea.MouseMsg:
+		if fp.searchActive {
+			cmd := fp.handleSearchMouse(msg)
+			if cmd != nil {
+				cmds = append(cmds, cmd)
+			}
+		}
+		// When not in search mode, the mouse event falls through to
+		// fp.tree.Update below which handles wheel scrolling.
 	}
 
 	if fp.searchActive {
@@ -181,6 +191,28 @@ func (fp *FilePicker) handleSearchKey(msg tea.KeyMsg) tea.Cmd {
 				fp.opts.OnSelect(path)
 			}
 		}
+		return Consumed()
+	}
+	return nil
+}
+
+func (fp *FilePicker) handleSearchMouse(msg tea.MouseMsg) tea.Cmd {
+	// Ignore events outside component bounds.
+	if msg.X < 0 || msg.X >= fp.width || msg.Y < 0 || msg.Y >= fp.height {
+		return nil
+	}
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		if fp.searchCursor > 0 {
+			fp.searchCursor--
+		}
+		fp.invalidatePreview()
+		return Consumed()
+	case tea.MouseButtonWheelDown:
+		if fp.searchCursor < len(fp.searchResults)-1 {
+			fp.searchCursor++
+		}
+		fp.invalidatePreview()
 		return Consumed()
 	}
 	return nil

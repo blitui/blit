@@ -111,11 +111,40 @@ func (lv *LogViewer) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 		cmd := lv.handleKey(msg)
 		return lv, cmd
 
+	case tea.MouseMsg:
+		cmd := lv.handleMouse(msg)
+		return lv, cmd
+
 	case LogAppendMsg:
 		lv.Append(msg.Line)
 		return lv, nil
 	}
 	return lv, nil
+}
+
+func (lv *LogViewer) handleMouse(msg tea.MouseMsg) tea.Cmd {
+	// Ignore events outside component bounds.
+	if msg.X < 0 || msg.X >= lv.width || msg.Y < 0 || msg.Y >= lv.height {
+		return nil
+	}
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		lv.mu.Lock()
+		lv.viewport.ScrollUp(3)
+		lv.userScrolled = true
+		lv.paused = true
+		lv.mu.Unlock()
+		return Consumed()
+	case tea.MouseButtonWheelDown:
+		lv.mu.Lock()
+		lv.viewport.ScrollDown(3)
+		if lv.viewport.AtBottom() {
+			lv.userScrolled = false
+		}
+		lv.mu.Unlock()
+		return Consumed()
+	}
+	return nil
 }
 
 // LogAppendMsg is a Bubble Tea message that appends a line to the LogViewer.

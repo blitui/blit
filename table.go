@@ -304,6 +304,10 @@ func (t *Table) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 }
 
 func (t *Table) handleMouse(msg tea.MouseMsg) (Component, tea.Cmd) {
+	// Ignore events outside component bounds.
+	if msg.X < 0 || msg.X >= t.width || msg.Y < 0 || msg.Y >= t.height {
+		return t, nil
+	}
 	switch msg.Button {
 	case tea.MouseButtonWheelUp:
 		t.cursor--

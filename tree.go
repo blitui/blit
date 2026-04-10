@@ -96,10 +96,35 @@ func (t *Tree) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if !t.focused {
 		return t, nil
 	}
-	if msg, ok := msg.(tea.KeyMsg); ok {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
 		return t, t.handleKey(msg)
+	case tea.MouseMsg:
+		return t, t.handleMouse(msg)
 	}
 	return t, nil
+}
+
+func (t *Tree) handleMouse(msg tea.MouseMsg) tea.Cmd {
+	// Ignore events outside component bounds.
+	if msg.X < 0 || msg.X >= t.width || msg.Y < 0 || msg.Y >= t.height {
+		return nil
+	}
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		if t.cursor > 0 {
+			t.cursor--
+			t.clampScroll()
+		}
+		return Consumed()
+	case tea.MouseButtonWheelDown:
+		if t.cursor < len(t.flat)-1 {
+			t.cursor++
+			t.clampScroll()
+		}
+		return Consumed()
+	}
+	return nil
 }
 
 func (t *Tree) handleKey(msg tea.KeyMsg) tea.Cmd {
