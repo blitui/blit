@@ -11,6 +11,8 @@ linters:
     - unused
     - gocritic
     - ineffassign
+    - gosimple
+    - misspell
   disable:
     - depguard
   exclusions:

@@ -1,4 +1,4 @@
-.PHONY: test lint build cover tidy clean
+.PHONY: test lint build cover tidy clean fmt vet snapshot
 
 test:
 	go test -race ./...
@@ -9,6 +9,12 @@ lint:
 build:
 	go build ./...
 
+fmt:
+	gofmt -w .
+
+vet:
+	go vet ./...
+
 cover:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
@@ -16,6 +22,9 @@ cover:
 
 tidy:
 	go mod tidy
+
+snapshot:
+	goreleaser build --snapshot --clean
 
 clean:
 	rm -f coverage.out coverage.html

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Go 1.24+ (see `go.mod` for exact version)
+- Go 1.25+ (see `go.mod` for exact version)
 - Git
 
 ## Build and test
