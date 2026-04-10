@@ -19,8 +19,8 @@ type templateInfo struct {
 
 var projectTemplates = []templateInfo{
 	{Name: "starter", Description: "Minimal app — list view, status bar, help overlay"},
-	{Name: "dashboard", Description: "Dashboard — tables, charts, split panes (coming soon)"},
-	{Name: "form", Description: "Form app — validated inputs, submission flow (coming soon)"},
+	{Name: "dashboard", Description: "Dashboard — table, sidebar, split pane layout"},
+	{Name: "form", Description: "Form app — validated inputs, submission flow"},
 }
 
 // initOpts holds the collected wizard answers.
@@ -75,11 +75,6 @@ func runInit(args []string) int {
 	}
 	tmplName := projectTemplates[idx].Name
 
-	if tmplName != "starter" {
-		fmt.Fprintf(os.Stderr, "\nTemplate %q is not yet available. Use \"starter\" for now.\n", tmplName)
-		return 1
-	}
-
 	opts := initOpts{
 		ProjectName: name,
 		ModulePath:  modPath,
@@ -133,12 +128,25 @@ Useful commands:
 // scaffoldProject creates the project directory and writes all template files.
 func scaffoldProject(dir string, opts initOpts) error {
 	files := map[string]string{
-		"go.mod":                                    goModTmpl,
-		".gitignore":                                gitignoreTmpl,
-		"Makefile":                                  makefileTmpl,
-		"cmd/" + opts.BinaryName + "/main.go":       starterMainTmpl,
-		"internal/" + opts.BinaryName + "/app.go":   starterAppTmpl,
-		"internal/" + opts.BinaryName + "/app_test.go": starterAppTestTmpl,
+		"go.mod":    goModTmpl,
+		".gitignore": gitignoreTmpl,
+		"Makefile":  makefileTmpl,
+	}
+
+	// Add template-specific files.
+	switch opts.Template {
+	case "dashboard":
+		files["cmd/"+opts.BinaryName+"/main.go"] = dashboardMainTmpl
+		files["internal/"+opts.BinaryName+"/app.go"] = dashboardAppTmpl
+		files["internal/"+opts.BinaryName+"/app_test.go"] = dashboardAppTestTmpl
+	case "form":
+		files["cmd/"+opts.BinaryName+"/main.go"] = formMainTmpl
+		files["internal/"+opts.BinaryName+"/app.go"] = formAppTmpl
+		files["internal/"+opts.BinaryName+"/app_test.go"] = formAppTestTmpl
+	default: // "starter"
+		files["cmd/"+opts.BinaryName+"/main.go"] = starterMainTmpl
+		files["internal/"+opts.BinaryName+"/app.go"] = starterAppTmpl
+		files["internal/"+opts.BinaryName+"/app_test.go"] = starterAppTestTmpl
 	}
 
 	for relPath, tmplStr := range files {

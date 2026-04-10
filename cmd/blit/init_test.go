@@ -130,6 +130,94 @@ func TestScaffoldProject_Gitignore(t *testing.T) {
 	}
 }
 
+func TestScaffoldProject_Dashboard(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "dash")
+
+	opts := initOpts{
+		ProjectName: "dash",
+		ModulePath:  "github.com/test/dash",
+		Template:    "dashboard",
+		BinaryName:  "dash",
+	}
+
+	if err := scaffoldProject(target, opts); err != nil {
+		t.Fatalf("scaffoldProject: %v", err)
+	}
+
+	// Verify dashboard-specific files exist
+	expected := []string{
+		"cmd/dash/main.go",
+		"internal/dash/app.go",
+		"internal/dash/app_test.go",
+	}
+	for _, f := range expected {
+		path := filepath.Join(target, f)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			t.Errorf("expected file %s to exist", f)
+		}
+	}
+
+	// Verify app.go contains dashboard-specific content
+	appGo, err := os.ReadFile(filepath.Join(target, "internal/dash/app.go"))
+	if err != nil {
+		t.Fatalf("read app.go: %v", err)
+	}
+	got := string(appGo)
+	if !contains(got, "SlotMain") {
+		t.Error("dashboard app.go should use SlotMain")
+	}
+	if !contains(got, "SlotSidebar") {
+		t.Error("dashboard app.go should use SlotSidebar")
+	}
+	if !contains(got, "NewTable") {
+		t.Error("dashboard app.go should use NewTable")
+	}
+}
+
+func TestScaffoldProject_Form(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "myform")
+
+	opts := initOpts{
+		ProjectName: "myform",
+		ModulePath:  "github.com/test/myform",
+		Template:    "form",
+		BinaryName:  "myform",
+	}
+
+	if err := scaffoldProject(target, opts); err != nil {
+		t.Fatalf("scaffoldProject: %v", err)
+	}
+
+	expected := []string{
+		"cmd/myform/main.go",
+		"internal/myform/app.go",
+		"internal/myform/app_test.go",
+	}
+	for _, f := range expected {
+		path := filepath.Join(target, f)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			t.Errorf("expected file %s to exist", f)
+		}
+	}
+
+	appGo, err := os.ReadFile(filepath.Join(target, "internal/myform/app.go"))
+	if err != nil {
+		t.Fatalf("read app.go: %v", err)
+	}
+	got := string(appGo)
+	if !contains(got, "NewForm") {
+		t.Error("form app.go should use NewForm")
+	}
+	if !contains(got, "NewTextField") {
+		t.Error("form app.go should use NewTextField")
+	}
+	if !contains(got, "EmailValidator") {
+		t.Error("form app.go should use EmailValidator")
+	}
+}
+
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsStr(s, substr))
 }
