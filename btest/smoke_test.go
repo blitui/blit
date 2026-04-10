@@ -15,8 +15,7 @@ type smokeStubModel struct {
 
 func (m *smokeStubModel) Init() tea.Cmd { return nil }
 func (m *smokeStubModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
+	if msg, ok := msg.(tea.WindowSizeMsg); ok {
 		m.width = msg.Width
 		m.height = msg.Height
 	}
@@ -62,21 +61,6 @@ func TestSmokeTest_Passes(t *testing.T) {
 	btest.SmokeTest(t, &smokeStubModel{}, nil)
 }
 
-// panicModel panics in View to test smoke failure detection.
-type panicModel struct {
-	panicked bool
-}
-
-func (m *panicModel) Init() tea.Cmd { return nil }
-func (m *panicModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	return m, nil
-}
-func (m *panicModel) View() string {
-	if m.panicked {
-		panic("intentional panic")
-	}
-	return "ok"
-}
 
 // emptyModel returns empty view to test failure detection.
 type emptyModel struct{}

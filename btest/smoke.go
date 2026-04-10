@@ -114,15 +114,25 @@ func smokeInitRender(t testing.TB, model tea.Model) SmokeResult {
 	t.Helper()
 	name := "init+render"
 
-	defer func() {
-		if r := recover(); r != nil {
-			// Will be caught by the result below
+	recovered := false
+	empty := false
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				recovered = true
+			}
+		}()
+		tm := NewTestModel(t, model, 80, 24)
+		s := tm.Screen()
+		if s.IsEmpty() {
+			empty = true
 		}
 	}()
 
-	tm := NewTestModel(t, model, 80, 24)
-	s := tm.Screen()
-	if s.IsEmpty() {
+	if recovered {
+		return SmokeResult{Name: name, Passed: false, Detail: "panicked during init/render"}
+	}
+	if empty {
 		return SmokeResult{Name: name, Passed: false, Detail: "View() returned empty screen"}
 	}
 	return SmokeResult{Name: name, Passed: true, Detail: "rendered successfully"}
