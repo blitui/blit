@@ -94,6 +94,7 @@ func main() {
 		timeout  = flag.String("timeout", "", "per-test timeout (e.g., 30s, 2m); passed to go test -timeout")
 		jsonOut  = flag.Bool("json", false, "emit test results as JSON lines (uses go test -json)")
 		failOnly = flag.Bool("fail", false, "only print failing tests; suppress passing test output")
+		smoke    = flag.Bool("smoke", false, "run auto-generated smoke tests (init, render, keys, resize, mouse)")
 	)
 	flag.Parse()
 
@@ -105,6 +106,10 @@ func main() {
 	if *jsonOut && *failOnly {
 		fmt.Fprintln(os.Stderr, "[blit] --json and --fail cannot be used together (--fail filters plain-text output)")
 		os.Exit(1)
+	}
+
+	if *smoke {
+		os.Exit(runSmoke(packages, *verbose))
 	}
 
 	if *coverage {
