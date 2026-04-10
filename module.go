@@ -37,6 +37,17 @@ type DebugDataProvider interface {
 	Data() map[string]any
 }
 
+// DebugProviderWithLifecycle is an optional extension of DebugProvider that
+// supports initialization and cleanup. Init is called when the provider is
+// registered with the DevConsole. Destroy is called when the App shuts down.
+type DebugProviderWithLifecycle interface {
+	DebugProvider
+	// Init is called once when the provider is registered.
+	Init() error
+	// Destroy is called when the App is shutting down.
+	Destroy() error
+}
+
 // ModuleWithProviders is an optional extension of Module that contributes
 // debug providers to the DevConsole.
 type ModuleWithProviders interface {

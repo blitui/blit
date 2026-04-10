@@ -1,8 +1,10 @@
 package blit
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -199,6 +201,9 @@ func (dc *devConsole) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 			if len(dc.providers) > 0 {
 				dc.activeTab = (dc.activeTab + 1) % len(dc.providers)
 			}
+		case "ctrl+e":
+			_ = dc.exportJSON()
+			return dc, nil
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
 			idx := int(msg.String()[0]-'0') - 1
 			if idx >= 0 && idx < len(dc.providers) {
@@ -417,6 +422,7 @@ func (dc *devConsole) renderTabBar(width int, t Theme) string {
 // KeyBindings implements Component.
 func (dc *devConsole) KeyBindings() []KeyBind {
 	return []KeyBind{
+		{Key: "ctrl+e", Label: "Export JSON", Group: "DEV"},
 		{Key: "esc", Label: "Close dev console", Group: "DEV"},
 		{Key: "left/right", Label: "Switch tab", Group: "DEV"},
 		{Key: "1-9", Label: "Jump to tab", Group: "DEV"},
@@ -477,6 +483,47 @@ func WithDevConsole() Option {
 		}
 		a.devConsole.active = true
 	}
+}
+
+// initProviders calls Init on all DebugProviderWithLifecycle providers.
+func (dc *devConsole) initProviders() {
+	for _, p := range dc.providers {
+		if lp, ok := p.(DebugProviderWithLifecycle); ok {
+			_ = lp.Init()
+		}
+	}
+}
+
+// destroyProviders calls Destroy on all DebugProviderWithLifecycle providers.
+func (dc *devConsole) destroyProviders() {
+	for _, p := range dc.providers {
+		if lp, ok := p.(DebugProviderWithLifecycle); ok {
+			_ = lp.Destroy()
+		}
+	}
+}
+
+// exportJSON writes all DebugDataProvider Data() to a JSON file in the
+// current directory. Returns the path written or an error.
+func (dc *devConsole) exportJSON() error {
+	export := make(map[string]any, len(dc.providers))
+	for _, p := range dc.providers {
+		if dp, ok := p.(DebugDataProvider); ok {
+			export[p.Name()] = dp.Data()
+		}
+	}
+
+	data, err := json.MarshalIndent(export, "", "  ")
+	if err != nil {
+		return fmt.Errorf("devconsole export: %w", err)
+	}
+
+	name := fmt.Sprintf("blit-devconsole-%s.json", time.Now().Format("20060102-150405"))
+	path := filepath.Join(os.TempDir(), name)
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		return fmt.Errorf("devconsole export write: %w", err)
+	}
+	return nil
 }
 
 // --- Built-in DebugProvider implementations ---
