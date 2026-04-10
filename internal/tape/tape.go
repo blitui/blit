@@ -17,6 +17,14 @@ import (
 // when no explicit timing information is available in the session.
 const defaultSleepMs = 100
 
+// Options configures VHS tape generation.
+type Options struct {
+	// Speed is the playback speed multiplier. Values > 1 produce shorter
+	// sleeps (faster playback); values < 1 produce longer sleeps. Zero or
+	// negative values are treated as 1.0.
+	Speed float64
+}
+
 // Generate converts a btest.Session into a VHS tape script string.
 //
 // The resulting script contains:
@@ -24,6 +32,21 @@ const defaultSleepMs = 100
 //   - A Type, Key, Sleep, or Hide directive for every input step.
 //   - Screen steps are skipped (they are blit assertions, not VHS directives).
 func Generate(sess *btest.Session) string {
+	return GenerateWithOptions(sess, Options{Speed: 1.0})
+}
+
+// GenerateWithOptions converts a session into a VHS tape script with
+// configurable options. The Speed option scales inter-step sleep durations.
+func GenerateWithOptions(sess *btest.Session, opts Options) string {
+	speed := opts.Speed
+	if speed <= 0 {
+		speed = 1.0
+	}
+	sleepMs := int(float64(defaultSleepMs) / speed)
+	if sleepMs < 1 {
+		sleepMs = 1
+	}
+
 	var sb strings.Builder
 
 	// Preamble: terminal dimensions.
@@ -38,13 +61,13 @@ func Generate(sess *btest.Session) string {
 			// Escape double-quotes inside the text for VHS.
 			escaped := strings.ReplaceAll(step.Text, `"`, `\"`)
 			fmt.Fprintf(&sb, "Type \"%s\"\n", escaped)
-			fmt.Fprintf(&sb, "Sleep %dms\n", defaultSleepMs)
+			fmt.Fprintf(&sb, "Sleep %dms\n", sleepMs)
 
 		case "key":
 			directive := keyToVHS(step.Key)
 			if directive != "" {
 				fmt.Fprintf(&sb, "%s\n", directive)
-				fmt.Fprintf(&sb, "Sleep %dms\n", defaultSleepMs)
+				fmt.Fprintf(&sb, "Sleep %dms\n", sleepMs)
 			}
 
 		case "resize":
@@ -53,7 +76,7 @@ func Generate(sess *btest.Session) string {
 
 		case "tick":
 			// A tick represents a timer event; map to a short sleep.
-			fmt.Fprintf(&sb, "Sleep %dms\n", defaultSleepMs)
+			fmt.Fprintf(&sb, "Sleep %dms\n", sleepMs)
 
 		case "screen":
 			// Screen steps are blit assertion snapshots — not emitted.

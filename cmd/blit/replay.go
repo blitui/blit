@@ -24,6 +24,7 @@ func runReplay(args []string) int {
 	fs := flag.NewFlagSet("replay", flag.ContinueOnError)
 	inDir := fs.String("dir", "testdata/sessions", "directory containing .tuisess files")
 	speed := fs.Float64("speed", 1.0, "playback speed multiplier (e.g. 2x, 0.5x)")
+	skip := fs.String("skip", "", "comma-separated list of key names to skip during replay")
 	fs.Usage = func() {
 		fmt.Fprintln(os.Stderr, "usage: blit replay [flags] <name>")
 		fs.PrintDefaults()
@@ -36,6 +37,17 @@ func runReplay(args []string) int {
 		fmt.Fprintln(os.Stderr, "blit replay: <name> required")
 		fs.Usage()
 		return 1
+	}
+
+	// Parse skip keys into a set.
+	skipSet := make(map[string]bool)
+	if *skip != "" {
+		for _, k := range strings.Split(*skip, ",") {
+			k = strings.TrimSpace(k)
+			if k != "" {
+				skipSet[k] = true
+			}
+		}
 	}
 
 	name := fs.Arg(0)
@@ -66,7 +78,7 @@ func runReplay(args []string) int {
 		return 1
 	}
 
-	return runReplaySession(&sess, path, *speed)
+	return runReplaySession(&sess, path, *speed, skipSet)
 }
 
 // replaySessFile is the on-disk representation read by the replay command.
@@ -81,7 +93,8 @@ type replaySessFile struct {
 }
 
 // runReplaySession drives the VT through recorded steps and renders the UI.
-func runReplaySession(sess *replaySessFile, path string, speed float64) int {
+// Keys in skipKeys are silently dropped during playback.
+func runReplaySession(sess *replaySessFile, path string, speed float64, skipKeys map[string]bool) int {
 	cols, _ := termSize()
 
 	total := len(sess.Steps)
@@ -113,6 +126,9 @@ func runReplaySession(sess *replaySessFile, path string, speed float64) int {
 
 		switch step.Kind {
 		case "key":
+			if skipKeys[step.Key] {
+				continue
+			}
 			vt.applyKey(step.Key)
 		case "type":
 			for _, ch := range step.Text {
