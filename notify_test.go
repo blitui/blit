@@ -102,8 +102,9 @@ func TestToastManager_AutoExpire(t *testing.T) {
 	tm := newToastManager(ToastManagerOpts{})
 	tm.noAnim = true
 	tm.add(ToastMsg{Title: "x", Duration: 10 * time.Millisecond})
-	time.Sleep(20 * time.Millisecond)
-	if !tm.tick(time.Now()) {
+	// Use a future time instead of sleeping to make the test deterministic.
+	future := time.Now().Add(time.Second)
+	if !tm.tick(future) {
 		t.Error("changed should be true")
 	}
 	if tm.hasActive() {
