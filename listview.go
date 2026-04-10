@@ -35,6 +35,10 @@ type ListViewOpts[T any] struct {
 	// When DetailFunc is set, this space is always reserved (blank when unfocused)
 	// to prevent viewport jitter on focus change. Default: 3.
 	DetailHeight int
+
+	// EmptyText is displayed when the list has no items. If empty, the list
+	// renders blank when there are no items (preserving existing behavior).
+	EmptyText string
 }
 
 // ListView is a generic scrollable list with cursor navigation, header, detail
@@ -215,9 +219,17 @@ func (l *ListView[T]) View() string {
 		}
 	}
 
-	// Viewport content
-	vpView := strings.TrimRight(l.viewport.View(), "\n")
-	sections = append(sections, vpView)
+	// Viewport content (or empty state)
+	if len(l.items) == 0 && l.opts.EmptyText != "" {
+		style := lipgloss.NewStyle().
+			Foreground(lipgloss.Color(l.theme.Muted)).
+			Width(l.width).
+			Align(lipgloss.Center)
+		sections = append(sections, style.Render(l.opts.EmptyText))
+	} else {
+		vpView := strings.TrimRight(l.viewport.View(), "\n")
+		sections = append(sections, vpView)
+	}
 
 	// Detail bar
 	if l.opts.DetailFunc != nil {
