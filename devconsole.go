@@ -59,6 +59,9 @@ type devConsole struct {
 
 	// snapshot of app state for rendering (set each frame by the app)
 	snapshot devConsoleSnapshot
+
+	// providers holds registered DebugProviders for custom debug sections.
+	providers []DebugProvider
 }
 
 // devConsoleSnapshot captures a point-in-time view of app state so the

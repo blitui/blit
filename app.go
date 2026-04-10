@@ -192,6 +192,7 @@ type appModel struct {
 	hotReload         *ThemeHotReload
 	slots             *slotRegistry
 	devConsole        *devConsole
+	modules           []Module
 }
 
 // trackSignal registers a signal with the app's bus so its Set calls fire
@@ -305,6 +306,23 @@ func (a *appModel) setup() {
 		}
 	}
 
+	// Module keybindings
+	for _, m := range a.modules {
+		if mk, ok := m.(ModuleWithKeybinds); ok {
+			a.registry.addBindings(m.Name(), mk.Keybinds())
+		}
+	}
+
+	// Module debug providers
+	for _, m := range a.modules {
+		if mp, ok := m.(ModuleWithProviders); ok {
+			if a.devConsole == nil {
+				a.devConsole = newDevConsole()
+			}
+			a.devConsole.providers = append(a.devConsole.providers, mp.Providers()...)
+		}
+	}
+
 	// User-defined global bindings
 	globals = append(globals, a.globalBindings...)
 	a.registry.addBindings("global", globals)
@@ -397,6 +415,12 @@ func (a *appModel) Init() tea.Cmd {
 	}
 	if cmd := a.animTickCmd(); cmd != nil {
 		cmds = append(cmds, cmd)
+	}
+	// Initialize modules in registration order
+	for _, m := range a.modules {
+		if cmd := m.Init(); cmd != nil {
+			cmds = append(cmds, cmd)
+		}
 	}
 	if a.pendingNotify != "" {
 		cmds = append(cmds, NotifyCmd(a.pendingNotify, 5*time.Second))
@@ -495,9 +519,23 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.toggleDevConsole()
 	}
 
+	// Dispatch to modules before components
+	var moduleCmds []tea.Cmd
+	for i, m := range a.modules {
+		updated, cmd := m.Update(msg, a.ctx())
+		a.modules[i] = updated
+		if cmd != nil {
+			moduleCmds = append(moduleCmds, cmd)
+		}
+	}
+
 	// Forward unknown messages to all components (for custom app messages)
 	cmd := a.broadcastMsg(msg)
 	a.checkOverlayActivation()
+	if len(moduleCmds) > 0 {
+		moduleCmds = append(moduleCmds, cmd)
+		return a, tea.Batch(moduleCmds...)
+	}
 	return a, cmd
 }
 
