@@ -195,3 +195,254 @@ func TestTree_OnToggle(t *testing.T) {
 		t.Fatalf("expected OnToggle with parent, got %v", toggled)
 	}
 }
+
+func TestTree_SingleSelection(t *testing.T) {
+	child := &blit.Node{Title: "child"}
+	parent := &blit.Node{Title: "parent", Children: []*blit.Node{child}}
+	leaf := &blit.Node{Title: "leaf"}
+	roots := []*blit.Node{parent, leaf}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		Selection: blit.SelectionSingle,
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	// Enter selects parent.
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyEnter}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	if !parent.Selected {
+		t.Fatal("parent should be selected after enter")
+	}
+
+	// Move down and select leaf — parent should be deselected.
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyEnter}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	if parent.Selected {
+		t.Fatal("parent should be deselected in single mode")
+	}
+	if !leaf.Selected {
+		t.Fatal("leaf should be selected")
+	}
+
+	selected := tree.SelectedNodes()
+	if len(selected) != 1 || selected[0] != leaf {
+		t.Fatalf("SelectedNodes() = %v, want [leaf]", selected)
+	}
+
+	// Enter again deselects.
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyEnter}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	if leaf.Selected {
+		t.Fatal("leaf should be deselected after second enter")
+	}
+	if len(tree.SelectedNodes()) != 0 {
+		t.Fatal("expected no selected nodes")
+	}
+}
+
+func TestTree_MultiSelection(t *testing.T) {
+	a := &blit.Node{Title: "a"}
+	b := &blit.Node{Title: "b"}
+	c := &blit.Node{Title: "c"}
+	roots := []*blit.Node{a, b, c}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		Selection: blit.SelectionMulti,
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	// Space toggles selection in multi mode (doesn't expand/collapse).
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeySpace}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	if !a.Selected {
+		t.Fatal("a should be selected after space")
+	}
+
+	// Move to b and select with space.
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeySpace}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	if !b.Selected {
+		t.Fatal("b should be selected")
+	}
+	if !a.Selected {
+		t.Fatal("a should still be selected in multi mode")
+	}
+
+	selected := tree.SelectedNodes()
+	if len(selected) != 2 {
+		t.Fatalf("SelectedNodes() = %d, want 2", len(selected))
+	}
+
+	// Deselect a with enter.
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyUp}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyEnter}, blit.Context{})
+	_ = updated.(*blit.Tree)
+	if a.Selected {
+		t.Fatal("a should be deselected after enter toggle")
+	}
+}
+
+func TestTree_SelectAllDeselectAll(t *testing.T) {
+	child := &blit.Node{Title: "child"}
+	parent := &blit.Node{Title: "parent", Children: []*blit.Node{child}}
+	leaf := &blit.Node{Title: "leaf"}
+	roots := []*blit.Node{parent, leaf}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		Selection: blit.SelectionMulti,
+	})
+
+	tree.SelectAll()
+	if !parent.Selected || !child.Selected || !leaf.Selected {
+		t.Fatal("SelectAll should select all nodes including children")
+	}
+	if len(tree.SelectedNodes()) != 3 {
+		t.Fatalf("SelectedNodes() = %d, want 3", len(tree.SelectedNodes()))
+	}
+
+	tree.DeselectAll()
+	if parent.Selected || child.Selected || leaf.Selected {
+		t.Fatal("DeselectAll should clear all selections")
+	}
+	if len(tree.SelectedNodes()) != 0 {
+		t.Fatal("expected no selected nodes after DeselectAll")
+	}
+}
+
+func TestTree_CustomRenderNode(t *testing.T) {
+	node := &blit.Node{Title: "README.md", Glyph: "📄", Detail: "1.2KB"}
+	roots := []*blit.Node{node}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		RenderNode: func(n *blit.Node, isCursor bool) string {
+			return "[" + n.Glyph + "] " + n.Title + " (" + n.Detail + ")"
+		},
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	view := tree.View()
+	if view == "" {
+		t.Fatal("View() should not be empty with custom renderer")
+	}
+	// The custom renderer output should appear in the view.
+	if !containsStr(view, "[📄] README.md (1.2KB)") {
+		t.Fatalf("custom render output not found in view:\n%s", view)
+	}
+}
+
+func TestTree_Detail(t *testing.T) {
+	node := &blit.Node{Title: "file.go", Detail: "42 lines"}
+	roots := []*blit.Node{node}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+
+	view := tree.View()
+	if !containsStr(view, "42 lines") {
+		t.Fatalf("Detail not rendered in view:\n%s", view)
+	}
+}
+
+func TestTree_SelectionIndicator(t *testing.T) {
+	node := &blit.Node{Title: "item", Selected: true}
+	roots := []*blit.Node{node}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		Selection: blit.SelectionMulti,
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+
+	view := tree.View()
+	g := blit.DefaultGlyphs()
+	if !containsStr(view, g.SelectedBullet) {
+		t.Fatalf("selected bullet not found in view:\n%s", view)
+	}
+
+	// Deselected node should show unselected bullet.
+	node.Selected = false
+	view = tree.View()
+	if !containsStr(view, g.UnselectedBullet) {
+		t.Fatalf("unselected bullet not found in view:\n%s", view)
+	}
+}
+
+func TestTree_SelectionNone_NoIndicator(t *testing.T) {
+	node := &blit.Node{Title: "item"}
+	roots := []*blit.Node{node}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		Selection: blit.SelectionNone,
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+
+	view := tree.View()
+	g := blit.DefaultGlyphs()
+	if containsStr(view, g.SelectedBullet) || containsStr(view, g.UnselectedBullet) {
+		t.Fatalf("selection indicators should not appear in SelectionNone mode:\n%s", view)
+	}
+}
+
+func TestTree_SetRoots(t *testing.T) {
+	tree, _ := makeTestTree()
+
+	newRoots := []*blit.Node{{Title: "new1"}, {Title: "new2"}}
+	tree.SetRoots(newRoots)
+
+	if tree.CursorNode() != newRoots[0] {
+		t.Fatal("cursor should be at first new root")
+	}
+}
+
+func TestTree_MouseClick(t *testing.T) {
+	tree, _ := makeTestTree()
+
+	// Mouse outside bounds should be ignored.
+	_, cmd := tree.Update(tea.MouseMsg{X: -1, Y: 0, Button: tea.MouseButtonWheelUp}, blit.Context{})
+	if cmd != nil {
+		t.Fatal("mouse outside bounds should return nil cmd")
+	}
+}
+
+func TestTree_UnfocusedIgnoresInput(t *testing.T) {
+	tree, roots := makeTestTree()
+	tree.SetFocused(false)
+
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	if tree.CursorNode() != roots[0] {
+		t.Fatal("unfocused tree should not process key input")
+	}
+}
+
+func TestTree_ZeroSize(t *testing.T) {
+	tree := blit.NewTree([]*blit.Node{{Title: "x"}}, blit.TreeOpts{})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(0, 0)
+	if tree.View() != "" {
+		t.Fatal("zero-sized tree should return empty view")
+	}
+}
+
+// containsStr is a simple helper to avoid importing strings in _test.
+func containsStr(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}
