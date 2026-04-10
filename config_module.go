@@ -1,10 +1,15 @@
 package blit
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 // Config manages loading, saving, and editing application configuration.
@@ -126,6 +131,75 @@ func (c *Config[T]) Reset() error {
 	c.Value = c.Defaults()
 	c.dirty = true
 	return c.Save()
+}
+
+// WatchFile watches the config file for changes and reloads automatically.
+// On each detected change, the YAML is re-read and Value is updated in place.
+// The onChange callback (if non-nil) is invoked after a successful reload.
+// WatchFile blocks until ctx is cancelled; run it in a goroutine.
+//
+// File events are debounced by 200ms to avoid flicker from editors that save
+// in multiple steps (write tmp + rename).
+func (c *Config[T]) WatchFile(ctx context.Context, onChange func(T)) error {
+	if c.path == "" {
+		return fmt.Errorf("config: no file path to watch")
+	}
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("config watch: %w", err)
+	}
+	defer func() { _ = watcher.Close() }()
+
+	if err := watcher.Add(c.path); err != nil {
+		return fmt.Errorf("config watch add: %w", err)
+	}
+
+	var mu sync.Mutex
+	var debounce *time.Timer
+
+	reload := func() {
+		var v T
+		if err := LoadYAML(c.path, &v); err != nil {
+			return // silently ignore reload errors
+		}
+		applyDefaults(&v)
+		c.Value = v
+		c.dirty = false
+		if onChange != nil {
+			onChange(v)
+		}
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			mu.Lock()
+			if debounce != nil {
+				debounce.Stop()
+			}
+			mu.Unlock()
+			return nil
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return nil
+			}
+			if event.Op&(fsnotify.Write|fsnotify.Create) == 0 {
+				continue
+			}
+			mu.Lock()
+			if debounce != nil {
+				debounce.Stop()
+			}
+			debounce = time.AfterFunc(200*time.Millisecond, reload)
+			mu.Unlock()
+		case _, ok := <-watcher.Errors:
+			if !ok {
+				return nil
+			}
+			// Silently ignore watcher errors; keep watching.
+		}
+	}
 }
 
 // Editor returns a ConfigEditor auto-generated from the struct tags.

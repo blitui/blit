@@ -1,9 +1,11 @@
 package blit
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 type testModuleConfig struct {
@@ -416,4 +418,134 @@ func TestConfig_Defaults(t *testing.T) {
 	if cfg.Value.Interval != 999 {
 		t.Errorf("original Interval changed to %d", cfg.Value.Interval)
 	}
+}
+
+func TestConfig_WatchFile(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	// Write initial config.
+	initial := "interval: 30\ntheme: dark\n"
+	if err := os.WriteFile(path, []byte(initial), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := &Config[testModuleConfig]{
+		path:    path,
+		appName: "test",
+		Value:   testModuleConfig{Interval: 30, Theme: "dark"},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	changed := make(chan testModuleConfig, 1)
+	errCh := make(chan error, 1)
+
+	go func() {
+		errCh <- cfg.WatchFile(ctx, func(v testModuleConfig) {
+			select {
+			case changed <- v:
+			default:
+			}
+		})
+	}()
+
+	// Give the watcher time to start.
+	time.Sleep(100 * time.Millisecond)
+
+	// Modify the file.
+	updated := "interval: 60\ntheme: light\n"
+	if err := os.WriteFile(path, []byte(updated), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Wait for the onChange callback (debounce is 200ms).
+	select {
+	case v := <-changed:
+		if v.Interval != 60 {
+			t.Errorf("Interval = %d, want 60", v.Interval)
+		}
+		if v.Theme != "light" {
+			t.Errorf("Theme = %q, want %q", v.Theme, "light")
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("timed out waiting for config change")
+	}
+
+	// Verify cfg.Value was updated.
+	if cfg.Value.Interval != 60 {
+		t.Errorf("cfg.Value.Interval = %d, want 60", cfg.Value.Interval)
+	}
+
+	// Cancel and verify clean shutdown.
+	cancel()
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Errorf("WatchFile returned error: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("WatchFile did not return after cancel")
+	}
+}
+
+func TestConfig_WatchFile_NoPath(t *testing.T) {
+	cfg := &Config[testModuleConfig]{}
+
+	err := cfg.WatchFile(context.Background(), nil)
+	if err == nil {
+		t.Fatal("expected error for empty path")
+	}
+}
+
+func TestConfig_WatchFile_AppliesDefaults(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	// Write config with only interval (no theme).
+	if err := os.WriteFile(path, []byte("interval: 99\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := &Config[testModuleConfig]{
+		path:    path,
+		appName: "test",
+		Value:   testModuleConfig{Interval: 1, Theme: "old"},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	changed := make(chan testModuleConfig, 1)
+
+	go func() {
+		_ = cfg.WatchFile(ctx, func(v testModuleConfig) {
+			select {
+			case changed <- v:
+			default:
+			}
+		})
+	}()
+
+	time.Sleep(100 * time.Millisecond)
+
+	// Rewrite with only interval — theme should get default "dark".
+	if err := os.WriteFile(path, []byte("interval: 42\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	select {
+	case v := <-changed:
+		if v.Interval != 42 {
+			t.Errorf("Interval = %d, want 42", v.Interval)
+		}
+		if v.Theme != "dark" {
+			t.Errorf("Theme = %q, want default %q", v.Theme, "dark")
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("timed out waiting for config change")
+	}
+
+	cancel()
 }
