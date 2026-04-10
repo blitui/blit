@@ -859,3 +859,52 @@ func TestHarness_ExpectRow(t *testing.T) {
 	// Row 0 should exist (even if empty).
 	h.ExpectRow(0, "").Done()
 }
+
+// ── a11y_colorblind.go coverage ─────────────────────────────────────────
+
+func TestAssertDistinguishable_Pass(t *testing.T) {
+	// Black and white should be distinguishable under any type.
+	AssertDistinguishable(t, RGB{0, 0, 0}, RGB{255, 255, 255}, Protanopia)
+}
+
+func TestAssertDistinguishable_Fail(t *testing.T) {
+	ft := &stubTB{}
+	// Two very similar colors should fail.
+	AssertDistinguishable(ft, RGB{128, 0, 0}, RGB{130, 2, 0}, Protanopia)
+	if !ft.failed {
+		t.Error("expected AssertDistinguishable to fail for similar colors")
+	}
+}
+
+func TestAssertAllDistinguishable_Pass(t *testing.T) {
+	colors := []RGB{{0, 0, 0}, {255, 255, 255}, {0, 0, 255}}
+	AssertAllDistinguishable(t, colors, Deuteranopia)
+}
+
+func TestAssertAllDistinguishable_Fail(t *testing.T) {
+	ft := &stubTB{}
+	colors := []RGB{{128, 0, 0}, {130, 2, 0}, {255, 255, 255}}
+	AssertAllDistinguishable(ft, colors, Protanopia)
+	if !ft.failed {
+		t.Error("expected AssertAllDistinguishable to fail")
+	}
+}
+
+func TestColorBlindType_String_Unknown(t *testing.T) {
+	s := ColorBlindType(99).String()
+	if s == "" {
+		t.Error("expected non-empty string for unknown ColorBlindType")
+	}
+}
+
+func TestClamp01_Boundaries(t *testing.T) {
+	if v := clamp01(-0.5); v != 0 {
+		t.Errorf("clamp01(-0.5) = %f, want 0", v)
+	}
+	if v := clamp01(1.5); v != 1 {
+		t.Errorf("clamp01(1.5) = %f, want 1", v)
+	}
+	if v := clamp01(0.5); v != 0.5 {
+		t.Errorf("clamp01(0.5) = %f, want 0.5", v)
+	}
+}
