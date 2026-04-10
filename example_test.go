@@ -1,6 +1,7 @@
 package blit_test
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -71,6 +72,21 @@ func ExampleNewPollerWithOpts() {
 		Name:     "api-events",
 		Interval: 30 * time.Second,
 		Fetch: func() (tea.Msg, error) {
+			return "events fetched", nil
+		},
+		Backoff:    blit.ExponentialBackoff(time.Second, 5*time.Minute),
+		MaxRetries: 3,
+	})
+	_ = poller
+	// Output:
+}
+
+func ExampleNewPollerWithOpts_fetchCtx() {
+	poller := blit.NewPollerWithOpts(blit.PollerOpts{
+		Name:     "api-events",
+		Interval: 30 * time.Second,
+		FetchCtx: func(ctx context.Context) (tea.Msg, error) {
+			// Use ctx for HTTP request cancellation, timeouts, etc.
 			return "events fetched", nil
 		},
 		Backoff:    blit.ExponentialBackoff(time.Second, 5*time.Minute),

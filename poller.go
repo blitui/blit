@@ -1,6 +1,7 @@
 package blit
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -92,6 +93,12 @@ type PollerOpts struct {
 	// Fetch is called on each poll. Returns a tea.Msg on success or error.
 	Fetch func() (tea.Msg, error)
 
+	// FetchCtx is an optional context-aware fetch function. When set, it takes
+	// priority over Fetch. The context is cancelled when the Poller is stopped
+	// or the App quits. Use this when your fetch logic needs cancellation
+	// support (e.g., HTTP requests with timeouts).
+	FetchCtx func(ctx context.Context) (tea.Msg, error)
+
 	// OnRateLimit is called when rate limiting is detected. Optional.
 	OnRateLimit func(resetAt time.Time)
 
@@ -162,6 +169,7 @@ type Poller struct {
 	// Enhanced fields (only used when created via NewPollerWithOpts).
 	name              string
 	fetch             func() (tea.Msg, error)
+	fetchCtx          func(ctx context.Context) (tea.Msg, error)
 	onRateLimit       func(resetAt time.Time)
 	onError           func(err error)
 	backoff           BackoffStrategy
@@ -274,6 +282,7 @@ func NewPollerWithOpts(opts PollerOpts) *Poller {
 		clock:       opts.Clock,
 		name:        opts.Name,
 		fetch:       opts.Fetch,
+		fetchCtx:    opts.FetchCtx,
 		onRateLimit: opts.OnRateLimit,
 		onError:     opts.OnError,
 		backoff:     opts.Backoff,
@@ -294,7 +303,13 @@ func NewPollerWithOpts(opts PollerOpts) *Poller {
 func (p *Poller) enhancedFetch() tea.Cmd {
 	return func() tea.Msg {
 		for attempt := 0; attempt <= p.maxRetries; attempt++ {
-			msg, err := p.fetch()
+			var msg tea.Msg
+			var err error
+			if p.fetchCtx != nil {
+				msg, err = p.fetchCtx(context.Background())
+			} else {
+				msg, err = p.fetch()
+			}
 			if err == nil {
 				p.consecutiveErrors = 0
 				p.lastError = nil
