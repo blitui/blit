@@ -8,6 +8,86 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Full release history is also available on
 [GitHub Releases](https://github.com/blitui/blit/releases).
 
+## [0.2.14] - 2026-04-10
+
+### Added
+- Form field unit tests covering all field types (TextField, PasswordField, SelectField, MultiSelectField, ConfirmField, NumberField)
+
+## [0.2.13] - 2026-04-10
+
+### Added
+- Glyphs test coverage (field validation, ASCII-only constraint, spinner frames)
+- Theme presets test coverage (registry, required fields, extra colors for all 8 presets)
+
+## [0.2.12] - 2026-04-10
+
+### Added
+- `Stepper` component — multi-step progress indicator with done/active/pending states, forward/back navigation, OnChange and OnComplete callbacks
+
+## [0.2.11] - 2026-04-10
+
+### Added
+- `Tooltip` component — floating overlay with anchor positioning, esc dismiss, compositing via `FloatingOverlay` interface
+
+## [0.2.10] - 2026-04-10
+
+### Added
+- `Spinner` component — animated loading indicator cycling through glyph SpinnerFrames with configurable interval
+
+## [0.2.9] - 2026-04-10
+
+### Added
+- `Accordion` component — collapsible sections with exclusive mode, toggle callbacks, vi navigation
+
+## [0.2.8] - 2026-04-10
+
+### Added
+- `Breadcrumb` component — navigable path display with Push/Pop API, custom separators, OnSelect callback
+
+## [0.2.7] - 2026-04-10
+
+### Added
+- `Timeline` component — vertical and horizontal event sequences with status icons (done/active/pending), scrolling, OnSelect
+
+## [0.2.6] - 2026-04-10
+
+### Added
+- `Kanban` component — multi-column board with card movement between columns, tag badges, OnMove and OnSelect callbacks
+
+## [0.2.5] - 2026-04-10
+
+### Added
+- `ChartPanel` component — switchable container for chart Components with tab navigation and label header
+
+## [0.2.4] - 2026-04-10
+
+### Added
+- `Menu` overlay component — popup menu with separator support, disabled items, shortcut hints
+
+## [0.2.3] - 2026-04-10
+
+### Added
+- `Dialog` overlay component — modal dialog with button navigation, centered rendering, OnClose callback
+
+## [0.2.2] - 2026-04-10
+
+### Added
+- `ProgressBar` component — value-based progress with label, percentage display, themed bar glyphs
+
+## [0.2.1] - 2026-04-10
+
+### Added
+- TreeView lazy loading via `LoadChildren` callback
+- TreeView search/filter with fuzzy matching
+- TreeView context menu support via `OnContext` callback
+
+## [0.2.0] - 2026-04-10
+
+### Added
+- TreeView selection modes (None, Single, Multi) with `SelectedNodes()`, `SelectAll()`, `DeselectAll()`
+- TreeView custom node rendering via `NodeRenderFunc`
+- TreeView `Detail` field on Node for additional info display
+
 ## [0.12.5] - 2026-04-10
 
 ### Fixed

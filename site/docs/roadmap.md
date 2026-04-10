@@ -12,6 +12,19 @@
 | v0.12.0 | SSH serve via Wish, cosign signature verification, delta updates, docs site, starter template |
 | v0.11.0 | blit snapshot review UI, VHS tape integration, screen diff viewer |
 | v0.10.0 | Context struct, dev console overlay, theme hot-reload |
+| v0.2.14 | Form field test coverage, glyphs/presets tests |
+| v0.2.12 | Stepper multi-step progress indicator |
+| v0.2.11 | Tooltip floating overlay |
+| v0.2.10 | Spinner animated loading indicator |
+| v0.2.9 | Accordion collapsible sections |
+| v0.2.8 | Breadcrumb navigable path |
+| v0.2.7 | Timeline event sequences |
+| v0.2.6 | Kanban board with card management |
+| v0.2.5 | ChartPanel switchable container |
+| v0.2.4 | Menu popup overlay |
+| v0.2.3 | Dialog modal overlay |
+| v0.2.2 | ProgressBar component |
+| v0.2.0 | TreeView selection, lazy loading, filter, custom rendering |
 | v0.9.0 | Tree, FilePicker, LogViewer, virtualized Table, HBox/VBox, Breadcrumbs, Split pane |
 | v0.8.0 | Theme system, animation engine, Form, Tabs, Picker, Toast, gradient text |
 | v0.7.0 | Markdown rendering, collapsible sections, detail overlay |
