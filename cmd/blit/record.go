@@ -122,6 +122,7 @@ func runRecordSession(sess *recordSession, outDir string) int {
 	// Set up signal handling for clean exit.
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(sigCh)
 
 	// Channel for raw key bytes read from stdin.
 	keyCh := make(chan []byte, 64)
@@ -129,11 +130,13 @@ func runRecordSession(sess *recordSession, outDir string) int {
 	// Put stdin into raw mode so we can intercept individual keystrokes.
 	oldState, err := makeRaw(int(os.Stdin.Fd()))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[blit] warning: could not set raw mode: %v\n", err)
+		fmt.Fprintf(os.Stderr, "[blit] raw mode: %v\n", err)
+		return 1
 	}
 
-	// Start reading keystrokes in a goroutine.
-	go readKeys(keyCh)
+	// Start reading keystrokes in a goroutine; closed on exit.
+	doneCh := make(chan struct{})
+	go readKeys(keyCh, doneCh)
 
 	// Launch the target command, forwarding its stdio.
 	cmd := exec.Command(sess.Command[0], sess.Command[1:]...) //nolint:gosec
@@ -197,7 +200,8 @@ loop:
 		}
 	}
 
-	// Restore terminal before writing output.
+	// Signal readKeys goroutine to exit and restore terminal.
+	close(doneCh)
 	if oldState != nil {
 		restoreTerminal(int(os.Stdin.Fd()), oldState)
 	}
