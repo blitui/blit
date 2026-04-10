@@ -8,6 +8,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // devConsoleToggleMsg is sent by ctrl+\ to toggle the dev console.
@@ -260,24 +261,14 @@ func (dc *devConsole) FloatView(background string) string {
 			break
 		}
 		bgLine := bgLines[row]
-		bgRunes := []rune(bgLine)
-		pRunes := []rune(pLine)
 
-		// Expand bg line if shorter than dc.x
-		for len(bgRunes) < dc.x {
-			bgRunes = append(bgRunes, ' ')
+		// Use ANSI-aware truncation so escape sequences aren't mangled
+		left := ansi.Truncate(bgLine, dc.x, "")
+		// Pad to the target column if the visible width is short
+		if w := ansi.StringWidth(left); w < dc.x {
+			left += strings.Repeat(" ", dc.x-w)
 		}
-
-		// Replace characters at [dc.x : dc.x+len(pRunes)]
-		end := dc.x + len(pRunes)
-		if end > len(bgRunes) {
-			// Extend with spaces then overwrite
-			for len(bgRunes) < end {
-				bgRunes = append(bgRunes, ' ')
-			}
-		}
-		copy(bgRunes[dc.x:], pRunes)
-		bgLines[row] = string(bgRunes)
+		bgLines[row] = left + pLine
 	}
 
 	return strings.Join(bgLines, "\n")

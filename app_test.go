@@ -397,6 +397,52 @@ func TestDualPaneHeightConsistency(t *testing.T) {
 	}
 }
 
+func TestDualPaneMouseMotionNoFocusChange(t *testing.T) {
+	main := &stubComponent{name: "M"}
+	side := &stubComponent{name: "S"}
+
+	a := newAppModel(
+		WithTheme(DefaultTheme()),
+		WithLayout(&DualPane{
+			Main:         main,
+			Side:         side,
+			SideWidth:    20,
+			MinMainWidth: 40,
+			SideRight:    true,
+		}),
+		WithMouseSupport(),
+	)
+
+	a.width = 80
+	a.height = 24
+	a.resize()
+
+	// Focus starts on main (index 0)
+	if a.focusIdx != 0 {
+		t.Fatalf("focus should start at 0, got %d", a.focusIdx)
+	}
+
+	// Mouse motion over the side pane should NOT change focus
+	a.Update(tea.MouseMsg{
+		X: 70, Y: 5,
+		Button: tea.MouseButtonNone,
+		Action: tea.MouseActionMotion,
+	})
+	if a.focusIdx != 0 {
+		t.Errorf("mouse motion should not change focus, got focusIdx=%d", a.focusIdx)
+	}
+
+	// Actual click on the side pane SHOULD change focus
+	a.Update(tea.MouseMsg{
+		X: 70, Y: 5,
+		Button: tea.MouseButtonLeft,
+		Action: tea.MouseActionPress,
+	})
+	if a.focusIdx != 1 {
+		t.Errorf("click on side pane should change focus to 1, got %d", a.focusIdx)
+	}
+}
+
 func TestDualPaneBadgesMatchVisibility(t *testing.T) {
 	main := &stubComponent{name: "M"}
 	side := &stubComponent{name: "S"}
