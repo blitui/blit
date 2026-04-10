@@ -19,8 +19,9 @@ import (
 	"strings"
 )
 
-// SessionFormatVersion must match btest.SessionFormatVersion.
-const SessionFormatVersion = 1
+// SessionFormatVersion is the latest version this tool supports.
+// Must stay in sync with btest.SessionFormatVersion.
+const SessionFormatVersion = 2
 
 type session struct {
 	Version int    `json:"version"`
@@ -82,8 +83,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "sess2tape: parse session: %v\n", err)
 		os.Exit(1)
 	}
-	if sess.Version != SessionFormatVersion {
-		fmt.Fprintf(os.Stderr, "sess2tape: unsupported session version %d (want %d)\n", sess.Version, SessionFormatVersion)
+	if sess.Version != 1 && sess.Version != SessionFormatVersion {
+		fmt.Fprintf(os.Stderr, "sess2tape: unsupported session version %d (want 1 or %d)\n", sess.Version, SessionFormatVersion)
 		os.Exit(1)
 	}
 
