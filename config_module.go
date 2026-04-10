@@ -149,7 +149,7 @@ func (c *Config[T]) WatchFile(ctx context.Context, onChange func(T)) error {
 	if err != nil {
 		return fmt.Errorf("config watch: %w", err)
 	}
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	if err := watcher.Add(c.path); err != nil {
 		return fmt.Errorf("config watch add: %w", err)
