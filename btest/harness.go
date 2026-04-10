@@ -160,6 +160,34 @@ type TickMsgPlaceholder struct {
 	At time.Time
 }
 
+// NewAppHarness creates a test harness from a full application, using the real
+// component tree (Tabs, DualPane, StatusBar, overlays, etc.). This ensures
+// golden snapshots cover the actual production layout, not a simplified
+// reconstruction. app must implement Model() tea.Model (e.g., *blit.App).
+//
+//	h := btest.NewAppHarness(t, myApp, 80, 24)
+//	defer h.Done()
+//	h.Send(someMsg).Expect("loaded").Snapshot("initial")
+func NewAppHarness(t testing.TB, app interface{ Model() tea.Model }, cols, lines int) *Harness {
+	t.Helper()
+	return NewHarness(t, app.Model(), cols, lines)
+}
+
+// SnapshotApp is a one-liner that creates a harness from a full application,
+// takes a named golden snapshot, and cleans up. Use this when you only need to
+// verify the initial render of the real app layout:
+//
+//	btest.SnapshotApp(t, myApp, 80, 24, "initial")
+//
+// For interactive tests (key presses, resizes, multiple snapshots), use
+// NewAppHarness instead.
+func SnapshotApp(t testing.TB, app interface{ Model() tea.Model }, cols, lines int, name string) {
+	t.Helper()
+	h := NewAppHarness(t, app, cols, lines)
+	defer h.Done()
+	h.Snapshot(name)
+}
+
 // Done runs registered teardown callbacks in LIFO order. Safe to call
 // multiple times; subsequent calls are no-ops.
 func (h *Harness) Done() {
