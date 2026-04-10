@@ -7,7 +7,8 @@
 .copilot/
 CLAUDE.md
 AGENTS.md
-docs/superpowers/
+# Private docs (strategy, planning, notes — never public)
+.internal/
 
 # Go binaries
 *.exe
