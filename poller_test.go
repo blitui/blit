@@ -1,6 +1,7 @@
 package blit
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -221,5 +222,127 @@ func TestRetryCmd_DefaultOpts(t *testing.T) {
 	msg := cmd()
 	if m, ok := msg.(testMsg); !ok || m.val != "default" {
 		t.Errorf("got %v, want testMsg{default}", msg)
+	}
+}
+
+func TestPollerOpts_FetchCtxTakesPriority(t *testing.T) {
+	fetchCalled := false
+	fetchCtxCalled := false
+
+	p := NewPollerWithOpts(PollerOpts{
+		Name:     "ctx-test",
+		Interval: time.Second,
+		Fetch: func() (tea.Msg, error) {
+			fetchCalled = true
+			return testMsg{"fetch"}, nil
+		},
+		FetchCtx: func(ctx context.Context) (tea.Msg, error) {
+			fetchCtxCalled = true
+			if ctx == nil {
+				t.Error("FetchCtx received nil context")
+			}
+			return testMsg{"fetchCtx"}, nil
+		},
+		Backoff: NoBackoff(),
+	})
+
+	cmd := p.enhancedFetch()
+	msg := cmd()
+	sm, ok := msg.(PollerSuccessMsg)
+	if !ok {
+		t.Fatalf("got %T, want PollerSuccessMsg", msg)
+	}
+	if m, ok := sm.Msg.(testMsg); !ok || m.val != "fetchCtx" {
+		t.Errorf("got %v, want testMsg{fetchCtx}", sm.Msg)
+	}
+	if !fetchCtxCalled {
+		t.Error("FetchCtx was not called")
+	}
+	if fetchCalled {
+		t.Error("Fetch was called when FetchCtx is set")
+	}
+}
+
+func TestPollerOpts_FetchCtxReceivesContext(t *testing.T) {
+	var receivedCtx context.Context
+
+	p := NewPollerWithOpts(PollerOpts{
+		Name:     "ctx-verify",
+		Interval: time.Second,
+		FetchCtx: func(ctx context.Context) (tea.Msg, error) {
+			receivedCtx = ctx
+			return testMsg{"ok"}, nil
+		},
+		Backoff: NoBackoff(),
+	})
+
+	cmd := p.enhancedFetch()
+	cmd()
+
+	if receivedCtx == nil {
+		t.Fatal("FetchCtx did not receive a context")
+	}
+	// The context should not be cancelled.
+	if err := receivedCtx.Err(); err != nil {
+		t.Errorf("context already cancelled: %v", err)
+	}
+}
+
+func TestPollerOpts_FetchCtxNilFallsBackToFetch(t *testing.T) {
+	fetchCalled := false
+
+	p := NewPollerWithOpts(PollerOpts{
+		Name:     "fallback-test",
+		Interval: time.Second,
+		Fetch: func() (tea.Msg, error) {
+			fetchCalled = true
+			return testMsg{"fetch"}, nil
+		},
+		// FetchCtx is nil — should use Fetch.
+		Backoff: NoBackoff(),
+	})
+
+	cmd := p.enhancedFetch()
+	msg := cmd()
+	sm, ok := msg.(PollerSuccessMsg)
+	if !ok {
+		t.Fatalf("got %T, want PollerSuccessMsg", msg)
+	}
+	if m, ok := sm.Msg.(testMsg); !ok || m.val != "fetch" {
+		t.Errorf("got %v, want testMsg{fetch}", sm.Msg)
+	}
+	if !fetchCalled {
+		t.Error("Fetch was not called as fallback")
+	}
+}
+
+func TestPollerOpts_FetchCtxWithRetry(t *testing.T) {
+	calls := 0
+
+	p := NewPollerWithOpts(PollerOpts{
+		Name:     "ctx-retry",
+		Interval: time.Second,
+		FetchCtx: func(ctx context.Context) (tea.Msg, error) {
+			calls++
+			if calls < 3 {
+				return nil, fmt.Errorf("attempt %d failed", calls)
+			}
+			return testMsg{"success"}, nil
+		},
+		Backoff:    FixedBackoff(time.Millisecond, 5),
+		MaxRetries: 5,
+	})
+
+	cmd := p.enhancedFetch()
+	msg := cmd()
+	sm, ok := msg.(PollerSuccessMsg)
+	if !ok {
+		t.Fatalf("got %T, want PollerSuccessMsg", msg)
+	}
+	if m, ok := sm.Msg.(testMsg); !ok || m.val != "success" {
+		t.Errorf("got %v, want testMsg{success}", sm.Msg)
+	}
+	if calls != 3 {
+		t.Errorf("calls = %d, want 3", calls)
 	}
 }
