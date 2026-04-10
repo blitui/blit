@@ -102,7 +102,7 @@ func NewThemeHotReload(path string, sender func(msg interface{})) (*ThemeHotRelo
 		return nil, fmt.Errorf("theme hot-reload: create watcher: %w", err)
 	}
 	if err := w.Add(path); err != nil {
-		w.Close()
+		_ = w.Close()
 		return nil, fmt.Errorf("theme hot-reload: watch %q: %w", path, err)
 	}
 	hr := &ThemeHotReload{
@@ -173,7 +173,7 @@ func (hr *ThemeHotReload) reload() {
 
 // Stop shuts down the watcher and waits for the goroutine to exit.
 func (hr *ThemeHotReload) Stop() {
-	hr.watcher.Close()
+	_ = hr.watcher.Close()
 	<-hr.stopped
 }
 

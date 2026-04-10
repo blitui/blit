@@ -515,7 +515,7 @@ func loadFilePreview(path string) string {
 	if err != nil {
 		return "(cannot open)"
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	buf := make([]byte, 4096)
 	n, _ := f.Read(buf)

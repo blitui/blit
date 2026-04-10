@@ -543,7 +543,7 @@ func extractFromTarGz(data []byte, binaryName string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening gzip: %w", err)
 	}
-	defer gr.Close()
+	defer func() { _ = gr.Close() }()
 
 	tr := tar.NewReader(gr)
 	for {
@@ -574,7 +574,7 @@ func extractFromZip(data []byte, binaryName string) ([]byte, error) {
 			if err != nil {
 				return nil, fmt.Errorf("opening %s: %w", f.Name, err)
 			}
-			defer rc.Close()
+			defer func() { _ = rc.Close() }()
 			return io.ReadAll(rc)
 		}
 	}
