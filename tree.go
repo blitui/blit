@@ -15,6 +15,9 @@ type Node struct {
 	// Glyph is an optional icon prefix shown before the title.
 	Glyph string
 
+	// Detail is optional secondary text rendered after the title.
+	Detail string
+
 	// Children are the child nodes. Non-nil means this node is expandable.
 	Children []*Node
 
@@ -23,7 +26,28 @@ type Node struct {
 
 	// Expanded controls whether children are visible.
 	Expanded bool
+
+	// Selected marks this node as selected (used in Single/Multi selection modes).
+	Selected bool
 }
+
+// SelectionMode controls how node selection behaves in a Tree.
+type SelectionMode int
+
+const (
+	// SelectionNone disables selection state tracking. Enter triggers OnSelect only.
+	SelectionNone SelectionMode = iota
+	// SelectionSingle allows at most one selected node at a time.
+	SelectionSingle
+	// SelectionMulti allows any number of selected nodes (checkbox style).
+	SelectionMulti
+)
+
+// NodeRenderFunc customises how a single node is rendered. It receives the
+// node and whether it is currently highlighted by the cursor. Return the
+// string that should appear in the tree line (connectors and selection
+// indicators are still drawn by the Tree itself).
+type NodeRenderFunc func(node *Node, isCursor bool) string
 
 // TreeOpts configures Tree behaviour.
 type TreeOpts struct {
@@ -32,6 +56,13 @@ type TreeOpts struct {
 
 	// OnToggle is called when the user expands or collapses a node. Optional.
 	OnToggle func(node *Node)
+
+	// Selection sets the selection mode. Default is SelectionNone.
+	Selection SelectionMode
+
+	// RenderNode, if non-nil, overrides the default node label rendering.
+	// The returned string replaces the glyph+title portion of each line.
+	RenderNode NodeRenderFunc
 }
 
 // Tree is a recursive Component that renders a tree of Nodes with indent
@@ -86,6 +117,39 @@ func (t *Tree) CursorNode() *Node {
 		return t.flat[t.cursor].node
 	}
 	return nil
+}
+
+// SelectedNodes returns all nodes that have Selected == true, in tree order.
+func (t *Tree) SelectedNodes() []*Node {
+	var out []*Node
+	t.collectSelected(t.roots, &out)
+	return out
+}
+
+func (t *Tree) collectSelected(nodes []*Node, out *[]*Node) {
+	for _, n := range nodes {
+		if n.Selected {
+			*out = append(*out, n)
+		}
+		t.collectSelected(n.Children, out)
+	}
+}
+
+// SelectAll marks every node as Selected. Only meaningful in SelectionMulti mode.
+func (t *Tree) SelectAll() {
+	t.walkAll(t.roots, func(n *Node) { n.Selected = true })
+}
+
+// DeselectAll clears the Selected flag on every node.
+func (t *Tree) DeselectAll() {
+	t.walkAll(t.roots, func(n *Node) { n.Selected = false })
+}
+
+func (t *Tree) walkAll(nodes []*Node, fn func(*Node)) {
+	for _, n := range nodes {
+		fn(n)
+		t.walkAll(n.Children, fn)
+	}
 }
 
 // Init implements Component.
@@ -167,14 +231,25 @@ func (t *Tree) handleKey(msg tea.KeyMsg) tea.Cmd {
 
 	case "enter":
 		node := t.CursorNode()
-		if node != nil && t.opts.OnSelect != nil {
-			t.opts.OnSelect(node)
+		if node != nil {
+			t.applySelection(node)
+			if t.opts.OnSelect != nil {
+				t.opts.OnSelect(node)
+			}
 		}
 		return Consumed()
 
 	case " ":
 		node := t.CursorNode()
-		if node != nil && len(node.Children) > 0 {
+		if node == nil {
+			return Consumed()
+		}
+		// In multi-select, space toggles selection instead of expand/collapse.
+		if t.opts.Selection == SelectionMulti {
+			t.applySelection(node)
+			return Consumed()
+		}
+		if len(node.Children) > 0 {
 			node.Expanded = !node.Expanded
 			t.rebuild()
 			if t.opts.OnToggle != nil {
@@ -205,6 +280,8 @@ func (t *Tree) View() string {
 		Foreground(lipgloss.Color(t.theme.Muted))
 	accentStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(t.theme.Accent))
+	selectedStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(t.theme.Positive))
 
 	end := t.scroll + t.height
 	if end > len(t.flat) {
@@ -240,18 +317,37 @@ func (t *Tree) View() string {
 			arrow = g.Dot
 		}
 
-		glyph := node.Glyph
-		if glyph != "" {
-			glyph += " "
+		// Selection indicator (checkbox-style) for Single/Multi modes.
+		var selMark string
+		if t.opts.Selection != SelectionNone {
+			if node.Selected {
+				selMark = g.SelectedBullet + " "
+			} else {
+				selMark = g.UnselectedBullet + " "
+			}
+		}
+
+		// Node label: custom renderer or default glyph+title+detail.
+		var label string
+		if t.opts.RenderNode != nil {
+			label = t.opts.RenderNode(node, isCursor)
+		} else {
+			glyph := node.Glyph
+			if glyph != "" {
+				glyph += " "
+			}
+			label = glyph + node.Title
+			if node.Detail != "" {
+				label += " " + node.Detail
+			}
 		}
 
 		var line string
 		if isCursor {
-			// re-render with connector prepended (not styled so connector remains muted)
 			prefixStyled := mutedStyle.Render(connector)
-			line = prefixStyled + accentStyle.Render(arrow) + cursorStyle.Render(" "+glyph+node.Title)
+			line = prefixStyled + accentStyle.Render(arrow) + cursorStyle.Render(" "+selMark+label)
 		} else {
-			line = mutedStyle.Render(connector+arrow+" ") + normalStyle.Render(glyph+node.Title)
+			line = mutedStyle.Render(connector+arrow+" ") + selectedStyle.Render(selMark) + normalStyle.Render(label)
 		}
 
 		lines = append(lines, line)
@@ -291,6 +387,18 @@ func (t *Tree) SetFocused(f bool) { t.focused = f }
 
 // SetTheme implements Themed.
 func (t *Tree) SetTheme(theme Theme) { t.theme = theme }
+
+// applySelection updates node selection state based on the current mode.
+func (t *Tree) applySelection(node *Node) {
+	switch t.opts.Selection {
+	case SelectionSingle:
+		wasSelected := node.Selected
+		t.DeselectAll()
+		node.Selected = !wasSelected
+	case SelectionMulti:
+		node.Selected = !node.Selected
+	}
+}
 
 // rebuild linearises all currently visible nodes into t.flat.
 func (t *Tree) rebuild() {
