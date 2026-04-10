@@ -27,6 +27,9 @@ type Config[T any] struct {
 
 	// appName for XDG path resolution.
 	appName string
+
+	// signal is lazily created by AsSignal and emits on config changes.
+	signal *Signal[T]
 }
 
 // fieldMeta holds parsed struct tag metadata for a single config field.
@@ -106,6 +109,9 @@ func (c *Config[T]) Save() error {
 func (c *Config[T]) SetValue(fn func(*T)) error {
 	fn(&c.Value)
 	c.dirty = true
+	if c.signal != nil {
+		c.signal.Set(c.Value)
+	}
 	return nil
 }
 
@@ -117,6 +123,17 @@ func (c *Config[T]) Path() string {
 // IsDirty returns whether unsaved changes exist.
 func (c *Config[T]) IsDirty() bool {
 	return c.dirty
+}
+
+// AsSignal returns a reactive Signal that tracks the config value.
+// The signal is created lazily on first call and emits whenever the config
+// changes via SetValue or WatchFile reload. Components can Subscribe to the
+// returned signal for reactive updates.
+func (c *Config[T]) AsSignal() *Signal[T] {
+	if c.signal == nil {
+		c.signal = NewSignal(c.Value)
+	}
+	return c.signal
 }
 
 // Defaults returns a new T with all `default` tags applied.
@@ -166,6 +183,9 @@ func (c *Config[T]) WatchFile(ctx context.Context, onChange func(T)) error {
 		applyDefaults(&v)
 		c.Value = v
 		c.dirty = false
+		if c.signal != nil {
+			c.signal.Set(v)
+		}
 		if onChange != nil {
 			onChange(v)
 		}

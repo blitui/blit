@@ -420,6 +420,110 @@ func TestConfig_Defaults(t *testing.T) {
 	}
 }
 
+func TestConfig_AsSignal(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	sig := cfg.AsSignal()
+	if sig == nil {
+		t.Fatal("AsSignal returned nil")
+	}
+
+	// Should return the same signal on subsequent calls.
+	sig2 := cfg.AsSignal()
+	if sig != sig2 {
+		t.Error("AsSignal returned different signal on second call")
+	}
+
+	// Signal should reflect current config value.
+	if sig.Get().Interval != 30 {
+		t.Errorf("signal Interval = %d, want 30", sig.Get().Interval)
+	}
+	if sig.Get().Theme != "dark" {
+		t.Errorf("signal Theme = %q, want %q", sig.Get().Theme, "dark")
+	}
+}
+
+func TestConfig_AsSignal_SetValueEmits(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	sig := cfg.AsSignal()
+
+	if err := cfg.SetValue(func(v *testModuleConfig) {
+		v.Interval = 77
+		v.Theme = "light"
+	}); err != nil {
+		t.Fatalf("SetValue: %v", err)
+	}
+
+	// Signal should have the updated value.
+	if sig.Get().Interval != 77 {
+		t.Errorf("signal Interval = %d, want 77", sig.Get().Interval)
+	}
+	if sig.Get().Theme != "light" {
+		t.Errorf("signal Theme = %q, want %q", sig.Get().Theme, "light")
+	}
+}
+
+func TestConfig_AsSignal_WatchFileEmits(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	if err := os.WriteFile(path, []byte("interval: 30\ntheme: dark\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := &Config[testModuleConfig]{
+		path:    path,
+		appName: "test",
+		Value:   testModuleConfig{Interval: 30, Theme: "dark"},
+	}
+
+	sig := cfg.AsSignal()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		_ = cfg.WatchFile(ctx, nil)
+	}()
+
+	// Give the watcher time to start.
+	time.Sleep(100 * time.Millisecond)
+
+	// Modify the file.
+	if err := os.WriteFile(path, []byte("interval: 88\ntheme: light\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Poll for the signal to update (debounce is 200ms).
+	deadline := time.After(3 * time.Second)
+	for sig.Get().Interval != 88 {
+		select {
+		case <-deadline:
+			t.Fatalf("timed out: signal Interval = %d, want 88", sig.Get().Interval)
+		case <-time.After(50 * time.Millisecond):
+		}
+	}
+
+	if sig.Get().Theme != "light" {
+		t.Errorf("signal Theme = %q, want %q", sig.Get().Theme, "light")
+	}
+
+	cancel()
+}
+
 func TestConfig_WatchFile(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "config.yaml")
