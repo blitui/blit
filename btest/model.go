@@ -151,6 +151,7 @@ func (tm *TestModel) TriggerTick() {
 
 // SendTick sends a generic tick message. Useful for testing time-based
 // components like pollers, spinners, and animations.
+//
 // Deprecated: Use TriggerTick or AdvanceClock instead.
 func (tm *TestModel) SendTick() {
 	tm.t.Helper()
