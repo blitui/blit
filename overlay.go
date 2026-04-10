@@ -43,6 +43,10 @@ func (s *overlayStack) remove(o Overlay) {
 			filtered = append(filtered, item)
 		}
 	}
+	// Nil out removed tail slots so the GC can collect the overlays.
+	for i := len(filtered); i < len(s.stack); i++ {
+		s.stack[i] = nil
+	}
 	s.stack = filtered
 }
 
