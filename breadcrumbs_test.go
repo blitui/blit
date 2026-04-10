@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	blit "github.com/blitui/blit"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func newTestBreadcrumbs(segs []string, maxWidth int) *blit.Breadcrumbs {
@@ -99,5 +100,43 @@ func TestBreadcrumbsDefaultSeparator(t *testing.T) {
 	view := b.View()
 	if !strings.Contains(view, "/") {
 		t.Errorf("expected default separator '/' in view, got: %q", view)
+	}
+}
+
+func TestBreadcrumbsUpdate(t *testing.T) {
+	b := blit.NewBreadcrumbs([]string{"home", "docs"})
+	ctx := blit.Context{Theme: blit.DefaultTheme()}
+	result, cmd := b.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}}, ctx)
+	if result != b {
+		t.Error("Update should return same breadcrumbs")
+	}
+	if cmd != nil {
+		t.Error("Update should return nil cmd")
+	}
+}
+
+func TestBreadcrumbsKeyBindings(t *testing.T) {
+	b := blit.NewBreadcrumbs([]string{"a"})
+	if b.KeyBindings() != nil {
+		t.Error("KeyBindings should return nil")
+	}
+}
+
+func TestBreadcrumbsFocused(t *testing.T) {
+	b := blit.NewBreadcrumbs([]string{"a"})
+	if b.Focused() {
+		t.Error("should not be focused initially")
+	}
+	b.SetFocused(true)
+	if !b.Focused() {
+		t.Error("should be focused after SetFocused(true)")
+	}
+}
+
+func TestBreadcrumbsInit(t *testing.T) {
+	b := blit.NewBreadcrumbs([]string{"a", "b"})
+	cmd := b.Init()
+	if cmd != nil {
+		t.Error("Init should return nil")
 	}
 }
