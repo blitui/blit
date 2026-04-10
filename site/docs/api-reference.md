@@ -31,7 +31,23 @@ Full API documentation is available on [pkg.go.dev](https://pkg.go.dev/github.co
 | [`StatusBar`](https://pkg.go.dev/github.com/blitui/blit#StatusBar) | Left/right footer driven by closures or signals |
 | [`Help`](https://pkg.go.dev/github.com/blitui/blit#Help) | Auto-generated keybinding overlay |
 | [`Breadcrumbs`](https://pkg.go.dev/github.com/blitui/blit#Breadcrumbs) | Navigation breadcrumb trail |
+| [`ProgressBar`](https://pkg.go.dev/github.com/blitui/blit#ProgressBar) | Value-based progress indicator with label and percentage |
+| [`Spinner`](https://pkg.go.dev/github.com/blitui/blit#Spinner) | Animated loading indicator cycling through glyph frames |
+| [`Accordion`](https://pkg.go.dev/github.com/blitui/blit#Accordion) | Collapsible sections with exclusive mode |
+| [`Breadcrumb`](https://pkg.go.dev/github.com/blitui/blit#Breadcrumb) | Navigable path display with Push/Pop API |
+| [`Timeline`](https://pkg.go.dev/github.com/blitui/blit#Timeline) | Vertical/horizontal event sequence with status icons |
+| [`Kanban`](https://pkg.go.dev/github.com/blitui/blit#Kanban) | Multi-column board with card movement |
+| [`ChartPanel`](https://pkg.go.dev/github.com/blitui/blit#ChartPanel) | Switchable container for chart components |
+| [`Stepper`](https://pkg.go.dev/github.com/blitui/blit#Stepper) | Multi-step progress indicator with navigation |
 | [`ToastMsg`](https://pkg.go.dev/github.com/blitui/blit#ToastMsg) | Toast notification message |
+
+## Overlays
+
+| Type | Description |
+|------|-------------|
+| [`Dialog`](https://pkg.go.dev/github.com/blitui/blit#Dialog) | Modal dialog with button navigation |
+| [`Menu`](https://pkg.go.dev/github.com/blitui/blit#Menu) | Popup menu with separators and shortcuts |
+| [`Tooltip`](https://pkg.go.dev/github.com/blitui/blit#Tooltip) | Floating hint composited over background |
 
 ## Layout
 
