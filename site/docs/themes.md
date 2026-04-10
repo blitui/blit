@@ -98,10 +98,10 @@ app.SetTheme(blit.TokyoNightTheme())
 
 ## Hot Reload
 
-Set `TUIKIT_THEME` to a JSON file path. blit watches the file and reloads the theme without restarting:
+Set `BLIT_THEME` to a JSON file path. blit watches the file and reloads the theme without restarting:
 
 ```bash
-TUIKIT_THEME=~/.config/mytool/theme.json mytool
+BLIT_THEME=~/.config/mytool/theme.json mytool
 ```
 
 ## Custom Glyphs

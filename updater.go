@@ -268,7 +268,7 @@ func (m UpdateMode) String() string {
 // SelfUpdate without making any network calls. Intended as a kill switch
 // for CI, tests, and users who want to disable updates temporarily without
 // changing code.
-const EnvDisableUpdate = "TUIKIT_UPDATE_DISABLE"
+const EnvDisableUpdate = "BLIT_UPDATE_DISABLE"
 
 // updateDisabled reports whether the environment or config disables updates.
 func updateDisabled(cfg UpdateConfig) bool {
@@ -298,7 +298,7 @@ type UpdateConfig struct {
 	CacheDir   string        // Override cache directory (default: os.UserConfigDir()/<BinaryName>)
 
 	// Disabled short-circuits every update call (same effect as the
-	// TUIKIT_UPDATE_DISABLE environment variable). Useful in tests and CI.
+	// BLIT_UPDATE_DISABLE environment variable). Useful in tests and CI.
 	Disabled bool
 
 	// Channel selects which releases to consider. "" or "stable" uses
@@ -583,7 +583,7 @@ func extractFromZip(data []byte, binaryName string) ([]byte, error) {
 
 // SelfUpdate downloads the latest release and replaces the current binary.
 // Only works for manual installs (not Homebrew/Scoop). Honors the
-// TUIKIT_UPDATE_DISABLE env var, cfg.Disabled, and cfg.Mode == UpdateDryRun
+// BLIT_UPDATE_DISABLE env var, cfg.Disabled, and cfg.Mode == UpdateDryRun
 // (which logs every step without writing anything). Before/After/Error
 // hooks on cfg are called at the corresponding points.
 func SelfUpdate(cfg UpdateConfig) error {

@@ -125,7 +125,7 @@ func TestInterpolateColor(t *testing.T) {
 
 func TestTweenProgress(t *testing.T) {
 	if animDisabled {
-		t.Skip("TUIKIT_NO_ANIM=1 set, skipping tween progress test")
+		t.Skip("BLIT_NO_ANIM=1 set, skipping tween progress test")
 	}
 	tw := &Tween{Duration: 100 * time.Millisecond}
 	tw.Start(t0)
@@ -159,7 +159,7 @@ func TestTweenNotStarted(t *testing.T) {
 
 func TestTweenZeroDuration(t *testing.T) {
 	if animDisabled {
-		t.Skip("TUIKIT_NO_ANIM=1 set")
+		t.Skip("BLIT_NO_ANIM=1 set")
 	}
 	tw := &Tween{Duration: 0}
 	tw.Start(t0)
@@ -170,7 +170,7 @@ func TestTweenZeroDuration(t *testing.T) {
 
 func TestTweenRunning(t *testing.T) {
 	if animDisabled {
-		t.Skip("TUIKIT_NO_ANIM=1 set, skipping running test")
+		t.Skip("BLIT_NO_ANIM=1 set, skipping running test")
 	}
 	tw := &Tween{Duration: 200 * time.Millisecond}
 	if tw.Running() {
@@ -188,7 +188,7 @@ func TestTweenRunning(t *testing.T) {
 
 func TestTweenDisabledSnapToEnd(t *testing.T) {
 	if !animDisabled {
-		t.Skip("TUIKIT_NO_ANIM not set, skipping disabled-snap test")
+		t.Skip("BLIT_NO_ANIM not set, skipping disabled-snap test")
 	}
 	tw := &Tween{Duration: 500 * time.Millisecond}
 	tw.Start(t0)

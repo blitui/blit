@@ -86,7 +86,7 @@ func newToastManager(opts ToastManagerOpts) *toastManager {
 	if opts.AnimDuration <= 0 {
 		opts.AnimDuration = 300 * time.Millisecond
 	}
-	return &toastManager{opts: opts, theme: DefaultTheme(), noAnim: os.Getenv("TUIKIT_NO_ANIM") == "1"}
+	return &toastManager{opts: opts, theme: DefaultTheme(), noAnim: os.Getenv("BLIT_NO_ANIM") == "1"}
 }
 
 func (tm *toastManager) add(msg ToastMsg) {

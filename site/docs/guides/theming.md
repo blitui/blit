@@ -63,7 +63,7 @@ theme  = blit.ThemePreset("gruvbox")
 
 ## Hot Reload
 
-Set `TUIKIT_THEME` environment variable to a JSON file path. blit watches the file and reloads the theme without restarting the app.
+Set `BLIT_THEME` environment variable to a JSON file path. blit watches the file and reloads the theme without restarting the app.
 
 ## Custom Glyphs
 

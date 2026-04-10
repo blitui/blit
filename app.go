@@ -135,7 +135,7 @@ func WithFocusCycleKey(key string) Option {
 }
 
 // WithAnimations enables or disables the internal animation tick bus (~60fps).
-// Setting TUIKIT_NO_ANIM=1 in the environment overrides this to false.
+// Setting BLIT_NO_ANIM=1 in the environment overrides this to false.
 func WithAnimations(enabled bool) Option {
 	return func(a *appModel) {
 		if animDisabled {
@@ -220,7 +220,7 @@ func newAppModel(opts ...Option) *appModel {
 		opt(a)
 	}
 	// Auto-enable dev console from environment even without WithDevConsole option.
-	if a.devConsole == nil && os.Getenv("TUIKIT_DEVCONSOLE") == "1" {
+	if a.devConsole == nil && os.Getenv("BLIT_DEVCONSOLE") == "1" {
 		a.devConsole = newDevConsole()
 	}
 	a.materialiseSlots()

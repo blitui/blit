@@ -8,8 +8,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// animDisabled reports whether animations are suppressed via TUIKIT_NO_ANIM=1.
-var animDisabled = os.Getenv("TUIKIT_NO_ANIM") == "1"
+// animDisabled reports whether animations are suppressed via BLIT_NO_ANIM=1.
+var animDisabled = os.Getenv("BLIT_NO_ANIM") == "1"
 
 // Ease is an easing function mapping t in [0,1] to value in [0,1].
 type Ease func(t float64) float64
@@ -105,7 +105,7 @@ func byteHex(v int) string {
 }
 
 // Tween tracks animation progress over a fixed duration.
-// When TUIKIT_NO_ANIM=1, Start is a no-op and Progress always returns 1.
+// When BLIT_NO_ANIM=1, Start is a no-op and Progress always returns 1.
 type Tween struct {
 	Duration  time.Duration
 	startedAt time.Time

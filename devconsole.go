@@ -19,7 +19,7 @@ func DevConsoleToggleCmd() tea.Cmd {
 }
 
 // devConsole is the overlay that renders the developer console.
-// It is toggled by ctrl+\ or by setting TUIKIT_DEVCONSOLE=1.
+// It is toggled by ctrl+\ or by setting BLIT_DEVCONSOLE=1.
 //
 // The console shows:
 //   - FPS / frame time
@@ -32,7 +32,7 @@ func DevConsoleToggleCmd() tea.Cmd {
 // It renders as a full-screen overlay (implements Overlay) and is mounted
 // via the slot system at SlotOverlay with the highest z-order.
 //
-// Zero cost when disabled: when TUIKIT_DEVCONSOLE=0 and the console has
+// Zero cost when disabled: when BLIT_DEVCONSOLE=0 and the console has
 // never been toggled, all frame-recording hooks are no-ops and the console
 // never enters the overlay stack.
 type devConsole struct {
@@ -79,10 +79,10 @@ type signalInfo struct {
 	value string
 }
 
-// newDevConsole creates a devConsole. autoEnable checks TUIKIT_DEVCONSOLE env.
+// newDevConsole creates a devConsole. autoEnable checks BLIT_DEVCONSOLE env.
 func newDevConsole() *devConsole {
 	dc := &devConsole{}
-	if os.Getenv("TUIKIT_DEVCONSOLE") == "1" {
+	if os.Getenv("BLIT_DEVCONSOLE") == "1" {
 		dc.active = true
 	}
 	return dc
@@ -444,7 +444,7 @@ func (dc *devConsole) SetActive(v bool) { dc.active = v }
 // --- app integration helpers ---
 
 // WithDevConsole enables the dev console overlay on an App. The console is
-// also auto-enabled when TUIKIT_DEVCONSOLE=1 is set in the environment.
+// also auto-enabled when BLIT_DEVCONSOLE=1 is set in the environment.
 // When this option is not provided and the env var is not set, the console
 // costs nothing at runtime.
 func WithDevConsole() Option {
