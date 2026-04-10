@@ -21,7 +21,7 @@ type Context struct {
 
 	// Hotkeys exposes the app-wide keybinding registry. Components can
 	// consult it to resolve chord conflicts or render inline hints.
-	Hotkeys *registry
+	Hotkeys *Registry
 
 	// Clock abstracts time.Now so components can be tested with a fake
 	// clock. It is nil-safe: if unset, callers should fall back to

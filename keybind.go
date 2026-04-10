@@ -19,21 +19,21 @@ type KeyGroup struct {
 	Bindings []KeyBind
 }
 
-// registry collects keybindings from all components and provides
+// Registry collects keybindings from all components and provides
 // grouped access for the help screen and conflict detection.
-type registry struct {
+type Registry struct {
 	sources map[string][]KeyBind // component name -> bindings
 	order   []string             // insertion order of sources
 }
 
-func newRegistry() *registry {
-	return &registry{
+func newRegistry() *Registry {
+	return &Registry{
 		sources: make(map[string][]KeyBind),
 	}
 }
 
 // addBindings registers keybindings from a named source (component or "global").
-func (r *registry) addBindings(source string, bindings []KeyBind) {
+func (r *Registry) addBindings(source string, bindings []KeyBind) {
 	if _, exists := r.sources[source]; !exists {
 		r.order = append(r.order, source)
 	}
@@ -41,7 +41,7 @@ func (r *registry) addBindings(source string, bindings []KeyBind) {
 }
 
 // all returns every registered keybinding in insertion order.
-func (r *registry) all() []KeyBind {
+func (r *Registry) all() []KeyBind {
 	var result []KeyBind
 	for _, src := range r.order {
 		result = append(result, r.sources[src]...)
@@ -51,7 +51,7 @@ func (r *registry) all() []KeyBind {
 
 // grouped returns keybindings organized by Group, preserving insertion order.
 // Handler funcs are stripped from the output to keep help screen data clean.
-func (r *registry) grouped() []KeyGroup {
+func (r *Registry) grouped() []KeyGroup {
 	seen := make(map[string]int)
 	var groups []KeyGroup
 	for _, kb := range r.all() {
@@ -70,7 +70,7 @@ func (r *registry) grouped() []KeyGroup {
 }
 
 // conflicts returns key names that are bound by more than one source.
-func (r *registry) conflicts() []string {
+func (r *Registry) conflicts() []string {
 	counts := make(map[string]int)
 	for _, src := range r.order {
 		for _, kb := range r.sources[src] {

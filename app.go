@@ -172,7 +172,7 @@ type appModel struct {
 	help              *Help
 	namedOverlays     []namedOverlay
 	overlays          *overlayStack
-	registry          *registry
+	registry          *Registry
 	globalBindings    []KeyBind
 	mouseSupport      bool
 	tickInterval      time.Duration
