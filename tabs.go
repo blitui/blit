@@ -358,8 +358,8 @@ func (t *Tabs) contentSize() (int, int) {
 		barW := t.verticalBarWidth()
 		return t.width - barW, t.height
 	}
-	// Horizontal: 3 rows for bar (tab row + underline + border line)
-	barH := 3
+	// Horizontal: 2 rows for bar (tab row + underline/border merged line)
+	barH := 2
 	h := t.height - barH
 	if h < 0 {
 		h = 0
