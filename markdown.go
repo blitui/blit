@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"regexp"
@@ -34,7 +34,7 @@ func Markdown(md string, theme Theme) string {
 // ptr returns a pointer to v, used when building glamour StylePrimitive fields.
 func ptr[T any](v T) *T { return &v }
 
-// themeToStyleConfig converts a tuikit Theme into a glamour ansi.StyleConfig
+// themeToStyleConfig converts a blit Theme into a glamour ansi.StyleConfig
 // by mapping semantic color tokens to glamour's ANSIColor scheme.
 func themeToStyleConfig(t Theme) ansi.StyleConfig {
 	accent := string(t.Accent)

@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // totalRows is the logical dataset size. A million rows is ~40 MB if you were
@@ -34,9 +34,9 @@ type bigtableProvider struct {
 	filter string
 }
 
-func (p *bigtableProvider) rowAt(i int) tuikit.Row {
+func (p *bigtableProvider) rowAt(i int) blit.Row {
 	status := statuses[i%len(statuses)]
-	return tuikit.Row{
+	return blit.Row{
 		strconv.Itoa(i),
 		"user-" + strconv.Itoa(i),
 		status,
@@ -44,7 +44,7 @@ func (p *bigtableProvider) rowAt(i int) tuikit.Row {
 	}
 }
 
-func (p *bigtableProvider) matches(r tuikit.Row) bool {
+func (p *bigtableProvider) matches(r blit.Row) bool {
 	if p.filter == "" {
 		return true
 	}
@@ -76,8 +76,8 @@ func (p *bigtableProvider) Len() int {
 	return n
 }
 
-func (p *bigtableProvider) Rows(offset, limit int) []tuikit.Row {
-	out := make([]tuikit.Row, 0, limit)
+func (p *bigtableProvider) Rows(offset, limit int) []blit.Row {
+	out := make([]blit.Row, 0, limit)
 	if p.filter == "" {
 		for i := offset; i < offset+limit && i < totalRows; i++ {
 			out = append(out, p.rowAt(i))
@@ -100,18 +100,18 @@ func (p *bigtableProvider) Rows(offset, limit int) []tuikit.Row {
 }
 
 func main() {
-	cols := []tuikit.Column{
-		{Title: "ID", Width: 8, Align: tuikit.Right, MaxWidth: 10},
+	cols := []blit.Column{
+		{Title: "ID", Width: 8, Align: blit.Right, MaxWidth: 10},
 		{Title: "User", Width: 20},
 		{Title: "Status", Width: 10},
-		{Title: "Score", Width: 10, Align: tuikit.Right},
+		{Title: "Score", Width: 10, Align: blit.Right},
 	}
 
 	provider := &bigtableProvider{}
 
 	// Color the status cell per value. Cell renderers still run in virtual
 	// mode — only on the visible slice, so they stay fast.
-	cellRenderer := func(row tuikit.Row, colIdx int, isCursor bool, theme tuikit.Theme) string {
+	cellRenderer := func(row blit.Row, colIdx int, isCursor bool, theme blit.Theme) string {
 		if colIdx >= len(row) {
 			return ""
 		}
@@ -131,8 +131,8 @@ func main() {
 		return cell
 	}
 
-	var tbl *tuikit.Table
-	tbl = tuikit.NewTable(cols, nil, tuikit.TableOpts{
+	var tbl *blit.Table
+	tbl = blit.NewTable(cols, nil, blit.TableOpts{
 		Virtual:      true,
 		RowProvider:  provider,
 		Filterable:   true,
@@ -145,10 +145,10 @@ func main() {
 		},
 	})
 
-	app := tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithComponent("bigtable", tbl),
-		tuikit.WithStatusBar(
+	app := blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithComponent("bigtable", tbl),
+		blit.WithStatusBar(
 			func() string { return " ↑/↓ j/k  g/G  / search  ? help  q quit" },
 			func() string {
 				return fmt.Sprintf(" %d / %d rows ",
@@ -157,7 +157,7 @@ func main() {
 				)
 			},
 		),
-		tuikit.WithHelp(),
+		blit.WithHelp(),
 	)
 
 	if err := app.Run(); err != nil {

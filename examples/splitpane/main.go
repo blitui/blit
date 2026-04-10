@@ -20,7 +20,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // ---- tree placeholder -------------------------------------------------------
@@ -33,7 +33,7 @@ type treeNode struct {
 }
 
 // TreePlaceholder is a minimal list-style tree placeholder that satisfies
-// tuikit.Component. It will be replaced by the real Tree from Track A once
+// blit.Component. It will be replaced by the real Tree from Track A once
 // that branch is merged.
 type TreePlaceholder struct {
 	nodes   []treeNode
@@ -41,7 +41,7 @@ type TreePlaceholder struct {
 	focused bool
 	width   int
 	height  int
-	theme   tuikit.Theme
+	theme   blit.Theme
 }
 
 func newTreePlaceholder() *TreePlaceholder {
@@ -49,7 +49,7 @@ func newTreePlaceholder() *TreePlaceholder {
 		nodes: []treeNode{
 			{label: "src", children: []string{"main.go", "app.go", "theme.go"}, expanded: true},
 			{label: "examples", children: []string{"dashboard", "splitpane", "picker"}},
-			{label: "tuitest", children: []string{"harness.go", "assert.go"}},
+			{label: "blit", children: []string{"harness.go", "assert.go"}},
 			{label: "go.mod"},
 			{label: "README.md"},
 		},
@@ -57,28 +57,28 @@ func newTreePlaceholder() *TreePlaceholder {
 }
 
 func (t *TreePlaceholder) Init() tea.Cmd                 { return nil }
-func (t *TreePlaceholder) KeyBindings() []tuikit.KeyBind { return nil }
+func (t *TreePlaceholder) KeyBindings() []blit.KeyBind { return nil }
 func (t *TreePlaceholder) SetSize(w, h int)              { t.width = w; t.height = h }
 func (t *TreePlaceholder) Focused() bool                 { return t.focused }
 func (t *TreePlaceholder) SetFocused(f bool)             { t.focused = f }
-func (t *TreePlaceholder) SetTheme(th tuikit.Theme)      { t.theme = th }
+func (t *TreePlaceholder) SetTheme(th blit.Theme)      { t.theme = th }
 
-func (t *TreePlaceholder) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (t *TreePlaceholder) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	if km, ok := msg.(tea.KeyMsg); ok {
 		switch km.String() {
 		case "up", "k":
 			if t.cursor > 0 {
 				t.cursor--
 			}
-			return t, tuikit.Consumed()
+			return t, blit.Consumed()
 		case "down", "j":
 			if t.cursor < len(t.nodes)-1 {
 				t.cursor++
 			}
-			return t, tuikit.Consumed()
+			return t, blit.Consumed()
 		case "right", "l", "enter":
 			t.nodes[t.cursor].expanded = !t.nodes[t.cursor].expanded
-			return t, tuikit.Consumed()
+			return t, blit.Consumed()
 		}
 	}
 	return t, nil
@@ -123,37 +123,37 @@ func (t *TreePlaceholder) SelectedPath() []string {
 		return nil
 	}
 	n := t.nodes[t.cursor]
-	return []string{"tuikit-go", n.label}
+	return []string{"blit", n.label}
 }
 
 // ---- model ------------------------------------------------------------------
 
 type model struct {
-	split       *tuikit.Split
+	split       *blit.Split
 	tree        *TreePlaceholder
-	viewport    *tuikit.Viewport
-	breadcrumbs *tuikit.Breadcrumbs
+	viewport    *blit.Viewport
+	breadcrumbs *blit.Breadcrumbs
 	width       int
 	height      int
-	theme       tuikit.Theme
+	theme       blit.Theme
 }
 
 func newModel() model {
-	theme := tuikit.DefaultTheme()
+	theme := blit.DefaultTheme()
 
 	tree := newTreePlaceholder()
 	tree.SetTheme(theme)
 
-	vp := tuikit.NewViewport()
+	vp := blit.NewViewport()
 	vp.SetTheme(theme)
 	vp.SetContent(buildViewportContent())
 
-	sp := tuikit.NewSplit(tuikit.Horizontal, 0.35, tree, vp)
+	sp := blit.NewSplit(blit.Horizontal, 0.35, tree, vp)
 	sp.Resizable = true
 	sp.SetTheme(theme)
 	sp.SetFocused(true)
 
-	bc := tuikit.NewBreadcrumbs(tree.SelectedPath())
+	bc := blit.NewBreadcrumbs(tree.SelectedPath())
 	bc.SetTheme(theme)
 
 	return model{
@@ -167,7 +167,7 @@ func newModel() model {
 
 func buildViewportContent() string {
 	lines := []string{
-		"tuikit-go — v0.9.0 Viewport Demo",
+		"blit — v0.9.0 Viewport Demo",
 		strings.Repeat("─", 50),
 		"",
 		"This pane is a Viewport component. It supports:",
@@ -208,8 +208,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "q" || msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
-		updated, cmd := m.split.Update(msg, tuikit.Context{})
-		m.split = updated.(*tuikit.Split)
+		updated, cmd := m.split.Update(msg, blit.Context{})
+		m.split = updated.(*blit.Split)
 		// Refresh breadcrumbs to reflect cursor movement.
 		m.breadcrumbs.Segments = m.tree.SelectedPath()
 		return m, cmd

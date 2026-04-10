@@ -1,6 +1,6 @@
 # myapp
 
-A minimal [tuikit-go](https://github.com/moneycaringcoder/tuikit-go) starter application.
+A minimal [blit](https://github.com/blitui/blit) starter application.
 
 ## Getting started
 
@@ -23,7 +23,7 @@ A minimal [tuikit-go](https://github.com/moneycaringcoder/tuikit-go) starter app
 ```
 cmd/myapp/
   main.go        — entry point, app wiring
-  app_test.go    — tuitest session tests
+  app_test.go    — blit session tests
 go.mod
 .goreleaser.yaml
 .github/workflows/
@@ -37,7 +37,7 @@ go.mod
 go test ./...
 ```
 
-Tests use [tuitest](https://github.com/moneycaringcoder/tuikit-go/tree/main/tuitest), the built-in TUI testing harness. See `cmd/myapp/app_test.go` for example assertions.
+Tests use [blit](https://github.com/blitui/blit/tree/main/blit), the built-in TUI testing harness. See `cmd/myapp/app_test.go` for example assertions.
 
 ## Release
 

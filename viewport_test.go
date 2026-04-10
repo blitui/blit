@@ -1,16 +1,16 @@
-package tuikit_test
+package blit_test
 
 import (
 	"strings"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
-func newTestViewport(content string, w, h int) *tuikit.Viewport {
-	v := tuikit.NewViewport()
-	v.SetTheme(tuikit.DefaultTheme())
+func newTestViewport(content string, w, h int) *blit.Viewport {
+	v := blit.NewViewport()
+	v.SetTheme(blit.DefaultTheme())
 	v.SetSize(w, h)
 	v.SetContent(content)
 	return v
@@ -201,11 +201,11 @@ func TestViewportScrollbarPresent(t *testing.T) {
 }
 
 func TestViewportComponentInterface(t *testing.T) {
-	var _ tuikit.Component = tuikit.NewViewport()
+	var _ blit.Component = blit.NewViewport()
 }
 
 func TestViewportThemedInterface(t *testing.T) {
-	var _ tuikit.Themed = tuikit.NewViewport()
+	var _ blit.Themed = blit.NewViewport()
 }
 
 func TestViewportMouseWheelDown(t *testing.T) {
@@ -214,7 +214,7 @@ func TestViewportMouseWheelDown(t *testing.T) {
 		lines[i] = "x"
 	}
 	v := newTestViewport(strings.Join(lines, "\n"), 40, 5)
-	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelDown}, tuikit.Context{})
+	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelDown}, blit.Context{})
 	if v.YOffset() != 3 {
 		t.Errorf("expected offset 3 after wheel down, got %d", v.YOffset())
 	}
@@ -227,7 +227,7 @@ func TestViewportMouseWheelUp(t *testing.T) {
 	}
 	v := newTestViewport(strings.Join(lines, "\n"), 40, 5)
 	v.ScrollBy(6)
-	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelUp}, tuikit.Context{})
+	_, _ = v.Update(tea.MouseMsg{Button: tea.MouseButtonWheelUp}, blit.Context{})
 	if v.YOffset() != 3 {
 		t.Errorf("expected offset 3 after wheel up, got %d", v.YOffset())
 	}

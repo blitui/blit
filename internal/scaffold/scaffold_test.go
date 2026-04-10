@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/moneycaringcoder/tuikit-go/internal/scaffold"
+	"github.com/blitui/blit/internal/scaffold"
 )
 
 func TestGenerate_DefaultComponent(t *testing.T) {
@@ -20,7 +20,7 @@ func TestGenerate_DefaultComponent(t *testing.T) {
 
 	for _, want := range []string{
 		"package mypkg_test",
-		"tuitest.NewTestModel",
+		"btest.NewTestModel",
 		"func TestMypkg(",
 		"stubMypkg",
 	} {
@@ -47,7 +47,7 @@ func TestGenerate_CustomComponent(t *testing.T) {
 	for _, want := range []string{
 		"func TestDashboard(",
 		"stubDashboard",
-		"tuitest.NewTestModel",
+		"btest.NewTestModel",
 	} {
 		if !strings.Contains(src, want) {
 			t.Errorf("generated source missing %q\ngot:\n%s", want, src)

@@ -21,25 +21,25 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // --- Simple stub components ---
 
 type headerPane struct {
 	width, height int
-	theme         tuikit.Theme
+	theme         blit.Theme
 }
 
 func (h *headerPane) Init() tea.Cmd { return nil }
-func (h *headerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (h *headerPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return h, nil
 }
-func (h *headerPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (h *headerPane) KeyBindings() []blit.KeyBind { return nil }
 func (h *headerPane) SetSize(w, ht int)             { h.width = w; h.height = ht }
 func (h *headerPane) Focused() bool                 { return false }
 func (h *headerPane) SetFocused(bool)               {}
-func (h *headerPane) SetTheme(t tuikit.Theme)       { h.theme = t }
+func (h *headerPane) SetTheme(t blit.Theme)       { h.theme = t }
 func (h *headerPane) View() string {
 	style := lipgloss.NewStyle().
 		Width(h.width).
@@ -47,7 +47,7 @@ func (h *headerPane) View() string {
 		Foreground(lipgloss.Color(h.theme.TextInverse)).
 		Bold(true).
 		Padding(0, 2)
-	title := style.Render("  tuikit HBox/VBox Flex Layout Demo")
+	title := style.Render("  blit HBox/VBox Flex Layout Demo")
 	sub := lipgloss.NewStyle().
 		Width(h.width).
 		Foreground(lipgloss.Color(h.theme.Muted)).
@@ -62,19 +62,19 @@ func (h *headerPane) View() string {
 
 type sidebarPane struct {
 	width, height int
-	theme         tuikit.Theme
+	theme         blit.Theme
 	focused       bool
 }
 
 func (s *sidebarPane) Init() tea.Cmd { return nil }
-func (s *sidebarPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (s *sidebarPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return s, nil
 }
-func (s *sidebarPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (s *sidebarPane) KeyBindings() []blit.KeyBind { return nil }
 func (s *sidebarPane) SetSize(w, h int)              { s.width = w; s.height = h }
 func (s *sidebarPane) Focused() bool                 { return s.focused }
 func (s *sidebarPane) SetFocused(f bool)             { s.focused = f }
-func (s *sidebarPane) SetTheme(t tuikit.Theme)       { s.theme = t }
+func (s *sidebarPane) SetTheme(t blit.Theme)       { s.theme = t }
 func (s *sidebarPane) View() string {
 	borderColor := s.theme.Border
 	if s.focused {
@@ -94,19 +94,19 @@ func (s *sidebarPane) View() string {
 
 type contentPane struct {
 	width, height int
-	theme         tuikit.Theme
+	theme         blit.Theme
 	focused       bool
 }
 
 func (c *contentPane) Init() tea.Cmd { return nil }
-func (c *contentPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (c *contentPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return c, nil
 }
-func (c *contentPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (c *contentPane) KeyBindings() []blit.KeyBind { return nil }
 func (c *contentPane) SetSize(w, h int)              { c.width = w; c.height = h }
 func (c *contentPane) Focused() bool                 { return c.focused }
 func (c *contentPane) SetFocused(f bool)             { c.focused = f }
-func (c *contentPane) SetTheme(t tuikit.Theme)       { c.theme = t }
+func (c *contentPane) SetTheme(t blit.Theme)       { c.theme = t }
 func (c *contentPane) View() string {
 	borderColor := c.theme.Border
 	if c.focused {
@@ -142,32 +142,32 @@ func (c *contentPane) View() string {
 
 type footerPane struct {
 	width, height int
-	theme         tuikit.Theme
+	theme         blit.Theme
 }
 
 func (f *footerPane) Init() tea.Cmd { return nil }
-func (f *footerPane) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (f *footerPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return f, nil
 }
-func (f *footerPane) KeyBindings() []tuikit.KeyBind { return nil }
+func (f *footerPane) KeyBindings() []blit.KeyBind { return nil }
 func (f *footerPane) SetSize(w, h int)              { f.width = w; f.height = h }
 func (f *footerPane) Focused() bool                 { return false }
 func (f *footerPane) SetFocused(bool)               {}
-func (f *footerPane) SetTheme(t tuikit.Theme)       { f.theme = t }
+func (f *footerPane) SetTheme(t blit.Theme)       { f.theme = t }
 func (f *footerPane) View() string {
 	left := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(f.theme.Muted)).
-		Render("  tuikit-go v0.9 · Flex layout")
+		Render("  blit v0.9 · Flex layout")
 	right := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(f.theme.Muted)).
 		Render("q quit  ")
 	// SpaceBetween via HBox
-	inner := &tuikit.HBox{
+	inner := &blit.HBox{
 		Gap:     0,
-		Justify: tuikit.FlexJustifySpaceBetween,
-		Items: []tuikit.Component{
-			tuikit.Sized{W: len([]rune(lipgloss.NewStyle().Render(left))), C: &labelComp{text: left}},
-			tuikit.Sized{W: len([]rune(lipgloss.NewStyle().Render(right))), C: &labelComp{text: right}},
+		Justify: blit.FlexJustifySpaceBetween,
+		Items: []blit.Component{
+			blit.Sized{W: len([]rune(lipgloss.NewStyle().Render(left))), C: &labelComp{text: left}},
+			blit.Sized{W: len([]rune(lipgloss.NewStyle().Render(right))), C: &labelComp{text: right}},
 		},
 	}
 	inner.SetSize(f.width, 1)
@@ -181,10 +181,10 @@ type labelComp struct {
 }
 
 func (l *labelComp) Init() tea.Cmd { return nil }
-func (l *labelComp) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (l *labelComp) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return l, nil
 }
-func (l *labelComp) KeyBindings() []tuikit.KeyBind { return nil }
+func (l *labelComp) KeyBindings() []blit.KeyBind { return nil }
 func (l *labelComp) SetSize(w, h int)              { l.width = w; l.height = h }
 func (l *labelComp) Focused() bool                 { return false }
 func (l *labelComp) SetFocused(bool)               {}
@@ -195,15 +195,15 @@ func (l *labelComp) View() string                  { return l.text }
 // flexDemo is the root Component that owns the VBox/HBox tree.
 type flexDemo struct {
 	width, height int
-	theme         tuikit.Theme
+	theme         blit.Theme
 
 	header  *headerPane
 	sidebar *sidebarPane
 	content *contentPane
 	footer  *footerPane
 
-	body  *tuikit.HBox
-	outer *tuikit.VBox
+	body  *blit.HBox
+	outer *blit.VBox
 }
 
 func newFlexDemo() *flexDemo {
@@ -214,22 +214,22 @@ func newFlexDemo() *flexDemo {
 		footer:  &footerPane{},
 	}
 
-	d.body = &tuikit.HBox{
+	d.body = &blit.HBox{
 		Gap:   1,
-		Align: tuikit.FlexAlignStretch,
-		Items: []tuikit.Component{
-			tuikit.Sized{W: 26, C: d.sidebar},
-			tuikit.Flex{Grow: 1, C: d.content},
+		Align: blit.FlexAlignStretch,
+		Items: []blit.Component{
+			blit.Sized{W: 26, C: d.sidebar},
+			blit.Flex{Grow: 1, C: d.content},
 		},
 	}
 
-	d.outer = &tuikit.VBox{
+	d.outer = &blit.VBox{
 		Gap:   0,
-		Align: tuikit.FlexAlignStretch,
-		Items: []tuikit.Component{
-			tuikit.Sized{W: 3, C: d.header},
-			tuikit.Flex{Grow: 1, C: d.body},
-			tuikit.Sized{W: 1, C: d.footer},
+		Align: blit.FlexAlignStretch,
+		Items: []blit.Component{
+			blit.Sized{W: 3, C: d.header},
+			blit.Flex{Grow: 1, C: d.body},
+			blit.Sized{W: 1, C: d.footer},
 		},
 	}
 	return d
@@ -237,15 +237,15 @@ func newFlexDemo() *flexDemo {
 
 func (d *flexDemo) Init() tea.Cmd { return d.outer.Init() }
 
-func (d *flexDemo) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (d *flexDemo) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	updated, cmd := d.outer.Update(msg, ctx)
-	d.outer = updated.(*tuikit.VBox)
+	d.outer = updated.(*blit.VBox)
 	return d, cmd
 }
 
 func (d *flexDemo) View() string { return d.outer.View() }
 
-func (d *flexDemo) KeyBindings() []tuikit.KeyBind { return nil }
+func (d *flexDemo) KeyBindings() []blit.KeyBind { return nil }
 
 func (d *flexDemo) SetSize(w, h int) {
 	d.width = w
@@ -256,7 +256,7 @@ func (d *flexDemo) SetSize(w, h int) {
 func (d *flexDemo) Focused() bool     { return false }
 func (d *flexDemo) SetFocused(f bool) {}
 
-func (d *flexDemo) SetTheme(t tuikit.Theme) {
+func (d *flexDemo) SetTheme(t blit.Theme) {
 	d.theme = t
 	d.header.SetTheme(t)
 	d.sidebar.SetTheme(t)
@@ -267,10 +267,10 @@ func (d *flexDemo) SetTheme(t tuikit.Theme) {
 func main() {
 	demo := newFlexDemo()
 
-	app := tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithComponent("main", demo),
-		tuikit.WithStatusBar(
+	app := blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithComponent("main", demo),
+		blit.WithStatusBar(
 			func() string { return "  HBox/VBox flex layout demo" },
 			func() string { return "q quit " },
 		),

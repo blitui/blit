@@ -1,4 +1,4 @@
-package tuikit_test
+package blit_test
 
 import (
 	"context"
@@ -6,17 +6,17 @@ import (
 	"testing"
 	"time"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 	"golang.org/x/crypto/ssh"
 )
 
 // serveMinimalApp starts a Serve with a minimal App on addr, returning when
 // ctx is cancelled.
 func serveMinimalApp(ctx context.Context, addr string) error {
-	return tuikit.Serve(ctx, tuikit.ServeConfig{
+	return blit.Serve(ctx, blit.ServeConfig{
 		Addr: addr,
-		Factory: func() *tuikit.App {
-			return tuikit.NewApp()
+		Factory: func() *blit.App {
+			return blit.NewApp()
 		},
 	})
 }

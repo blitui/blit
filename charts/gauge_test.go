@@ -4,14 +4,14 @@ import (
 	"strings"
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/charts"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/charts"
 )
 
 func TestGaugeRender(t *testing.T) {
 	g := charts.NewGauge(75, 100, []float64{60, 80}, "Load")
 	g.SetSize(30, 10)
-	g.SetTheme(tuikit.DefaultTheme())
+	g.SetTheme(blit.DefaultTheme())
 
 	out := g.View()
 	if out == "" {
@@ -22,7 +22,7 @@ func TestGaugeRender(t *testing.T) {
 func TestGaugeZeroValue(t *testing.T) {
 	g := charts.NewGauge(0, 100, nil, "")
 	g.SetSize(30, 10)
-	g.SetTheme(tuikit.DefaultTheme())
+	g.SetTheme(blit.DefaultTheme())
 	out := g.View()
 	if out == "" {
 		t.Fatal("expected non-empty output for zero-value gauge")
@@ -32,7 +32,7 @@ func TestGaugeZeroValue(t *testing.T) {
 func TestGaugeMaxValue(t *testing.T) {
 	g := charts.NewGauge(100, 100, nil, "")
 	g.SetSize(30, 10)
-	g.SetTheme(tuikit.DefaultTheme())
+	g.SetTheme(blit.DefaultTheme())
 	out := g.View()
 	if out == "" {
 		t.Fatal("expected non-empty output for max-value gauge")
@@ -51,7 +51,7 @@ func TestGaugeTooSmall(t *testing.T) {
 func TestGaugeLabelInOutput(t *testing.T) {
 	g := charts.NewGauge(42, 100, []float64{60, 80}, "Speed")
 	g.SetSize(40, 12)
-	g.SetTheme(tuikit.DefaultTheme())
+	g.SetTheme(blit.DefaultTheme())
 	out := g.View()
 	if !strings.Contains(out, "Speed") {
 		t.Errorf("expected label 'Speed' in gauge output")
@@ -61,7 +61,7 @@ func TestGaugeLabelInOutput(t *testing.T) {
 func TestGaugeDeterministic(t *testing.T) {
 	g := charts.NewGauge(65, 100, []float64{50, 75}, "CPU")
 	g.SetSize(40, 12)
-	g.SetTheme(tuikit.DefaultTheme())
+	g.SetTheme(blit.DefaultTheme())
 
 	out1 := g.View()
 	out2 := g.View()

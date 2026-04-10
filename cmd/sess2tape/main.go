@@ -1,4 +1,4 @@
-// Command sess2tape converts a .tuisess file (produced by tuitest.SessionRecorder)
+// Command sess2tape converts a .tuisess file (produced by btest.SessionRecorder)
 // into a VHS .tape script that can be fed to `vhs` to produce a GIF.
 //
 // Usage:
@@ -19,7 +19,7 @@ import (
 	"strings"
 )
 
-// SessionFormatVersion must match tuitest.SessionFormatVersion.
+// SessionFormatVersion must match btest.SessionFormatVersion.
 const SessionFormatVersion = 1
 
 type session struct {
@@ -166,7 +166,7 @@ func buildTape(sess session, cols, lines, fps, defaultDelay int, srcPath string)
 	return sb.String()
 }
 
-// vhsKey maps tuitest key names to VHS Key commands.
+// vhsKey maps blit key names to VHS Key commands.
 func vhsKey(key string, delay int) string {
 	vhsName, ok := keyMap[key]
 	if !ok {
@@ -180,7 +180,7 @@ func vhsKey(key string, delay int) string {
 	return fmt.Sprintf("Key %s\nSleep %dms\n", vhsName, delay)
 }
 
-// keyMap maps tuitest key names → VHS key names.
+// keyMap maps blit key names → VHS key names.
 // https://github.com/charmbracelet/vhs#key
 var keyMap = map[string]string{
 	"up":        "Up",

@@ -37,7 +37,7 @@ brews:
       name: homebrew-tap
     directory: Formula
     homepage: "https://github.com/OWNER/myapp"
-    description: "A tuikit-go starter application"
+    description: "A blit starter application"
     license: "MIT"
     test: |
       system "#{bin}/myapp", "-h"
@@ -47,7 +47,7 @@ scoops:
       owner: OWNER
       name: scoop-bucket
     homepage: "https://github.com/OWNER/myapp"
-    description: "A tuikit-go starter application"
+    description: "A blit starter application"
     license: "MIT"
 
 changelog:

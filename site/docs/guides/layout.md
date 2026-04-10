@@ -5,7 +5,7 @@
 Register one component as the main pane:
 
 ```go
-tuikit.WithComponent("main", myComponent)
+blit.WithComponent("main", myComponent)
 ```
 
 ## Dual Pane
@@ -13,7 +13,7 @@ tuikit.WithComponent("main", myComponent)
 Side-by-side layout with a collapsible sidebar:
 
 ```go
-tuikit.WithLayout(&tuikit.DualPane{
+blit.WithLayout(&blit.DualPane{
     Main:         table,
     Side:         panel,
     SideWidth:    30,        // character columns
@@ -30,7 +30,7 @@ tuikit.WithLayout(&tuikit.DualPane{
 Attach a footer with left and right text sections:
 
 ```go
-tuikit.WithStatusBar(
+blit.WithStatusBar(
     func() string { return " ? help  q quit" },
     func() string { return fmt.Sprintf(" %d rows", count) },
 )
@@ -39,10 +39,10 @@ tuikit.WithStatusBar(
 For reactive content driven by signals (e.g. background polling):
 
 ```go
-leftSig  := tuikit.NewSignal("")
-rightSig := tuikit.NewSignal("")
+leftSig  := blit.NewSignal("")
+rightSig := blit.NewSignal("")
 
-tuikit.WithStatusBarSignal(leftSig, rightSig)
+blit.WithStatusBarSignal(leftSig, rightSig)
 
 // From any goroutine:
 leftSig.Set("connected")
@@ -55,7 +55,7 @@ Signal updates are coalesced into one notification per frame via a dirty-bit mec
 Register a periodic tick for polling or animation:
 
 ```go
-tuikit.WithTickInterval(100 * time.Millisecond)
+blit.WithTickInterval(100 * time.Millisecond)
 ```
 
-Components receive `tuikit.TickMsg` in their `Update` method.
+Components receive `blit.TickMsg` in their `Update` method.

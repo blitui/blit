@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import tea "github.com/charmbracelet/bubbletea"
 

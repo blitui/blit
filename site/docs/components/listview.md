@@ -7,7 +7,7 @@ Generic scrollable list with cursor navigation, optional header, optional detail
 ## Construction
 
 ```go
-lv := tuikit.NewListView[T](opts tuikit.ListViewOpts[T])
+lv := blit.NewListView[T](opts blit.ListViewOpts[T])
 lv.SetItems(items []T)
 ```
 
@@ -17,15 +17,15 @@ lv.SetItems(items []T)
 type ListViewOpts[T any] struct {
     // RenderItem renders a single item to a string.
     // Parameters: item, index, whether this item has cursor, theme.
-    RenderItem func(item T, idx int, isCursor bool, theme tuikit.Theme) string
+    RenderItem func(item T, idx int, isCursor bool, theme blit.Theme) string
 
     // HeaderFunc renders a header above the list. Optional.
     // Can be multi-line; ListView accounts for its height automatically.
-    HeaderFunc func(theme tuikit.Theme) string
+    HeaderFunc func(theme blit.Theme) string
 
     // DetailFunc renders a detail bar below the list for the selected item. Optional.
     // Only shown when the list is focused and there is a cursor item.
-    DetailFunc func(item T, theme tuikit.Theme) string
+    DetailFunc func(item T, theme blit.Theme) string
 
     // FlashFunc returns true if an item should show the flash marker. Optional.
     FlashFunc func(item T, now time.Time) bool
@@ -46,8 +46,8 @@ type Server struct {
     Status string
 }
 
-lv := tuikit.NewListView[Server](tuikit.ListViewOpts[Server]{
-    RenderItem: func(s Server, idx int, isCursor bool, theme tuikit.Theme) string {
+lv := blit.NewListView[Server](blit.ListViewOpts[Server]{
+    RenderItem: func(s Server, idx int, isCursor bool, theme blit.Theme) string {
         color := theme.Positive
         if s.Status != "online" {
             color = theme.Negative
@@ -68,8 +68,8 @@ lv.SetItems(servers)
 ## Header
 
 ```go
-tuikit.ListViewOpts[Server]{
-    HeaderFunc: func(theme tuikit.Theme) string {
+blit.ListViewOpts[Server]{
+    HeaderFunc: func(theme blit.Theme) string {
         return lipgloss.NewStyle().
             Foreground(lipgloss.Color(theme.Muted)).
             Bold(true).
@@ -83,8 +83,8 @@ tuikit.ListViewOpts[Server]{
 The detail bar is shown below the list when the component is focused and a cursor item exists. Space is always reserved to prevent viewport jitter on focus change:
 
 ```go
-tuikit.ListViewOpts[Server]{
-    DetailFunc: func(s Server, theme tuikit.Theme) string {
+blit.ListViewOpts[Server]{
+    DetailFunc: func(s Server, theme blit.Theme) string {
         return lipgloss.NewStyle().
             Foreground(lipgloss.Color(theme.Accent)).
             Render(fmt.Sprintf("  IP: %s  Region: %s", s.IP, s.Region))
@@ -98,7 +98,7 @@ tuikit.ListViewOpts[Server]{
 Mark items with a flash glyph based on a time-based predicate:
 
 ```go
-tuikit.ListViewOpts[Server]{
+blit.ListViewOpts[Server]{
     FlashFunc: func(s Server, now time.Time) bool {
         return now.Sub(s.LastEvent) < 2*time.Second
     },
@@ -112,7 +112,7 @@ Call `lv.Refresh()` from a tick handler to re-evaluate flash state each frame.
 The cursor row is automatically styled with the theme's `Cursor` background. The cursor marker glyph (default `▶`) is drawn with a 120ms ease-out tween animation on movement. Use `isCursor bool` in `RenderItem` to suppress per-item highlights that would conflict:
 
 ```go
-RenderItem: func(s Server, idx int, isCursor bool, theme tuikit.Theme) string {
+RenderItem: func(s Server, idx int, isCursor bool, theme blit.Theme) string {
     // Don't apply extra background — RowStyler handles it
     name := s.Name
     if !isCursor {
@@ -147,7 +147,7 @@ lv.Refresh()            // Re-render content without changing items
 When embedding `ListView` inside a custom component, delegate key handling explicitly:
 
 ```go
-func (c *MyComponent) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (c *MyComponent) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
     if key, ok := msg.(tea.KeyMsg); ok {
         if cmd := c.list.HandleKey(key); cmd != nil {
             return c, cmd

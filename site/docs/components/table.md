@@ -5,7 +5,7 @@ Adaptive table with responsive columns, sorting, filtering, custom cell renderin
 ## Construction
 
 ```go
-table := tuikit.NewTable(columns []tuikit.Column, rows []tuikit.Row, opts tuikit.TableOpts)
+table := blit.NewTable(columns []blit.Column, rows []blit.Row, opts blit.TableOpts)
 ```
 
 ## Column
@@ -16,7 +16,7 @@ type Column struct {
     Width      int            // Proportional width weight
     MaxWidth   int            // Cap at this many characters (0 = no cap)
     MinWidth   int            // Hide when terminal width is below this (0 = always show)
-    Align      tuikit.Alignment // Left (default), Right, Center
+    Align      blit.Alignment // Left (default), Right, Center
     Sortable   bool           // Whether this column participates in sort cycling
     NoRowStyle bool           // Exempt from row-level background styling (e.g. for sparkline columns)
 }
@@ -44,13 +44,13 @@ type TableOpts struct {
 ## Basic Usage
 
 ```go
-columns := []tuikit.Column{
+columns := []blit.Column{
     {Title: "Name",  Width: 20, Sortable: true},
-    {Title: "Score", Width: 10, Align: tuikit.Right, Sortable: true},
+    {Title: "Score", Width: 10, Align: blit.Right, Sortable: true},
     {Title: "Extra", Width: 15, MinWidth: 100}, // hides below 100-column terminals
 }
 
-table := tuikit.NewTable(columns, rows, tuikit.TableOpts{
+table := blit.NewTable(columns, rows, blit.TableOpts{
     Sortable:   true, // 's' to cycle sort
     Filterable: true, // '/' to search
 })
@@ -60,7 +60,7 @@ table := tuikit.NewTable(columns, rows, tuikit.TableOpts{
 
 ```go
 table.SetRows(newRows)           // Replace all rows; rebuilds sorted/filtered view
-table.SetFilter(func(row tuikit.Row) bool {
+table.SetFilter(func(row blit.Row) bool {
     return row[1] == "Online"    // Predicate filter (works alongside text search)
 })
 table.SetFilter(nil)             // Clear predicate filter
@@ -73,8 +73,8 @@ table.SetCursor(5)               // Move cursor to row 5
 `CellRenderer` gives full control over per-cell styling using lipgloss:
 
 ```go
-tuikit.TableOpts{
-    CellRenderer: func(row tuikit.Row, colIdx int, isCursor bool, theme tuikit.Theme) string {
+blit.TableOpts{
+    CellRenderer: func(row blit.Row, colIdx int, isCursor bool, theme blit.Theme) string {
         val := row[colIdx]
         if colIdx == 1 && val == "Online" {
             return lipgloss.NewStyle().
@@ -91,8 +91,8 @@ tuikit.TableOpts{
 Apply a full-row background for cursor, flash effects, or alert rows. Works in combination with `CellRenderer`:
 
 ```go
-tuikit.TableOpts{
-    RowStyler: func(row tuikit.Row, idx int, isCursor bool, theme tuikit.Theme) *lipgloss.Style {
+blit.TableOpts{
+    RowStyler: func(row blit.Row, idx int, isCursor bool, theme blit.Theme) *lipgloss.Style {
         if row[2] == "error" {
             s := lipgloss.NewStyle().Background(lipgloss.Color(theme.Negative))
             return &s
@@ -107,8 +107,8 @@ tuikit.TableOpts{
 Override the default lexicographic sort with numeric, time-based, or any comparison:
 
 ```go
-tuikit.TableOpts{
-    SortFunc: func(a, b tuikit.Row, sortCol int, sortAsc bool) bool {
+blit.TableOpts{
+    SortFunc: func(a, b blit.Row, sortCol int, sortAsc bool) bool {
         va, _ := strconv.ParseFloat(a[sortCol], 64)
         vb, _ := strconv.ParseFloat(b[sortCol], 64)
         if sortAsc {
@@ -124,8 +124,8 @@ tuikit.TableOpts{
 Render a contextual detail panel below the table for the cursor row:
 
 ```go
-tuikit.TableOpts{
-    DetailFunc: func(row tuikit.Row, rowIdx int, width int, theme tuikit.Theme) string {
+blit.TableOpts{
+    DetailFunc: func(row blit.Row, rowIdx int, width int, theme blit.Theme) string {
         return lipgloss.NewStyle().
             Foreground(lipgloss.Color(theme.Muted)).
             Render(fmt.Sprintf("Details for %s: %s", row[0], row[1]))
@@ -139,14 +139,14 @@ tuikit.TableOpts{
 For millions of rows, enable virtual mode. Only the visible window is fetched per frame:
 
 ```go
-provider := tuikit.TableRowProviderFunc{
+provider := blit.TableRowProviderFunc{
     Total: 1_000_000,
-    Fetch: func(offset, limit int) []tuikit.Row {
+    Fetch: func(offset, limit int) []blit.Row {
         return myDB.Query(offset, limit)
     },
 }
 
-table := tuikit.NewTable(columns, nil, tuikit.TableOpts{
+table := blit.NewTable(columns, nil, blit.TableOpts{
     Virtual:     true,
     RowProvider: provider,
     OnFilterChange: func(query string) {

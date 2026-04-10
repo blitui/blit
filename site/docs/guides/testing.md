@@ -1,28 +1,28 @@
-# Testing with tuitest
+# Testing with blit
 
-`tuitest` is a virtual-terminal testing framework for Bubble Tea models. It renders your model into an in-memory screen buffer and provides 30+ assertions — no real terminal required.
+`blit` is a virtual-terminal testing framework for Bubble Tea models. It renders your model into an in-memory screen buffer and provides 30+ assertions — no real terminal required.
 
-## Install the tuitest CLI
+## Install the blit CLI
 
 ```bash
 # Homebrew
-brew install moneycaringcoder/tap/tuitest
+brew install blitui/tap/blit
 
 # Scoop
-scoop bucket add moneycaringcoder https://github.com/moneycaringcoder/scoop-bucket
-scoop install tuitest
+scoop bucket add blitui https://github.com/blitui/scoop-bucket
+scoop install blit
 
 # Go
-go install github.com/moneycaringcoder/tuikit-go/cmd/tuitest@latest
+go install github.com/blitui/blit/cmd/blit@latest
 ```
 
 ## Writing a Test
 
 ```go
-import "github.com/moneycaringcoder/tuikit-go/tuitest"
+import "github.com/blitui/blit/blit"
 
 func TestMyApp(t *testing.T) {
-    tm := tuitest.NewTestModel(t, myModel{}, 80, 24)
+    tm := blit.NewTestModel(t, myModel{}, 80, 24)
 
     // Interact
     tm.SendKey("down")
@@ -33,10 +33,10 @@ func TestMyApp(t *testing.T) {
 
     // Assert on rendered screen
     scr := tm.Screen()
-    tuitest.AssertContains(t, scr, "Expected text")
-    tuitest.AssertRowContains(t, scr, 0, "Header")
-    tuitest.AssertMatches(t, scr, `\d+ items`)
-    tuitest.AssertRowCount(t, scr, 5)
+    blit.AssertContains(t, scr, "Expected text")
+    blit.AssertRowContains(t, scr, 0, "Header")
+    blit.AssertMatches(t, scr, `\d+ items`)
+    blit.AssertRowCount(t, scr, 5)
 }
 ```
 
@@ -60,34 +60,34 @@ func TestMyApp(t *testing.T) {
 ## Golden File Testing
 
 ```go
-tuitest.AssertGolden(t, scr, "my-test")
+blit.AssertGolden(t, scr, "my-test")
 // compares against testdata/my-test.golden
 ```
 
 Regenerate snapshots:
 
 ```bash
-tuitest -update ./...
+blit -update ./...
 ```
 
 ## Waiting for Async State
 
 ```go
-ok := tm.WaitFor(tuitest.UntilContains("loaded"), 10)
+ok := tm.WaitFor(blit.UntilContains("loaded"), 10)
 if !ok {
     t.Fatal("timed out waiting for 'loaded'")
 }
 ```
 
-## tuitest CLI Flags
+## blit CLI Flags
 
 ```bash
-tuitest                                    # go test ./...
-tuitest -filter TestHarness ./tuitest/...  # run tests matching a regexp
-tuitest -update ./tuitest/...              # regenerate golden snapshots
-tuitest -junit out/junit.xml -parallel 4   # parallel run + JUnit report
-tuitest -html out/report.html              # HTML report
-tuitest -watch                             # re-run on file changes (1s poll)
+blit                                    # go test ./...
+blit -filter TestHarness ./blit/...  # run tests matching a regexp
+blit -update ./blit/...              # regenerate golden snapshots
+blit -junit out/junit.xml -parallel 4   # parallel run + JUnit report
+blit -html out/report.html              # HTML report
+blit -watch                             # re-run on file changes (1s poll)
 ```
 
 ## Vitest-Style Reporter
@@ -95,7 +95,7 @@ tuitest -watch                             # re-run on file changes (1s poll)
 Run with `-v` for grouped, color-coded output:
 
 ```
-  tuitest · terminal test toolkit
+  blit · terminal test toolkit
 
   Screen
     ✓ PlainText 0.000ms

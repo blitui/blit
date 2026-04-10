@@ -1,5 +1,5 @@
 // Package updatetest provides HTTP mocks and fake binaries for testing
-// code that uses tuikit-go's auto-update system. It lets consumer apps
+// code that uses blit's auto-update system. It lets consumer apps
 // write end-to-end update tests that do not hit the real GitHub API and
 // do not touch the user's filesystem.
 //
@@ -10,12 +10,12 @@
 //	})
 //	defer srv.Close()
 //
-//	cfg := tuikit.UpdateConfig{
+//	cfg := blit.UpdateConfig{
 //	    Owner: "owner", Repo: "repo",
 //	    BinaryName: "mytool", Version: "v1.0.0",
 //	    APIBaseURL: srv.URL, CacheDir: t.TempDir(),
 //	}
-//	res, _ := tuikit.CheckForUpdate(cfg)
+//	res, _ := blit.CheckForUpdate(cfg)
 //	if !res.Available { t.Fatal("expected available update") }
 package updatetest
 
@@ -55,7 +55,7 @@ type Release struct {
 	MinimumVersion string
 }
 
-// Asset mirrors tuikit's ReleaseAsset shape for mock server responses.
+// Asset mirrors blit's ReleaseAsset shape for mock server responses.
 type Asset struct {
 	Name        string `json:"name"`
 	DownloadURL string `json:"browser_download_url"`

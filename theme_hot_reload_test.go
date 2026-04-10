@@ -1,4 +1,4 @@
-package tuikit_test
+package blit_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 func TestThemeHotReload_ParseYAML(t *testing.T) {
@@ -23,7 +23,7 @@ flash: "#facc15"
 extra:
   brand: "#ff00ff"
 `)
-	theme, err := tuikit.ParseThemeYAML(data)
+	theme, err := blit.ParseThemeYAML(data)
 	if err != nil {
 		t.Fatalf("ParseThemeYAML: %v", err)
 	}
@@ -42,14 +42,14 @@ extra:
 func TestThemeHotReload_ParseYAML_Partial(t *testing.T) {
 	// Only accent is set; other fields fall back to DefaultTheme.
 	data := []byte(`accent: "#aabbcc"`)
-	theme, err := tuikit.ParseThemeYAML(data)
+	theme, err := blit.ParseThemeYAML(data)
 	if err != nil {
 		t.Fatalf("ParseThemeYAML: %v", err)
 	}
 	if string(theme.Accent) != "#aabbcc" {
 		t.Errorf("Accent = %q, want #aabbcc", theme.Accent)
 	}
-	def := tuikit.DefaultTheme()
+	def := blit.DefaultTheme()
 	if theme.Text != def.Text {
 		t.Errorf("Text should fall back to default, got %q", theme.Text)
 	}
@@ -57,7 +57,7 @@ func TestThemeHotReload_ParseYAML_Partial(t *testing.T) {
 
 func TestThemeHotReload_ParseYAML_InvalidYAML(t *testing.T) {
 	// accent mapped to a sequence instead of a string triggers an unmarshal error.
-	_, err := tuikit.ParseThemeYAML([]byte("accent: [1, 2, 3]"))
+	_, err := blit.ParseThemeYAML([]byte("accent: [1, 2, 3]"))
 	if err == nil {
 		t.Fatal("expected error for invalid YAML, got nil")
 	}
@@ -75,7 +75,7 @@ func TestThemeHotReload_FileWatch(t *testing.T) {
 	received := make(chan interface{}, 4)
 	sender := func(msg interface{}) { received <- msg }
 
-	hr, err := tuikit.NewThemeHotReload(path, sender)
+	hr, err := blit.NewThemeHotReload(path, sender)
 	if err != nil {
 		t.Fatalf("NewThemeHotReload: %v", err)
 	}
@@ -92,7 +92,7 @@ func TestThemeHotReload_FileWatch(t *testing.T) {
 	for {
 		select {
 		case msg := <-received:
-			if reload, ok := msg.(tuikit.ThemeHotReloadMsg); ok {
+			if reload, ok := msg.(blit.ThemeHotReloadMsg); ok {
 				if string(reload.Theme.Accent) != "#aabbcc" {
 					t.Errorf("hot-reload accent = %q, want #aabbcc", reload.Theme.Accent)
 				}
@@ -115,7 +115,7 @@ func TestThemeHotReload_InvalidFileEmitsError(t *testing.T) {
 	received := make(chan interface{}, 4)
 	sender := func(msg interface{}) { received <- msg }
 
-	hr, err := tuikit.NewThemeHotReload(path, sender)
+	hr, err := blit.NewThemeHotReload(path, sender)
 	if err != nil {
 		t.Fatalf("NewThemeHotReload: %v", err)
 	}
@@ -130,7 +130,7 @@ func TestThemeHotReload_InvalidFileEmitsError(t *testing.T) {
 	for {
 		select {
 		case msg := <-received:
-			if _, ok := msg.(tuikit.ThemeHotReloadErrMsg); ok {
+			if _, ok := msg.(blit.ThemeHotReloadErrMsg); ok {
 				return // got the expected error message
 			}
 		case <-timeout:

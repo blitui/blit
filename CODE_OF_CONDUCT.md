@@ -24,7 +24,7 @@ Examples of unacceptable behavior:
 ## Enforcement
 
 Instances of unacceptable behavior may be reported by opening a
-[GitHub issue](https://github.com/moneycaringcoder/tuikit-go/issues) or
+[GitHub issue](https://github.com/blitui/blit/issues) or
 contacting the maintainer directly. All complaints will be reviewed and
 investigated promptly and fairly.
 

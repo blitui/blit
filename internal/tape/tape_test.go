@@ -5,18 +5,18 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/moneycaringcoder/tuikit-go/internal/tape"
-	"github.com/moneycaringcoder/tuikit-go/tuitest"
+	"github.com/blitui/blit/internal/tape"
+	"github.com/blitui/blit/btest"
 )
 
 // fixtureSession returns a small hand-crafted session that matches
 // the golden file at testdata/basic.tape.golden.
-func fixtureSession() *tuitest.Session {
-	return &tuitest.Session{
+func fixtureSession() *btest.Session {
+	return &btest.Session{
 		Version: 2,
 		Cols:    80,
 		Lines:   24,
-		Steps: []tuitest.SessionStep{
+		Steps: []btest.SessionStep{
 			{Kind: "type", Text: "hello"},
 			{Kind: "screen", Screen: "hello"},
 			{Kind: "key", Key: "enter"},
@@ -54,7 +54,7 @@ func TestGenerate_GoldenFixture(t *testing.T) {
 }
 
 func TestGenerate_TerminalSize(t *testing.T) {
-	sess := &tuitest.Session{Version: 2, Cols: 100, Lines: 30, Steps: nil}
+	sess := &btest.Session{Version: 2, Cols: 100, Lines: 30, Steps: nil}
 	out := tape.Generate(sess)
 
 	if want := "Set Width 800\n"; !contains(out, want) {
@@ -84,9 +84,9 @@ func TestGenerate_KeyDirectives(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.key, func(t *testing.T) {
-			sess := &tuitest.Session{
+			sess := &btest.Session{
 				Version: 2, Cols: 80, Lines: 24,
-				Steps: []tuitest.SessionStep{
+				Steps: []btest.SessionStep{
 					{Kind: "key", Key: tc.key},
 				},
 			}
@@ -99,9 +99,9 @@ func TestGenerate_KeyDirectives(t *testing.T) {
 }
 
 func TestGenerate_TypeEscapesQuotes(t *testing.T) {
-	sess := &tuitest.Session{
+	sess := &btest.Session{
 		Version: 2, Cols: 80, Lines: 24,
-		Steps: []tuitest.SessionStep{
+		Steps: []btest.SessionStep{
 			{Kind: "type", Text: `say "hello"`},
 		},
 	}
@@ -112,9 +112,9 @@ func TestGenerate_TypeEscapesQuotes(t *testing.T) {
 }
 
 func TestGenerate_ScreenStepsOmitted(t *testing.T) {
-	sess := &tuitest.Session{
+	sess := &btest.Session{
 		Version: 2, Cols: 80, Lines: 24,
-		Steps: []tuitest.SessionStep{
+		Steps: []btest.SessionStep{
 			{Kind: "screen", Screen: "some screen content"},
 		},
 	}
@@ -125,9 +125,9 @@ func TestGenerate_ScreenStepsOmitted(t *testing.T) {
 }
 
 func TestGenerate_ResizeEmitsComment(t *testing.T) {
-	sess := &tuitest.Session{
+	sess := &btest.Session{
 		Version: 2, Cols: 80, Lines: 24,
-		Steps: []tuitest.SessionStep{
+		Steps: []btest.SessionStep{
 			{Kind: "resize", Cols: 120, Lines: 40},
 		},
 	}
@@ -138,9 +138,9 @@ func TestGenerate_ResizeEmitsComment(t *testing.T) {
 }
 
 func TestGenerate_TickEmitsSleep(t *testing.T) {
-	sess := &tuitest.Session{
+	sess := &btest.Session{
 		Version: 2, Cols: 80, Lines: 24,
-		Steps: []tuitest.SessionStep{
+		Steps: []btest.SessionStep{
 			{Kind: "tick"},
 		},
 	}

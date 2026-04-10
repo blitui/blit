@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"sync"
@@ -67,7 +67,7 @@ func (t *Theme) RegisterStyle(name string, s StyleSet) {
 }
 
 // builtinStyle returns the default StyleSet for the well-known named styles
-// that ship with tuikit. Returns (StyleSet{}, false) for unknown names.
+// that ship with blit. Returns (StyleSet{}, false) for unknown names.
 func builtinStyle(name string, t Theme) (StyleSet, bool) {
 	switch name {
 	case "button.primary":

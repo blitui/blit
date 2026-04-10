@@ -1,8 +1,8 @@
-site_name: tuikit-go
+site_name: blit
 site_description: The pragmatic TUI toolkit for shipping Go CLI tools fast
-site_url: https://moneycaringcoder.github.io/tuikit-go
-repo_url: https://github.com/moneycaringcoder/tuikit-go
-repo_name: moneycaringcoder/tuikit-go
+site_url: https://blitui.github.io/blit
+repo_url: https://github.com/blitui/blit
+repo_name: blitui/blit
 edit_uri: edit/main/site/docs/
 
 theme:

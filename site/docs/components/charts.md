@@ -3,7 +3,7 @@
 The `charts` sub-package provides terminal chart components for data visualization. All chart types implement `Component` and `Themed`.
 
 ```go
-import "github.com/moneycaringcoder/tuikit-go/charts"
+import "github.com/blitui/blit/charts"
 ```
 
 ## Chart Types
@@ -69,10 +69,10 @@ heatmap := charts.NewHeatmap(charts.HeatmapOpts{
 
 ## Sparkline (Root Package)
 
-The root `tuikit` package also provides an inline sparkline for embedding in table cells or status bars:
+The root `blit` package also provides an inline sparkline for embedding in table cells or status bars:
 
 ```go
-tuikit.Sparkline([]float64{1, 4, 2, 8, 5, 7, 3}, 10)
+blit.Sparkline([]float64{1, 4, 2, 8, 5, 7, 3}, 10)
 ```
 
 ## Example
@@ -83,4 +83,4 @@ go run ./examples/charts/
 
 ## API Reference
 
-Full API documentation: [pkg.go.dev/github.com/moneycaringcoder/tuikit-go/charts](https://pkg.go.dev/github.com/moneycaringcoder/tuikit-go/charts)
+Full API documentation: [pkg.go.dev/github.com/blitui/blit/charts](https://pkg.go.dev/github.com/blitui/blit/charts)

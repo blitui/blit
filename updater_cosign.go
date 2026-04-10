@@ -1,4 +1,4 @@
-// Package tuikit provides TUI components and update utilities.
+// Package blit provides TUI components and update utilities.
 //
 // Cosign signature verification — implementation notes:
 //
@@ -13,7 +13,7 @@
 //
 // If CosignPublicKey is empty the verification step is skipped entirely, keeping
 // the feature strictly opt-in and zero-cost for existing consumers.
-package tuikit
+package blit
 
 import (
 	"crypto/ed25519"

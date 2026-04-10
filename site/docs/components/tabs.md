@@ -5,7 +5,7 @@ A component that shows a row or column of named tabs with switchable content pan
 ## Construction
 
 ```go
-tabs := tuikit.NewTabs(items []tuikit.TabItem, opts tuikit.TabsOpts)
+tabs := blit.NewTabs(items []blit.TabItem, opts blit.TabsOpts)
 ```
 
 ## TabItem
@@ -14,7 +14,7 @@ tabs := tuikit.NewTabs(items []tuikit.TabItem, opts tuikit.TabsOpts)
 type TabItem struct {
     Title   string           // Label shown in the tab bar
     Glyph   string           // Optional icon prefix (e.g. "⚡")
-    Content tuikit.Component // Component rendered when this tab is active
+    Content blit.Component // Component rendered when this tab is active
 }
 ```
 
@@ -22,7 +22,7 @@ type TabItem struct {
 
 ```go
 type TabsOpts struct {
-    Orientation tuikit.Orientation // Horizontal (default) or Vertical
+    Orientation blit.Orientation // Horizontal (default) or Vertical
     OnChange    func(int)          // Called whenever the active tab changes
 }
 ```
@@ -30,11 +30,11 @@ type TabsOpts struct {
 ## Horizontal Tabs (Default)
 
 ```go
-tabs := tuikit.NewTabs([]tuikit.TabItem{
+tabs := blit.NewTabs([]blit.TabItem{
     {Title: "Overview",  Glyph: "◉", Content: overviewPanel},
     {Title: "Logs",      Glyph: "≡", Content: logViewer},
     {Title: "Settings",  Glyph: "⚙", Content: configEditor},
-}, tuikit.TabsOpts{
+}, blit.TabsOpts{
     OnChange: func(idx int) {
         fmt.Println("switched to tab", idx)
     },
@@ -46,8 +46,8 @@ The horizontal bar renders three rows: the tab labels row, an accent underline r
 ## Vertical Tabs (Sidebar Style)
 
 ```go
-tabs := tuikit.NewTabs(items, tuikit.TabsOpts{
-    Orientation: tuikit.Vertical,
+tabs := blit.NewTabs(items, blit.TabsOpts{
+    Orientation: blit.Vertical,
 })
 ```
 
@@ -83,9 +83,9 @@ When `SetFocused(true)` is called on `Tabs`, only the active content pane receiv
 ## Embedding in a Layout
 
 ```go
-app := tuikit.NewApp(
-    tuikit.WithComponent("main", tabs),
-    tuikit.WithStatusBar(
+app := blit.NewApp(
+    blit.WithComponent("main", tabs),
+    blit.WithStatusBar(
         func() string { return " tab next  shift+tab prev" },
         func() string { return fmt.Sprintf("tab %d/3", tabs.ActiveIndex()+1) },
     ),

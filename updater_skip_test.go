@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 func testSkipCfg(t *testing.T) UpdateConfig {
 	t.Helper()
 	return UpdateConfig{
-		BinaryName: "tuitest-binary",
+		BinaryName: "blit-binary",
 		CacheDir:   t.TempDir(),
 	}
 }

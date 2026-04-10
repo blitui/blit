@@ -1,20 +1,20 @@
-package tuikit_test
+package blit_test
 
 import (
 	"strings"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/tuitest"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/btest"
 )
 
 type formModel struct {
-	form     *tuikit.Form
+	form     *blit.Form
 	lastVals map[string]string
 }
 
-func newFormModel(opts tuikit.FormOpts) *formModel {
+func newFormModel(opts blit.FormOpts) *formModel {
 	m := &formModel{}
 	extra := opts.OnSubmit
 	opts.OnSubmit = func(values map[string]string) {
@@ -23,8 +23,8 @@ func newFormModel(opts tuikit.FormOpts) *formModel {
 			extra(values)
 		}
 	}
-	m.form = tuikit.NewForm(opts)
-	m.form.SetTheme(tuikit.DefaultTheme())
+	m.form = blit.NewForm(opts)
+	m.form.SetTheme(blit.DefaultTheme())
 	m.form.SetFocused(true)
 	return m
 }
@@ -36,51 +36,51 @@ func (m *formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.form.SetSize(ws.Width, ws.Height)
 		return m, nil
 	}
-	comp, cmd := m.form.Update(msg, tuikit.Context{})
-	m.form = comp.(*tuikit.Form)
+	comp, cmd := m.form.Update(msg, blit.Context{})
+	m.form = comp.(*blit.Form)
 	return m, cmd
 }
 
 func (m *formModel) View() string { return m.form.View() }
 
 func TestFormValidators(t *testing.T) {
-	if err := tuikit.Required()("hi"); err != nil {
+	if err := blit.Required()("hi"); err != nil {
 		t.Errorf("Required: unexpected error: %v", err)
 	}
-	if err := tuikit.Required()(""); err == nil {
+	if err := blit.Required()(""); err == nil {
 		t.Error("Required: expected error for empty")
 	}
-	if err := tuikit.Required()("  "); err == nil {
+	if err := blit.Required()("  "); err == nil {
 		t.Error("Required: expected error for spaces")
 	}
-	if err := tuikit.MinLength(3)("abc"); err != nil {
+	if err := blit.MinLength(3)("abc"); err != nil {
 		t.Errorf("MinLength: unexpected error: %v", err)
 	}
-	if err := tuikit.MinLength(5)("ab"); err == nil {
+	if err := blit.MinLength(5)("ab"); err == nil {
 		t.Error("MinLength: expected error")
 	}
-	if err := tuikit.MaxLength(10)("hello"); err != nil {
+	if err := blit.MaxLength(10)("hello"); err != nil {
 		t.Errorf("MaxLength: unexpected error: %v", err)
 	}
-	if err := tuikit.MaxLength(3)("toolong"); err == nil {
+	if err := blit.MaxLength(3)("toolong"); err == nil {
 		t.Error("MaxLength: expected error")
 	}
-	if err := tuikit.EmailValidator()("x@y.z"); err != nil {
+	if err := blit.EmailValidator()("x@y.z"); err != nil {
 		t.Errorf("Email: unexpected error: %v", err)
 	}
-	if err := tuikit.EmailValidator()("bad"); err == nil {
+	if err := blit.EmailValidator()("bad"); err == nil {
 		t.Error("Email: expected error")
 	}
-	if err := tuikit.URLValidator()("https://x.com"); err != nil {
+	if err := blit.URLValidator()("https://x.com"); err != nil {
 		t.Errorf("URL: unexpected error: %v", err)
 	}
-	if err := tuikit.URLValidator()("ftp://x.com"); err == nil {
+	if err := blit.URLValidator()("ftp://x.com"); err == nil {
 		t.Error("URL: expected error for ftp")
 	}
 }
 
 func TestFormComposeValidators(t *testing.T) {
-	v := tuikit.ComposeValidators(tuikit.Required(), tuikit.MinLength(8))
+	v := blit.ComposeValidators(blit.Required(), blit.MinLength(8))
 	if v("") == nil {
 		t.Error("expected required error")
 	}
@@ -93,7 +93,7 @@ func TestFormComposeValidators(t *testing.T) {
 }
 
 func TestFormRegexValidator(t *testing.T) {
-	v := tuikit.RegexValidator(`^\d{4}$`, "must be 4 digits")
+	v := blit.RegexValidator(`^\d{4}$`, "must be 4 digits")
 	if v("1234") != nil {
 		t.Error("unexpected error for 1234")
 	}
@@ -103,13 +103,13 @@ func TestFormRegexValidator(t *testing.T) {
 }
 
 func TestFormNavigation(t *testing.T) {
-	opts := tuikit.FormOpts{
-		Groups: []tuikit.FormGroup{{Fields: []tuikit.Field{
-			tuikit.NewTextField("a", "FieldA"),
-			tuikit.NewTextField("b", "FieldB"),
+	opts := blit.FormOpts{
+		Groups: []blit.FormGroup{{Fields: []blit.Field{
+			blit.NewTextField("a", "FieldA"),
+			blit.NewTextField("b", "FieldB"),
 		}}},
 	}
-	tm := tuitest.NewTestModel(t, newFormModel(opts), 80, 24)
+	tm := btest.NewTestModel(t, newFormModel(opts), 80, 24)
 	if !tm.Screen().Contains("FieldA") {
 		t.Error("expected FieldA on screen")
 	}
@@ -125,13 +125,13 @@ func TestFormNavigation(t *testing.T) {
 
 func TestFormSubmit(t *testing.T) {
 	var captured map[string]string
-	opts := tuikit.FormOpts{
-		Groups: []tuikit.FormGroup{{Fields: []tuikit.Field{
-			tuikit.NewTextField("name", "Name").WithDefault("Alice"),
+	opts := blit.FormOpts{
+		Groups: []blit.FormGroup{{Fields: []blit.Field{
+			blit.NewTextField("name", "Name").WithDefault("Alice"),
 		}}},
 		OnSubmit: func(v map[string]string) { captured = v },
 	}
-	tm := tuitest.NewTestModel(t, newFormModel(opts), 80, 24)
+	tm := btest.NewTestModel(t, newFormModel(opts), 80, 24)
 	tm.SendKey("enter")
 	if captured == nil {
 		t.Fatal("OnSubmit not called")
@@ -143,15 +143,15 @@ func TestFormSubmit(t *testing.T) {
 
 func TestFormInlineValidation(t *testing.T) {
 	var submitted bool
-	opts := tuikit.FormOpts{
-		Groups: []tuikit.FormGroup{{Fields: []tuikit.Field{
-			tuikit.NewTextField("email", "Email").
+	opts := blit.FormOpts{
+		Groups: []blit.FormGroup{{Fields: []blit.Field{
+			blit.NewTextField("email", "Email").
 				WithRequired().
-				WithValidator(tuikit.EmailValidator()),
+				WithValidator(blit.EmailValidator()),
 		}}},
 		OnSubmit: func(_ map[string]string) { submitted = true },
 	}
-	tm := tuitest.NewTestModel(t, newFormModel(opts), 80, 24)
+	tm := btest.NewTestModel(t, newFormModel(opts), 80, 24)
 	tm.SendKey("enter")
 	if submitted {
 		t.Error("should not submit empty required field")
@@ -168,16 +168,16 @@ func TestFormInlineValidation(t *testing.T) {
 
 func TestFormWizardMode(t *testing.T) {
 	var submitted bool
-	opts := tuikit.FormOpts{
+	opts := blit.FormOpts{
 		WizardMode: true,
-		Groups: []tuikit.FormGroup{{Fields: []tuikit.Field{
-			tuikit.NewTextField("s1", "Step 1"),
-			tuikit.NewTextField("s2", "Step 2"),
-			tuikit.NewTextField("s3", "Step 3"),
+		Groups: []blit.FormGroup{{Fields: []blit.Field{
+			blit.NewTextField("s1", "Step 1"),
+			blit.NewTextField("s2", "Step 2"),
+			blit.NewTextField("s3", "Step 3"),
 		}}},
 		OnSubmit: func(_ map[string]string) { submitted = true },
 	}
-	tm := tuitest.NewTestModel(t, newFormModel(opts), 80, 24)
+	tm := btest.NewTestModel(t, newFormModel(opts), 80, 24)
 	if !tm.Screen().Contains("Step 1 of 3") {
 		t.Errorf("expected Step 1 of 3, got:\n%s", tm.Screen().String())
 	}
@@ -198,20 +198,20 @@ func TestFormWizardMode(t *testing.T) {
 }
 
 func TestFormFieldTypes(t *testing.T) {
-	opts := tuikit.FormOpts{
-		Groups: []tuikit.FormGroup{{
+	opts := blit.FormOpts{
+		Groups: []blit.FormGroup{{
 			Title: "Account",
-			Fields: []tuikit.Field{
-				tuikit.NewTextField("u", "Username"),
-				tuikit.NewPasswordField("p", "Password"),
-				tuikit.NewSelectField("r", "Role", []string{"Admin", "User"}),
-				tuikit.NewMultiSelectField("x", "Permissions", []string{"Read", "Write"}),
-				tuikit.NewConfirmField("c", "Confirm"),
-				tuikit.NewNumberField("n", "Age").WithMin(18).WithMax(120),
+			Fields: []blit.Field{
+				blit.NewTextField("u", "Username"),
+				blit.NewPasswordField("p", "Password"),
+				blit.NewSelectField("r", "Role", []string{"Admin", "User"}),
+				blit.NewMultiSelectField("x", "Permissions", []string{"Read", "Write"}),
+				blit.NewConfirmField("c", "Confirm"),
+				blit.NewNumberField("n", "Age").WithMin(18).WithMax(120),
 			},
 		}},
 	}
-	tm := tuitest.NewTestModel(t, newFormModel(opts), 80, 40)
+	tm := btest.NewTestModel(t, newFormModel(opts), 80, 40)
 	scr := tm.Screen()
 	for _, lbl := range []string{"Username", "Password", "Role", "Permissions", "Confirm", "Age", "Account"} {
 		if !scr.Contains(lbl) {
@@ -229,7 +229,7 @@ func TestFormNumberField(t *testing.T) {
 		{"42", false}, {"25.5", false}, {"abc", true},
 		{"5", true}, {"200", true}, {"50", false},
 	}
-	f := tuikit.NewNumberField("n", "N").WithMin(18).WithMax(120)
+	f := blit.NewNumberField("n", "N").WithMin(18).WithMax(120)
 	for _, c := range cases {
 		t.Run(c.val, func(t *testing.T) {
 			f.SetValue(c.val)
@@ -245,7 +245,7 @@ func TestFormNumberField(t *testing.T) {
 }
 
 func TestFormSelectField(t *testing.T) {
-	f := tuikit.NewSelectField("l", "L", []string{"Go", "Rust", "Python"})
+	f := blit.NewSelectField("l", "L", []string{"Go", "Rust", "Python"})
 	if f.Value() != "Go" {
 		t.Errorf("want Go, got %q", f.Value())
 	}
@@ -256,7 +256,7 @@ func TestFormSelectField(t *testing.T) {
 }
 
 func TestFormMultiSelectField(t *testing.T) {
-	f := tuikit.NewMultiSelectField("t", "T", []string{"Go", "TUI", "CLI"})
+	f := blit.NewMultiSelectField("t", "T", []string{"Go", "TUI", "CLI"})
 	if f.Value() != "" {
 		t.Errorf("expected empty, got %q", f.Value())
 	}
@@ -268,7 +268,7 @@ func TestFormMultiSelectField(t *testing.T) {
 }
 
 func TestFormConfirmField(t *testing.T) {
-	f := tuikit.NewConfirmField("c", "C")
+	f := blit.NewConfirmField("c", "C")
 	if f.Value() != "false" {
 		t.Errorf("want false, got %q", f.Value())
 	}
@@ -279,13 +279,13 @@ func TestFormConfirmField(t *testing.T) {
 }
 
 func TestFormGroupSeparator(t *testing.T) {
-	opts := tuikit.FormOpts{
-		Groups: []tuikit.FormGroup{
-			{Title: "Personal", Fields: []tuikit.Field{tuikit.NewTextField("n", "Name")}},
-			{Title: "Account", Fields: []tuikit.Field{tuikit.NewTextField("e", "Email")}},
+	opts := blit.FormOpts{
+		Groups: []blit.FormGroup{
+			{Title: "Personal", Fields: []blit.Field{blit.NewTextField("n", "Name")}},
+			{Title: "Account", Fields: []blit.Field{blit.NewTextField("e", "Email")}},
 		},
 	}
-	tm := tuitest.NewTestModel(t, newFormModel(opts), 80, 24)
+	tm := btest.NewTestModel(t, newFormModel(opts), 80, 24)
 	scr := tm.Screen()
 	if !scr.Contains("Personal") {
 		t.Error("expected Personal group title")

@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // Gauge renders a half-circle (semicircle) gauge with colored threshold bands.
@@ -25,7 +25,7 @@ type Gauge struct {
 	// Label is displayed below the gauge needle value.
 	Label string
 
-	theme   tuikit.Theme
+	theme   blit.Theme
 	width   int
 	height  int
 	focused bool
@@ -38,19 +38,19 @@ func NewGauge(value, max float64, thresholds []float64, label string) *Gauge {
 		Max:        max,
 		Thresholds: thresholds,
 		Label:      label,
-		theme:      tuikit.DefaultTheme(),
+		theme:      blit.DefaultTheme(),
 	}
 }
 
 func (g *Gauge) Init() tea.Cmd { return nil }
-func (g *Gauge) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (g *Gauge) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return g, nil
 }
-func (g *Gauge) KeyBindings() []tuikit.KeyBind { return nil }
+func (g *Gauge) KeyBindings() []blit.KeyBind { return nil }
 func (g *Gauge) SetSize(w, h int)              { g.width = w; g.height = h }
 func (g *Gauge) Focused() bool                 { return g.focused }
 func (g *Gauge) SetFocused(f bool)             { g.focused = f }
-func (g *Gauge) SetTheme(t tuikit.Theme)       { g.theme = t }
+func (g *Gauge) SetTheme(t blit.Theme)       { g.theme = t }
 
 // bandColor returns the theme color for the band index.
 func (g *Gauge) bandColor(band int) lipgloss.Color {

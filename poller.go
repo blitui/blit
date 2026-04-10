@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"time"
@@ -8,7 +8,7 @@ import (
 
 // Clock abstracts time.Now so Poller can be tested deterministically.
 // Production code uses realClock (via NewPoller). Tests can pass a
-// FakeClock from the tuitest package (or any type that implements this
+// FakeClock from the blit package (or any type that implements this
 // interface).
 type Clock interface {
 	Now() time.Time
@@ -18,7 +18,7 @@ type realClock struct{}
 
 func (realClock) Now() time.Time { return time.Now() }
 
-// Poller manages periodic command execution on top of tuikit's TickMsg.
+// Poller manages periodic command execution on top of blit's TickMsg.
 // Create one with NewPoller, then call Check from your component's Update
 // when it receives a TickMsg. The Poller handles interval timing, pause/resume,
 // and force-refresh.

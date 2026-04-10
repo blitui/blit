@@ -1,9 +1,9 @@
-# tuikit-go
+# blit
 
 The pragmatic TUI toolkit for shipping Go CLI tools fast. Wraps [Bubble Tea](https://github.com/charmbracelet/bubbletea) + [Lip Gloss](https://github.com/charmbracelet/lipgloss) with reusable components, a layout engine, a keybinding registry, a theme system, and built-in binary self-update.
 
 ```bash
-go get github.com/moneycaringcoder/tuikit-go
+go get github.com/blitui/blit
 ```
 
 ## Features
@@ -21,9 +21,9 @@ go get github.com/moneycaringcoder/tuikit-go
 - **Dual-pane layout** with collapsible sidebar, flex layout (HBox/VBox), and split panes
 - **Dark + light themes** with semantic color tokens, hot-reload, and extensible `Extra` color map
 - **CLI primitives** — Confirm, SelectOne, MultiSelect, Input, Password, Spinner, Progress
-- **tuitest** — virtual-terminal testing framework with 30+ assertions, golden files, and a vitest-style reporter
+- **blit** — virtual-terminal testing framework with 30+ assertions, golden files, and a vitest-style reporter
 - **Self-update** — binary replacement with SHA256/cosign verification, delta patches, rollback, and Homebrew/Scoop detection
-- **SSH serve** — host any tuikit app over SSH via Charm Wish
+- **SSH serve** — host any blit app over SSH via Charm Wish
 - **Notifications, overlays, command bar, breadcrumbs** and other compound components
 - **Keybinding registry** with conflict detection and auto-generated help screen
 
@@ -34,30 +34,30 @@ package main
 
 import (
     "fmt"
-    tuikit "github.com/moneycaringcoder/tuikit-go"
+    blit "github.com/blitui/blit"
 )
 
 func main() {
-    table := tuikit.NewTable(
-        []tuikit.Column{
+    table := blit.NewTable(
+        []blit.Column{
             {Title: "Name",   Width: 20, Sortable: true},
             {Title: "Status", Width: 15},
         },
-        []tuikit.Row{
+        []blit.Row{
             {"Alice", "Online"},
             {"Bob",   "Away"},
         },
-        tuikit.TableOpts{Sortable: true, Filterable: true},
+        blit.TableOpts{Sortable: true, Filterable: true},
     )
 
-    app := tuikit.NewApp(
-        tuikit.WithTheme(tuikit.DefaultTheme()),
-        tuikit.WithComponent("main", table),
-        tuikit.WithStatusBar(
+    app := blit.NewApp(
+        blit.WithTheme(blit.DefaultTheme()),
+        blit.WithComponent("main", table),
+        blit.WithStatusBar(
             func() string { return " ? help  q quit" },
             func() string { return fmt.Sprintf(" %d items", 2) },
         ),
-        tuikit.WithHelp(),
+        blit.WithHelp(),
     )
 
     app.Run()
@@ -77,4 +77,4 @@ go run ./examples/cli-demo/    # Interactive CLI primitives showcase
 
 ## License
 
-MIT — [github.com/moneycaringcoder/tuikit-go](https://github.com/moneycaringcoder/tuikit-go)
+MIT — [github.com/blitui/blit](https://github.com/blitui/blit)

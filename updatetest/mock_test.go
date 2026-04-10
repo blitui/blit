@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
-	"github.com/moneycaringcoder/tuikit-go/updatetest"
+	blit "github.com/blitui/blit"
+	"github.com/blitui/blit/updatetest"
 )
 
 func TestNewMockServer_LatestRelease(t *testing.T) {
@@ -16,7 +16,7 @@ func TestNewMockServer_LatestRelease(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner:      "octocat",
 		Repo:       "tool",
 		BinaryName: "tool",
@@ -24,7 +24,7 @@ func TestNewMockServer_LatestRelease(t *testing.T) {
 		APIBaseURL: srv.URL,
 		CacheDir:   t.TempDir(),
 	}
-	res, err := tuikit.CheckForUpdate(cfg)
+	res, err := blit.CheckForUpdate(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,11 +45,11 @@ func TestNewMockServer_CurrentEqualsLatest(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner: "o", Repo: "r", BinaryName: "tool", Version: "v1.0.0",
 		APIBaseURL: srv.URL, CacheDir: t.TempDir(),
 	}
-	res, err := tuikit.CheckForUpdate(cfg)
+	res, err := blit.CheckForUpdate(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}

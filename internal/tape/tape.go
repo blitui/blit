@@ -1,8 +1,8 @@
-// Package tape converts a tuitest.Session into a VHS .tape script.
+// Package tape converts a btest.Session into a VHS .tape script.
 //
 // VHS (github.com/charmbracelet/vhs) is a tool that renders terminal
 // sessions as GIFs from a declarative tape script. This package bridges
-// the tuitest .tuisess format to the VHS tape format so recorded sessions
+// the blit .tuisess format to the VHS tape format so recorded sessions
 // can be turned into shareable GIFs.
 package tape
 
@@ -10,20 +10,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/moneycaringcoder/tuikit-go/tuitest"
+	"github.com/blitui/blit/btest"
 )
 
 // defaultSleepMs is the inter-step pause inserted between input directives
 // when no explicit timing information is available in the session.
 const defaultSleepMs = 100
 
-// Generate converts a tuitest.Session into a VHS tape script string.
+// Generate converts a btest.Session into a VHS tape script string.
 //
 // The resulting script contains:
 //   - A preamble that sets the terminal size from the session metadata.
 //   - A Type, Key, Sleep, or Hide directive for every input step.
-//   - Screen steps are skipped (they are tuitest assertions, not VHS directives).
-func Generate(sess *tuitest.Session) string {
+//   - Screen steps are skipped (they are blit assertions, not VHS directives).
+func Generate(sess *btest.Session) string {
 	var sb strings.Builder
 
 	// Preamble: terminal dimensions.
@@ -56,14 +56,14 @@ func Generate(sess *tuitest.Session) string {
 			fmt.Fprintf(&sb, "Sleep %dms\n", defaultSleepMs)
 
 		case "screen":
-			// Screen steps are tuitest assertion snapshots — not emitted.
+			// Screen steps are blit assertion snapshots — not emitted.
 		}
 	}
 
 	return sb.String()
 }
 
-// keyToVHS maps a tuitest key name to the equivalent VHS directive.
+// keyToVHS maps a blit key name to the equivalent VHS directive.
 // Returns an empty string for keys that have no VHS representation.
 func keyToVHS(key string) string {
 	switch key {

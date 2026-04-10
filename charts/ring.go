@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // Ring renders a circular progress ring using unicode quarter-block characters.
@@ -26,7 +26,7 @@ type Ring struct {
 	// TrackColor overrides the theme muted color for the unfilled arc.
 	TrackColor lipgloss.Color
 
-	theme   tuikit.Theme
+	theme   blit.Theme
 	width   int
 	height  int
 	focused bool
@@ -38,19 +38,19 @@ func NewRing(value, max float64, label string) *Ring {
 		Value: value,
 		Max:   max,
 		Label: label,
-		theme: tuikit.DefaultTheme(),
+		theme: blit.DefaultTheme(),
 	}
 }
 
 func (r *Ring) Init() tea.Cmd { return nil }
-func (r *Ring) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (r *Ring) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return r, nil
 }
-func (r *Ring) KeyBindings() []tuikit.KeyBind { return nil }
+func (r *Ring) KeyBindings() []blit.KeyBind { return nil }
 func (r *Ring) SetSize(w, h int)              { r.width = w; r.height = h }
 func (r *Ring) Focused() bool                 { return r.focused }
 func (r *Ring) SetFocused(f bool)             { r.focused = f }
-func (r *Ring) SetTheme(t tuikit.Theme)       { r.theme = t }
+func (r *Ring) SetTheme(t blit.Theme)       { r.theme = t }
 
 // quarterBlocks maps (topFill, bottomFill) → unicode block character.
 // Each cell covers 2 vertical sub-pixels (top and bottom half).

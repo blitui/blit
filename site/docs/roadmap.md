@@ -10,7 +10,7 @@
 | Version | Highlights |
 |---------|-----------|
 | v0.12.0 | SSH serve via Wish, cosign signature verification, delta updates, docs site, starter template |
-| v0.11.0 | tuitest snapshot review UI, VHS tape integration, screen diff viewer |
+| v0.11.0 | blit snapshot review UI, VHS tape integration, screen diff viewer |
 | v0.10.0 | Context struct, dev console overlay, theme hot-reload |
 | v0.9.0 | Tree, FilePicker, LogViewer, virtualized Table, HBox/VBox, Breadcrumbs, Split pane |
 | v0.8.0 | Theme system, animation engine, Form, Tabs, Picker, Toast, gradient text |
@@ -24,4 +24,4 @@
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/moneycaringcoder/tuikit-go/blob/main/CONTRIBUTING.md) for setup, build, test, and PR guidelines.
+See [CONTRIBUTING.md](https://github.com/blitui/blit/blob/main/CONTRIBUTING.md) for setup, build, test, and PR guidelines.

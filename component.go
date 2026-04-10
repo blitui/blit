@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"reflect"
@@ -18,7 +18,7 @@ const (
 	Center
 )
 
-// Component is the core interface for all tuikit UI elements.
+// Component is the core interface for all blit UI elements.
 // It extends Bubble Tea's Model with size, focus, and keybinding support.
 type Component interface {
 	// Init returns an initial command, like tea.Model.

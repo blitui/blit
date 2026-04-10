@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"context"
@@ -20,7 +20,7 @@ type ServeConfig struct {
 	Addr string
 
 	// HostKeyPath is the path to the ED25519 host key file.
-	// If empty, defaults to ~/.ssh/tuikit_host_ed25519 and is auto-generated
+	// If empty, defaults to ~/.ssh/blit_host_ed25519 and is auto-generated
 	// with 0600 permissions on first run.
 	HostKeyPath string
 
@@ -38,27 +38,27 @@ type ServeConfig struct {
 	Factory func() *App
 }
 
-// Serve hosts a tuikit App over SSH via Charm Wish. It blocks until ctx is
+// Serve hosts a blit App over SSH via Charm Wish. It blocks until ctx is
 // cancelled or the server exits.
 //
 // Each inbound SSH session receives a fresh *App produced by cfg.Factory,
 // ensuring per-connection state isolation.
 //
-//	tuikit.Serve(ctx, tuikit.ServeConfig{
+//	blit.Serve(ctx, blit.ServeConfig{
 //	    Addr:    ":2222",
-//	    Factory: func() *tuikit.App { return tuikit.NewApp(...) },
+//	    Factory: func() *blit.App { return blit.NewApp(...) },
 //	})
 func Serve(ctx context.Context, cfg ServeConfig) error {
 	if cfg.Addr == "" {
 		cfg.Addr = ":2222"
 	}
 	if cfg.Factory == nil {
-		return fmt.Errorf("tuikit.Serve: Factory must not be nil")
+		return fmt.Errorf("blit.Serve: Factory must not be nil")
 	}
 
 	hostKeyPath, err := resolveHostKeyPath(cfg.HostKeyPath)
 	if err != nil {
-		return fmt.Errorf("tuikit.Serve: host key: %w", err)
+		return fmt.Errorf("blit.Serve: host key: %w", err)
 	}
 
 	handler := func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
@@ -87,7 +87,7 @@ func Serve(ctx context.Context, cfg ServeConfig) error {
 
 	srv, err := wish.NewServer(serverOpts...)
 	if err != nil {
-		return fmt.Errorf("tuikit.Serve: %w", err)
+		return fmt.Errorf("blit.Serve: %w", err)
 	}
 
 	errCh := make(chan error, 1)
@@ -123,7 +123,7 @@ func Serve(ctx context.Context, cfg ServeConfig) error {
 }
 
 // resolveHostKeyPath returns the effective host key path, defaulting to
-// ~/.ssh/tuikit_host_ed25519. The parent directory is created if absent.
+// ~/.ssh/blit_host_ed25519. The parent directory is created if absent.
 func resolveHostKeyPath(p string) (string, error) {
 	if p != "" {
 		return p, nil
@@ -136,5 +136,5 @@ func resolveHostKeyPath(p string) (string, error) {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return "", fmt.Errorf("mkdir %s: %w", dir, err)
 	}
-	return filepath.Join(dir, "tuikit_host_ed25519"), nil
+	return filepath.Join(dir, "blit_host_ed25519"), nil
 }

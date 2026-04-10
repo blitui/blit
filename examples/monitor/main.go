@@ -1,4 +1,4 @@
-// Package main demonstrates a full-featured tuikit service monitor dashboard.
+// Package main demonstrates a full-featured blit service monitor dashboard.
 //
 // This example showcases: Table with live-updating data, DualPane layout,
 // CollapsibleSection sidebar, DetailOverlay, CommandBar, ConfigEditor,
@@ -19,7 +19,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // ── Service data ──────────────────────────────────────────────────────────
@@ -79,10 +79,10 @@ func generateServices() []service {
 	return svcs
 }
 
-func servicesToRows(svcs []service) []tuikit.Row {
-	rows := make([]tuikit.Row, len(svcs))
+func servicesToRows(svcs []service) []blit.Row {
+	rows := make([]blit.Row, len(svcs))
 	for i, s := range svcs {
-		rows[i] = tuikit.Row{
+		rows[i] = blit.Row{
 			s.Name, s.Region, s.Status,
 			fmt.Sprintf("%d", s.Latency),
 			fmt.Sprintf("%d", s.Memory),
@@ -97,7 +97,7 @@ func servicesToRows(svcs []service) []tuikit.Row {
 
 // FleetPanel shows aggregate fleet stats in collapsible sections.
 type FleetPanel struct {
-	theme    tuikit.Theme
+	theme    blit.Theme
 	focused  bool
 	width    int
 	height   int
@@ -118,12 +118,12 @@ func newFleetPanel(svcs []service) *FleetPanel {
 }
 
 func (p *FleetPanel) Init() tea.Cmd                 { return nil }
-func (p *FleetPanel) KeyBindings() []tuikit.KeyBind { return nil }
+func (p *FleetPanel) KeyBindings() []blit.KeyBind { return nil }
 func (p *FleetPanel) SetSize(w, h int)              { p.width = w; p.height = h }
 func (p *FleetPanel) Focused() bool                 { return p.focused }
 func (p *FleetPanel) SetFocused(f bool)             { p.focused = f }
-func (p *FleetPanel) SetTheme(t tuikit.Theme)       { p.theme = t }
-func (p *FleetPanel) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (p *FleetPanel) SetTheme(t blit.Theme)       { p.theme = t }
+func (p *FleetPanel) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return p, nil
 }
 func (p *FleetPanel) UpdateServices(svcs []service) { p.services = svcs }
@@ -163,7 +163,7 @@ func (p *FleetPanel) View() string {
 	sb.WriteString("\n\n")
 
 	// Health section
-	healthSection := tuikit.CollapsibleSection{
+	healthSection := blit.CollapsibleSection{
 		Title:     "HEALTH",
 		Collapsed: !p.sectionHealth,
 	}
@@ -192,7 +192,7 @@ func (p *FleetPanel) View() string {
 	sb.WriteString("\n\n")
 
 	// Region section
-	regionSection := tuikit.CollapsibleSection{
+	regionSection := blit.CollapsibleSection{
 		Title:     "REGIONS",
 		Collapsed: !p.sectionRegion,
 	}
@@ -213,7 +213,7 @@ func (p *FleetPanel) View() string {
 	sb.WriteString("\n\n")
 
 	// Alerts section
-	alertSection := tuikit.CollapsibleSection{
+	alertSection := blit.CollapsibleSection{
 		Title:     "ALERTS",
 		Collapsed: !p.sectionAlerts,
 	}
@@ -253,17 +253,17 @@ func main() {
 	services := generateServices()
 	rows := servicesToRows(services)
 
-	columns := []tuikit.Column{
+	columns := []blit.Column{
 		{Title: "Service", Width: 20, Sortable: true},
 		{Title: "Region", Width: 14, Sortable: true},
 		{Title: "Status", Width: 12, Sortable: true},
-		{Title: "Latency", Width: 10, MinWidth: 90, Align: tuikit.Right, Sortable: true},
-		{Title: "Memory", Width: 10, MinWidth: 100, Align: tuikit.Right, Sortable: true},
-		{Title: "Errors", Width: 8, MinWidth: 110, Align: tuikit.Right, Sortable: true},
-		{Title: "Uptime", Width: 8, MinWidth: 120, Align: tuikit.Right, Sortable: true},
+		{Title: "Latency", Width: 10, MinWidth: 90, Align: blit.Right, Sortable: true},
+		{Title: "Memory", Width: 10, MinWidth: 100, Align: blit.Right, Sortable: true},
+		{Title: "Errors", Width: 8, MinWidth: 110, Align: blit.Right, Sortable: true},
+		{Title: "Uptime", Width: 8, MinWidth: 120, Align: blit.Right, Sortable: true},
 	}
 
-	cellRenderer := func(row tuikit.Row, colIdx int, isCursor bool, theme tuikit.Theme) string {
+	cellRenderer := func(row blit.Row, colIdx int, isCursor bool, theme blit.Theme) string {
 		if colIdx >= len(row) {
 			return ""
 		}
@@ -322,7 +322,7 @@ func main() {
 		return style.Render(val)
 	}
 
-	numericSort := func(a, b tuikit.Row, col int, asc bool) bool {
+	numericSort := func(a, b blit.Row, col int, asc bool) bool {
 		va, _ := strconv.ParseFloat(a[col], 64)
 		vb, _ := strconv.ParseFloat(b[col], 64)
 		if asc {
@@ -331,7 +331,7 @@ func main() {
 		return va > vb
 	}
 
-	table := tuikit.NewTable(columns, rows, tuikit.TableOpts{
+	table := blit.NewTable(columns, rows, blit.TableOpts{
 		Sortable:     true,
 		Filterable:   true,
 		CellRenderer: cellRenderer,
@@ -341,8 +341,8 @@ func main() {
 	panel := newFleetPanel(services)
 
 	// Detail overlay for inspecting a service
-	detail := tuikit.NewDetailOverlay(tuikit.DetailOverlayOpts[tuikit.Row]{
-		Render: func(row tuikit.Row, width, height int, theme tuikit.Theme) string {
+	detail := blit.NewDetailOverlay(blit.DetailOverlayOpts[blit.Row]{
+		Render: func(row blit.Row, width, height int, theme blit.Theme) string {
 			if len(row) < 7 {
 				return ""
 			}
@@ -376,7 +376,7 @@ func main() {
 	// Config editor
 	refreshRate := "1s"
 	alertThreshold := "50"
-	configEditor := tuikit.NewConfigEditor([]tuikit.ConfigField{
+	configEditor := blit.NewConfigEditor([]blit.ConfigField{
 		{
 			Label: "Refresh Rate",
 			Group: "General",
@@ -394,7 +394,7 @@ func main() {
 	})
 
 	// Command bar
-	commandBar := tuikit.NewCommandBar([]tuikit.Command{
+	commandBar := blit.NewCommandBar([]blit.Command{
 		{Name: "sort", Args: true, Hint: "sort <column>", Run: func(args string) tea.Cmd { return nil }},
 		{Name: "filter", Args: true, Hint: "filter <status>", Run: func(args string) tea.Cmd { return nil }},
 		{Name: "region", Args: true, Hint: "region <name>", Run: func(args string) tea.Cmd { return nil }},
@@ -403,7 +403,7 @@ func main() {
 	// Filter state
 	filterModes := []string{"all", "healthy", "degraded", "critical"}
 	filterIdx := 0
-	table.SetFilter(func(row tuikit.Row) bool {
+	table.SetFilter(func(row blit.Row) bool {
 		if len(row) < 3 {
 			return true
 		}
@@ -414,9 +414,9 @@ func main() {
 		return row[2] == mode
 	})
 
-	app := tuikit.NewApp(
-		tuikit.WithTheme(tuikit.DefaultTheme()),
-		tuikit.WithLayout(&tuikit.DualPane{
+	app := blit.NewApp(
+		blit.WithTheme(blit.DefaultTheme()),
+		blit.WithLayout(&blit.DualPane{
 			Main:         table,
 			Side:         panel,
 			SideWidth:    30,
@@ -424,7 +424,7 @@ func main() {
 			SideRight:    true,
 			ToggleKey:    "p",
 		}),
-		tuikit.WithStatusBar(
+		blit.WithStatusBar(
 			func() string {
 				return fmt.Sprintf(" ? help  / search  s sort  c config  : cmd  f filter[%s]  d detail  p panel  q quit",
 					filterModes[filterIdx])
@@ -444,11 +444,11 @@ func main() {
 				return fmt.Sprintf(" %d healthy  %d degraded  %d critical ", h, d, c)
 			},
 		),
-		tuikit.WithHelp(),
-		tuikit.WithOverlay("Settings", "c", configEditor),
-		tuikit.WithOverlay("Command", ":", commandBar),
-		tuikit.WithOverlay("Detail", "d", detail),
-		tuikit.WithKeyBind(tuikit.KeyBind{
+		blit.WithHelp(),
+		blit.WithOverlay("Settings", "c", configEditor),
+		blit.WithOverlay("Command", ":", commandBar),
+		blit.WithOverlay("Detail", "d", detail),
+		blit.WithKeyBind(blit.KeyBind{
 			Key:   "f",
 			Label: "Cycle filter",
 			Group: "DATA",
@@ -457,7 +457,7 @@ func main() {
 				table.SetRows(rows)
 			},
 		}),
-		tuikit.WithKeyBind(tuikit.KeyBind{
+		blit.WithKeyBind(blit.KeyBind{
 			Key:   "r",
 			Label: "Refresh data",
 			Group: "DATA",
@@ -468,8 +468,8 @@ func main() {
 				panel.UpdateServices(services)
 			},
 		}),
-		tuikit.WithMouseSupport(),
-		tuikit.WithTickInterval(100*time.Millisecond),
+		blit.WithMouseSupport(),
+		blit.WithTickInterval(100*time.Millisecond),
 	)
 
 	if err := app.Run(); err != nil {

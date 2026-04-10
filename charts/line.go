@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // Line renders a multi-series line chart using unicode box-drawing characters.
@@ -21,7 +21,7 @@ type Line struct {
 	// Smooth enables diagonal connectors between adjacent points.
 	Smooth bool
 
-	theme   tuikit.Theme
+	theme   blit.Theme
 	width   int
 	height  int
 	focused bool
@@ -33,19 +33,19 @@ func NewLine(series [][]float64, colors []string, smooth bool) *Line {
 		Series: series,
 		Colors: colors,
 		Smooth: smooth,
-		theme:  tuikit.DefaultTheme(),
+		theme:  blit.DefaultTheme(),
 	}
 }
 
 func (l *Line) Init() tea.Cmd { return nil }
-func (l *Line) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (l *Line) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return l, nil
 }
-func (l *Line) KeyBindings() []tuikit.KeyBind { return nil }
+func (l *Line) KeyBindings() []blit.KeyBind { return nil }
 func (l *Line) SetSize(w, h int)              { l.width = w; l.height = h }
 func (l *Line) Focused() bool                 { return l.focused }
 func (l *Line) SetFocused(f bool)             { l.focused = f }
-func (l *Line) SetTheme(t tuikit.Theme)       { l.theme = t }
+func (l *Line) SetTheme(t blit.Theme)       { l.theme = t }
 
 // seriesColor returns the lipgloss color for series i.
 func (l *Line) seriesColor(i int) lipgloss.Color {

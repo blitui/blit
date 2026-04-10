@@ -6,7 +6,7 @@ Run any example with `go run ./examples/<name>`.
 
 | Example | Description |
 |---------|-------------|
-| [minimal](minimal/) | Simplest tuikit app — a movie watchlist in ~30 lines |
+| [minimal](minimal/) | Simplest blit app — a movie watchlist in ~30 lines |
 | [dashboard](dashboard/) | Full-featured dashboard with Table, DualPane, ConfigEditor, overlays, and keybindings |
 | [monitor](monitor/) | Service fleet dashboard with live data, CollapsibleSection, DetailOverlay, CommandBar, and notifications |
 
@@ -45,4 +45,4 @@ Run any example with `go run ./examples/<name>`.
 
 | Example | Description |
 |---------|-------------|
-| [ssh-serve](ssh-serve/) | Host a tuikit dashboard over SSH via Charm Wish |
+| [ssh-serve](ssh-serve/) | Host a blit dashboard over SSH via Charm Wish |

@@ -1,6 +1,6 @@
 # Showcase
 
-Projects built with tuikit-go.
+Projects built with blit.
 
 ## Used By
 
@@ -24,9 +24,9 @@ GitHub activity dashboard — pull requests, issues, CI status, and review queue
 
 ## Add Your Project
 
-Built something with tuikit-go? Open a PR to add it here.
+Built something with blit? Open a PR to add it here.
 
 Requirements:
 - Public GitHub repository
-- Uses `github.com/moneycaringcoder/tuikit-go` as a dependency
+- Uses `github.com/blitui/blit` as a dependency
 - Brief description of which components you use

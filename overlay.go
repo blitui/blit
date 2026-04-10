@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 // overlayStack manages a stack of modal overlays.
 // The top overlay receives all key events first. Esc pops it.

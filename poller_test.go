@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 )
 
 // fakeClock is a tiny Clock implementation used only by poller_test.
-// We avoid importing tuitest here to keep the dependency one-way.
+// We avoid importing blit here to keep the dependency one-way.
 type fakeClock struct{ now time.Time }
 
 func (f *fakeClock) Now() time.Time          { return f.now }

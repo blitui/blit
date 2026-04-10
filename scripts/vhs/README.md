@@ -55,11 +55,11 @@ GIFs are written to `docs/gifs/` which is git-ignored (they are regenerated from
 | `theme-gallery.tape` | Theme gallery — 8-preset live cycle | `docs/gifs/theme-gallery.gif` |
 | `cli-primitives.tape` | CLI primitives — Confirm, Input, Select… | `docs/gifs/cli-primitives.gif` |
 | `update-flow.tape` | Self-update progress + shimmer bar | `docs/gifs/update-flow.gif` |
-| `tuitest-runner.tape` | tuitest vitest-style reporter output | `docs/gifs/tuitest-runner.gif` |
+| `blit-runner.tape` | blit vitest-style reporter output | `docs/gifs/blit-runner.gif` |
 
 ## sess2tape
 
-The `cmd/sess2tape` tool converts a `.tuisess` session file (produced by `tuitest.SessionRecorder`) into a VHS tape script:
+The `cmd/sess2tape` tool converts a `.tuisess` session file (produced by `blit.SessionRecorder`) into a VHS tape script:
 
 ```bash
 # Build

@@ -5,14 +5,14 @@ Append-only, auto-scrolling log display with level filtering, substring search, 
 ## Construction
 
 ```go
-lv := tuikit.NewLogViewer()
+lv := blit.NewLogViewer()
 ```
 
 ## LogLine
 
 ```go
 type LogLine struct {
-    Level     tuikit.LogLevel // LogDebug, LogInfo, LogWarn, LogError
+    Level     blit.LogLevel // LogDebug, LogInfo, LogWarn, LogError
     Timestamp time.Time
     Message   string
     Source    string // Optional — shown in accent color between chip and message
@@ -33,8 +33,8 @@ type LogLine struct {
 `Append` is safe to call from any goroutine:
 
 ```go
-lv.Append(tuikit.LogLine{
-    Level:     tuikit.LogInfo,
+lv.Append(blit.LogLine{
+    Level:     blit.LogInfo,
     Timestamp: time.Now(),
     Source:    "api",
     Message:   "request completed in 42ms",
@@ -47,8 +47,8 @@ To append from within a Bubble Tea command pipeline:
 
 ```go
 func fetchData() tea.Cmd {
-    return tuikit.LogAppendCmd(tuikit.LogLine{
-        Level:   tuikit.LogInfo,
+    return blit.LogAppendCmd(blit.LogLine{
+        Level:   blit.LogInfo,
         Message: "data fetched",
     })
 }
@@ -79,9 +79,9 @@ The status bar displays the active filter query alongside the line count (`filte
 ## State Methods
 
 ```go
-lv.Append(line tuikit.LogLine) // Add a line (goroutine-safe)
+lv.Append(line blit.LogLine) // Add a line (goroutine-safe)
 lv.Clear()                     // Remove all lines (goroutine-safe)
-lv.Lines() []tuikit.LogLine    // Snapshot of all stored lines (goroutine-safe)
+lv.Lines() []blit.LogLine    // Snapshot of all stored lines (goroutine-safe)
 ```
 
 ## Keybindings
@@ -101,16 +101,16 @@ lv.Lines() []tuikit.LogLine    // Snapshot of all stored lines (goroutine-safe)
 ## Example: Background Appender
 
 ```go
-lv := tuikit.NewLogViewer()
+lv := blit.NewLogViewer()
 
-app := tuikit.NewApp(
-    tuikit.WithComponent("logs", lv),
+app := blit.NewApp(
+    blit.WithComponent("logs", lv),
 )
 
 go func() {
     for line := range logStream {
-        lv.Append(tuikit.LogLine{
-            Level:     tuikit.LogInfo,
+        lv.Append(blit.LogLine{
+            Level:     blit.LogInfo,
             Timestamp: time.Now(),
             Message:   line,
         })

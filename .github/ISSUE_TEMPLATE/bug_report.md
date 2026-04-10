@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in tuikit-go
+about: Report a bug in blit
 title: ''
 labels: bug
 assignees: ''
@@ -26,7 +26,7 @@ What actually happened.
 
 ## Environment
 
-- tuikit-go version:
+- blit version:
 - Go version:
 - OS:
 - Terminal:

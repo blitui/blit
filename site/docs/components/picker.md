@@ -5,7 +5,7 @@ A fuzzy-searchable command palette that can be used as either a full-screen over
 ## Construction
 
 ```go
-picker := tuikit.NewPicker(items []tuikit.PickerItem, opts tuikit.PickerOpts)
+picker := blit.NewPicker(items []blit.PickerItem, opts blit.PickerOpts)
 ```
 
 ## PickerItem
@@ -34,13 +34,13 @@ type PickerOpts struct {
 ## Basic Usage
 
 ```go
-picker := tuikit.NewPicker([]tuikit.PickerItem{
+picker := blit.NewPicker([]blit.PickerItem{
     {Title: "Open file",       Glyph: "📄", Value: "open"},
     {Title: "Run tests",       Glyph: "✓",  Value: "test"},
     {Title: "Deploy to prod",  Glyph: "🚀", Value: "deploy"},
-}, tuikit.PickerOpts{
+}, blit.PickerOpts{
     Placeholder: "What do you want to do?",
-    OnConfirm: func(item tuikit.PickerItem) {
+    OnConfirm: func(item blit.PickerItem) {
         dispatch(item.Value.(string))
     },
     OnCancel: func() {
@@ -54,7 +54,7 @@ picker := tuikit.NewPicker([]tuikit.PickerItem{
 Register the picker as an overlay triggered by a key:
 
 ```go
-tuikit.WithOverlay("command", "ctrl+k", picker)
+blit.WithOverlay("command", "ctrl+k", picker)
 ```
 
 Pressing `ctrl+k` opens the picker as a modal over the main content. `Esc` closes it.
@@ -64,13 +64,13 @@ Pressing `ctrl+k` opens the picker as a modal over the main content. `Esc` close
 Enable the optional 40%-width preview pane:
 
 ```go
-tuikit.PickerOpts{
+blit.PickerOpts{
     Preview: true,
-    OnConfirm: func(item tuikit.PickerItem) { ... },
+    OnConfirm: func(item blit.PickerItem) { ... },
 }
 
 // Attach a lazy preview to each item:
-tuikit.PickerItem{
+blit.PickerItem{
     Title:   "server-01",
     Preview: func() string {
         return fetchServerDetails("server-01")

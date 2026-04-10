@@ -1,4 +1,4 @@
-package tuikit_test
+package blit_test
 
 import (
 	"crypto/ed25519"
@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // generateTestKeyPair returns a fresh ed25519 key pair for use in tests.
@@ -56,14 +56,14 @@ func makeChecksumFile(archive []byte, assetName string) []byte {
 }
 
 func TestMatchSigAsset(t *testing.T) {
-	assets := []tuikit.ReleaseAsset{
+	assets := []blit.ReleaseAsset{
 		{Name: "myapp_1.0.0_linux_amd64.tar.gz", DownloadURL: "https://example.com/asset"},
 		{Name: "myapp_1.0.0_linux_amd64.tar.gz.sig", DownloadURL: "https://example.com/asset.sig"},
 		{Name: "checksums.txt", DownloadURL: "https://example.com/checksums"},
 	}
 
 	t.Run("found", func(t *testing.T) {
-		got, err := tuikit.MatchSigAsset(assets, "myapp_1.0.0_linux_amd64.tar.gz")
+		got, err := blit.MatchSigAsset(assets, "myapp_1.0.0_linux_amd64.tar.gz")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -73,7 +73,7 @@ func TestMatchSigAsset(t *testing.T) {
 	})
 
 	t.Run("not found", func(t *testing.T) {
-		_, err := tuikit.MatchSigAsset(assets, "nonexistent.tar.gz")
+		_, err := blit.MatchSigAsset(assets, "nonexistent.tar.gz")
 		if err == nil {
 			t.Error("expected error for missing .sig asset")
 		}
@@ -86,21 +86,21 @@ func TestVerifyCosignSignature(t *testing.T) {
 	sigData := cosignSign(t, priv, data)
 
 	t.Run("valid signature PEM key", func(t *testing.T) {
-		err := tuikit.VerifyCosignSignature(data, sigData, pubKeyToPEM(pub))
+		err := blit.VerifyCosignSignature(data, sigData, pubKeyToPEM(pub))
 		if err != nil {
 			t.Errorf("expected no error, got: %v", err)
 		}
 	})
 
 	t.Run("valid signature base64 key", func(t *testing.T) {
-		err := tuikit.VerifyCosignSignature(data, sigData, pubKeyToBase64(pub))
+		err := blit.VerifyCosignSignature(data, sigData, pubKeyToBase64(pub))
 		if err != nil {
 			t.Errorf("expected no error, got: %v", err)
 		}
 	})
 
 	t.Run("tampered data", func(t *testing.T) {
-		err := tuikit.VerifyCosignSignature([]byte("tampered"), sigData, pubKeyToPEM(pub))
+		err := blit.VerifyCosignSignature([]byte("tampered"), sigData, pubKeyToPEM(pub))
 		if err == nil {
 			t.Error("expected verification failure for tampered data")
 		}
@@ -108,21 +108,21 @@ func TestVerifyCosignSignature(t *testing.T) {
 
 	t.Run("wrong key", func(t *testing.T) {
 		pub2, _ := generateTestKeyPair(t)
-		err := tuikit.VerifyCosignSignature(data, sigData, pubKeyToPEM(pub2))
+		err := blit.VerifyCosignSignature(data, sigData, pubKeyToPEM(pub2))
 		if err == nil {
 			t.Error("expected verification failure for wrong key")
 		}
 	})
 
 	t.Run("invalid signature bytes", func(t *testing.T) {
-		err := tuikit.VerifyCosignSignature(data, []byte("not-valid-base64!!!"), pubKeyToPEM(pub))
+		err := blit.VerifyCosignSignature(data, []byte("not-valid-base64!!!"), pubKeyToPEM(pub))
 		if err == nil {
 			t.Error("expected error for invalid base64 signature")
 		}
 	})
 
 	t.Run("invalid public key", func(t *testing.T) {
-		err := tuikit.VerifyCosignSignature(data, sigData, "not-a-valid-key")
+		err := blit.VerifyCosignSignature(data, sigData, "not-a-valid-key")
 		if err == nil {
 			t.Error("expected error for invalid public key")
 		}
@@ -208,7 +208,7 @@ func TestSelfUpdateCosignVerification(t *testing.T) {
 			defer srv.Close()
 			srvURL = srv.URL
 
-			cfg := tuikit.UpdateConfig{
+			cfg := blit.UpdateConfig{
 				Owner:           "owner",
 				Repo:            "repo",
 				BinaryName:      "myapp",
@@ -218,7 +218,7 @@ func TestSelfUpdateCosignVerification(t *testing.T) {
 				CosignPublicKey: tt.pubKey,
 			}
 
-			err := tuikit.SelfUpdate(cfg)
+			err := blit.SelfUpdate(cfg)
 
 			if tt.wantCosignErr {
 				if err == nil {
@@ -286,7 +286,7 @@ func TestSelfUpdateCosignMissingSigAsset(t *testing.T) {
 	defer srv.Close()
 	srvURL = srv.URL
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner:           "owner",
 		Repo:            "repo",
 		BinaryName:      "myapp",
@@ -296,7 +296,7 @@ func TestSelfUpdateCosignMissingSigAsset(t *testing.T) {
 		CosignPublicKey: pubKeyToPEM(pub),
 	}
 
-	err := tuikit.SelfUpdate(cfg)
+	err := blit.SelfUpdate(cfg)
 	if err == nil {
 		t.Fatal("expected error when .sig asset is missing, got nil")
 	}
@@ -357,7 +357,7 @@ func TestSelfUpdateCosignSkippedWhenKeyEmpty(t *testing.T) {
 	defer srv.Close()
 	srvURL = srv.URL
 
-	cfg := tuikit.UpdateConfig{
+	cfg := blit.UpdateConfig{
 		Owner:           "owner",
 		Repo:            "repo",
 		BinaryName:      "myapp",
@@ -367,7 +367,7 @@ func TestSelfUpdateCosignSkippedWhenKeyEmpty(t *testing.T) {
 		CosignPublicKey: "", // empty — skip verification
 	}
 
-	_ = tuikit.SelfUpdate(cfg)
+	_ = blit.SelfUpdate(cfg)
 
 	if sigFetched {
 		t.Error("sig asset was fetched even though CosignPublicKey was empty")

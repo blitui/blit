@@ -5,23 +5,23 @@ Collapsible tree view for hierarchical data with cursor navigation, expand/colla
 ## Construction
 
 ```go
-tree := tuikit.NewTree([]*tuikit.Node{
+tree := blit.NewTree([]*blit.Node{
     {
         Title: "src",
         Expanded: true,
-        Children: []*tuikit.Node{
+        Children: []*blit.Node{
             {Title: "main.go", Glyph: "📄"},
             {Title: "app.go", Glyph: "📄"},
             {
                 Title: "internal",
-                Children: []*tuikit.Node{
+                Children: []*blit.Node{
                     {Title: "fuzzy.go"},
                 },
             },
         },
     },
-}, tuikit.TreeOpts{
-    OnSelect: func(node *tuikit.Node) {
+}, blit.TreeOpts{
+    OnSelect: func(node *blit.Node) {
         fmt.Println("Selected:", node.Title)
     },
 })

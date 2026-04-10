@@ -5,7 +5,7 @@ File system browser with tree navigation, search, and optional preview pane. Bui
 ## Construction
 
 ```go
-fp := tuikit.NewFilePicker(tuikit.FilePickerOpts{
+fp := blit.NewFilePicker(blit.FilePickerOpts{
     Root:        "/home/user/projects",
     ShowHidden:  false,
     PreviewPane: true,

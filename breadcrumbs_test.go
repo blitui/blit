@@ -1,26 +1,26 @@
-package tuikit_test
+package blit_test
 
 import (
 	"strings"
 	"testing"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
-func newTestBreadcrumbs(segs []string, maxWidth int) *tuikit.Breadcrumbs {
-	b := tuikit.NewBreadcrumbs(segs)
+func newTestBreadcrumbs(segs []string, maxWidth int) *blit.Breadcrumbs {
+	b := blit.NewBreadcrumbs(segs)
 	b.MaxWidth = maxWidth
-	b.SetTheme(tuikit.DefaultTheme())
+	b.SetTheme(blit.DefaultTheme())
 	b.SetSize(maxWidth, 1)
 	return b
 }
 
 func TestBreadcrumbsComponentInterface(t *testing.T) {
-	var _ tuikit.Component = tuikit.NewBreadcrumbs(nil)
+	var _ blit.Component = blit.NewBreadcrumbs(nil)
 }
 
 func TestBreadcrumbsThemedInterface(t *testing.T) {
-	var _ tuikit.Themed = tuikit.NewBreadcrumbs(nil)
+	var _ blit.Themed = blit.NewBreadcrumbs(nil)
 }
 
 func TestBreadcrumbsRenderAllSegments(t *testing.T) {
@@ -38,10 +38,10 @@ func TestBreadcrumbsRenderAllSegments(t *testing.T) {
 }
 
 func TestBreadcrumbsCustomSeparator(t *testing.T) {
-	b := tuikit.NewBreadcrumbs([]string{"a", "b"})
+	b := blit.NewBreadcrumbs([]string{"a", "b"})
 	b.Separator = " > "
 	b.MaxWidth = 0
-	b.SetTheme(tuikit.DefaultTheme())
+	b.SetTheme(blit.DefaultTheme())
 	view := b.View()
 	if !strings.Contains(view, ">") {
 		t.Errorf("expected custom separator '>' in view, got: %q", view)
@@ -94,8 +94,8 @@ func TestBreadcrumbsNoTruncationWhenFits(t *testing.T) {
 }
 
 func TestBreadcrumbsDefaultSeparator(t *testing.T) {
-	b := tuikit.NewBreadcrumbs([]string{"x", "y"})
-	b.SetTheme(tuikit.DefaultTheme())
+	b := blit.NewBreadcrumbs([]string{"x", "y"})
+	b.SetTheme(blit.DefaultTheme())
 	view := b.View()
 	if !strings.Contains(view, "/") {
 		t.Errorf("expected default separator '/' in view, got: %q", view)

@@ -1,4 +1,4 @@
-package tuikit
+package blit
 
 import (
 	"fmt"
@@ -306,7 +306,7 @@ func (dc *devConsole) renderPanel() string {
 	header := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color(t.Accent)).
-		Render("tuikit dev console")
+		Render("blit dev console")
 
 	fps := dc.fps()
 	ft := dc.frameTimeMs()

@@ -1,6 +1,6 @@
-package tuikit
+package blit
 
-// Glyphs defines terminal symbols used by tuikit components.
+// Glyphs defines terminal symbols used by blit components.
 // Two packs are provided: DefaultGlyphs (Unicode) and AsciiGlyphs.
 // Attach a Glyphs instance to a Theme to customise all component symbols at once.
 type Glyphs struct {

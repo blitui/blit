@@ -5,7 +5,7 @@ A download/operation progress bar component used by the self-update system. Can 
 ## Construction
 
 ```go
-p := tuikit.NewUpdateProgress(binary, version string, total int64)
+p := blit.NewUpdateProgress(binary, version string, total int64)
 ```
 
 - `binary` — name shown in the bar label
@@ -17,11 +17,11 @@ p := tuikit.NewUpdateProgress(binary, version string, total int64)
 Send `UpdateProgressMsg` updates into the model:
 
 ```go
-p.Update(tuikit.UpdateProgressMsg{Downloaded: bytesReceived})
+p.Update(blit.UpdateProgressMsg{Downloaded: bytesReceived})
 // When complete:
-p.Update(tuikit.UpdateProgressMsg{Done: true})
+p.Update(blit.UpdateProgressMsg{Done: true})
 // On error:
-p.Update(tuikit.UpdateProgressMsg{Err: err})
+p.Update(blit.UpdateProgressMsg{Err: err})
 ```
 
 ## Rendering
@@ -50,7 +50,7 @@ The bar renders a filled progress track with a shimmer highlight sweep animation
 For interactive CLI workflows outside a full TUI, use the `cli` package's progress bar:
 
 ```go
-import "github.com/moneycaringcoder/tuikit-go/cli"
+import "github.com/blitui/blit/cli"
 
 bar := cli.NewProgress(100, "Downloading")
 bar.Increment(25)

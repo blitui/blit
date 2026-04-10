@@ -1,11 +1,11 @@
-package tuikit_test
+package blit_test
 
 import (
 	"strings"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // splitStub is a minimal Component for split tests.
@@ -17,11 +17,11 @@ type splitStub struct {
 }
 
 func (s *splitStub) Init() tea.Cmd { return nil }
-func (s *splitStub) Update(msg tea.Msg, ctx tuikit.Context) (tuikit.Component, tea.Cmd) {
+func (s *splitStub) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return s, nil
 }
 func (s *splitStub) View() string                  { return s.view }
-func (s *splitStub) KeyBindings() []tuikit.KeyBind { return nil }
+func (s *splitStub) KeyBindings() []blit.KeyBind { return nil }
 func (s *splitStub) SetSize(w, h int)              { s.width = w; s.height = h }
 func (s *splitStub) Focused() bool                 { return s.focused }
 func (s *splitStub) SetFocused(f bool)             { s.focused = f }
@@ -29,13 +29,13 @@ func (s *splitStub) SetFocused(f bool)             { s.focused = f }
 func newSplitStub(view string) *splitStub { return &splitStub{view: view} }
 
 func TestSplitComponentInterface(t *testing.T) {
-	var _ tuikit.Component = tuikit.NewSplit(tuikit.Horizontal, 0.5, newSplitStub("a"), newSplitStub("b"))
+	var _ blit.Component = blit.NewSplit(blit.Horizontal, 0.5, newSplitStub("a"), newSplitStub("b"))
 }
 
 func TestSplitHorizontalSizeDistribution(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.5, a, b)
+	s := blit.NewSplit(blit.Horizontal, 0.5, a, b)
 	s.SetSize(40, 10)
 
 	// With width=40 and ratio=0.5: a gets ~19, divider=1, b gets ~20.
@@ -50,7 +50,7 @@ func TestSplitHorizontalSizeDistribution(t *testing.T) {
 func TestSplitVerticalSizeDistribution(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Vertical, 0.5, a, b)
+	s := blit.NewSplit(blit.Vertical, 0.5, a, b)
 	s.SetSize(40, 20)
 
 	// With height=20 and ratio=0.5: a gets ~9, divider=1, b gets ~10.
@@ -65,8 +65,8 @@ func TestSplitVerticalSizeDistribution(t *testing.T) {
 func TestSplitHorizontalViewContainsDivider(t *testing.T) {
 	a := newSplitStub(strings.Repeat("X", 5))
 	b := newSplitStub(strings.Repeat("Y", 5))
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.5, a, b)
-	s.SetTheme(tuikit.DefaultTheme())
+	s := blit.NewSplit(blit.Horizontal, 0.5, a, b)
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(20, 1)
 	view := s.View()
 	if view == "" {
@@ -81,8 +81,8 @@ func TestSplitHorizontalViewContainsDivider(t *testing.T) {
 func TestSplitVerticalViewContainsDivider(t *testing.T) {
 	a := newSplitStub("top")
 	b := newSplitStub("bottom")
-	s := tuikit.NewSplit(tuikit.Vertical, 0.5, a, b)
-	s.SetTheme(tuikit.DefaultTheme())
+	s := blit.NewSplit(blit.Vertical, 0.5, a, b)
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(20, 5)
 	view := s.View()
 	if !strings.Contains(view, "─") {
@@ -93,13 +93,13 @@ func TestSplitVerticalViewContainsDivider(t *testing.T) {
 func TestSplitResizableRatioDecrease(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.5, a, b)
+	s := blit.NewSplit(blit.Horizontal, 0.5, a, b)
 	s.Resizable = true
-	s.SetTheme(tuikit.DefaultTheme())
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(40, 10)
 
 	initialRatio := s.Ratio
-	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft}, tuikit.Context{})
+	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft}, blit.Context{})
 	if s.Ratio >= initialRatio {
 		t.Errorf("expected ratio to decrease after alt+left, before=%.2f after=%.2f", initialRatio, s.Ratio)
 	}
@@ -108,13 +108,13 @@ func TestSplitResizableRatioDecrease(t *testing.T) {
 func TestSplitResizableRatioIncrease(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.5, a, b)
+	s := blit.NewSplit(blit.Horizontal, 0.5, a, b)
 	s.Resizable = true
-	s.SetTheme(tuikit.DefaultTheme())
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(40, 10)
 
 	initialRatio := s.Ratio
-	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight}, tuikit.Context{})
+	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight}, blit.Context{})
 	if s.Ratio <= initialRatio {
 		t.Errorf("expected ratio to increase after alt+right, before=%.2f after=%.2f", initialRatio, s.Ratio)
 	}
@@ -123,13 +123,13 @@ func TestSplitResizableRatioIncrease(t *testing.T) {
 func TestSplitRatioClampMin(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.15, a, b)
+	s := blit.NewSplit(blit.Horizontal, 0.15, a, b)
 	s.Resizable = true
-	s.SetTheme(tuikit.DefaultTheme())
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(40, 10)
 
 	for i := 0; i < 20; i++ {
-		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft}, tuikit.Context{})
+		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyLeft}, blit.Context{})
 	}
 	if s.Ratio < 0.1 {
 		t.Errorf("ratio should not go below 0.1, got %.2f", s.Ratio)
@@ -139,13 +139,13 @@ func TestSplitRatioClampMin(t *testing.T) {
 func TestSplitRatioClampMax(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.85, a, b)
+	s := blit.NewSplit(blit.Horizontal, 0.85, a, b)
 	s.Resizable = true
-	s.SetTheme(tuikit.DefaultTheme())
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(40, 10)
 
 	for i := 0; i < 20; i++ {
-		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight}, tuikit.Context{})
+		s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyRight}, blit.Context{})
 	}
 	if s.Ratio > 0.9 {
 		t.Errorf("ratio should not go above 0.9, got %.2f", s.Ratio)
@@ -155,8 +155,8 @@ func TestSplitRatioClampMax(t *testing.T) {
 func TestSplitTabSwitchesFocus(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.5, a, b)
-	s.SetTheme(tuikit.DefaultTheme())
+	s := blit.NewSplit(blit.Horizontal, 0.5, a, b)
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(40, 10)
 	s.SetFocused(true)
 
@@ -165,7 +165,7 @@ func TestSplitTabSwitchesFocus(t *testing.T) {
 		t.Error("expected pane A to be focused initially")
 	}
 
-	s.Update(tea.KeyMsg{Type: tea.KeyTab}, tuikit.Context{})
+	s.Update(tea.KeyMsg{Type: tea.KeyTab}, blit.Context{})
 	if a.focused {
 		t.Error("expected pane A to lose focus after tab")
 	}
@@ -175,13 +175,13 @@ func TestSplitTabSwitchesFocus(t *testing.T) {
 }
 
 func TestSplitSetThemeNoPanic(t *testing.T) {
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.5, newSplitStub("A"), newSplitStub("B"))
+	s := blit.NewSplit(blit.Horizontal, 0.5, newSplitStub("A"), newSplitStub("B"))
 	// Should not panic even when children don't implement Themed.
-	s.SetTheme(tuikit.DefaultTheme())
+	s.SetTheme(blit.DefaultTheme())
 }
 
 func TestSplitKeyBindingsResizable(t *testing.T) {
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.5, newSplitStub("A"), newSplitStub("B"))
+	s := blit.NewSplit(blit.Horizontal, 0.5, newSplitStub("A"), newSplitStub("B"))
 	s.Resizable = true
 	binds := s.KeyBindings()
 	if len(binds) == 0 {
@@ -190,7 +190,7 @@ func TestSplitKeyBindingsResizable(t *testing.T) {
 }
 
 func TestSplitDefaultRatioInvalid(t *testing.T) {
-	s := tuikit.NewSplit(tuikit.Horizontal, 0.0, newSplitStub("A"), newSplitStub("B"))
+	s := blit.NewSplit(blit.Horizontal, 0.0, newSplitStub("A"), newSplitStub("B"))
 	if s.Ratio != 0.5 {
 		t.Errorf("expected default ratio 0.5 for invalid input, got %.2f", s.Ratio)
 	}
@@ -199,13 +199,13 @@ func TestSplitDefaultRatioInvalid(t *testing.T) {
 func TestSplitVerticalResizable(t *testing.T) {
 	a := newSplitStub("A")
 	b := newSplitStub("B")
-	s := tuikit.NewSplit(tuikit.Vertical, 0.5, a, b)
+	s := blit.NewSplit(blit.Vertical, 0.5, a, b)
 	s.Resizable = true
-	s.SetTheme(tuikit.DefaultTheme())
+	s.SetTheme(blit.DefaultTheme())
 	s.SetSize(40, 20)
 
 	initialRatio := s.Ratio
-	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyDown}, tuikit.Context{})
+	s.Update(tea.KeyMsg{Alt: true, Type: tea.KeyDown}, blit.Context{})
 	if s.Ratio <= initialRatio {
 		t.Errorf("expected ratio to increase after alt+down, before=%.2f after=%.2f", initialRatio, s.Ratio)
 	}

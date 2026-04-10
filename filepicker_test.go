@@ -1,4 +1,4 @@
-package tuikit_test
+package blit_test
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 func makeTempDir(t *testing.T) string {
@@ -31,10 +31,10 @@ func makeTempDir(t *testing.T) string {
 	return dir
 }
 
-func newTestFilePicker(t *testing.T, opts tuikit.FilePickerOpts) *tuikit.FilePicker {
+func newTestFilePicker(t *testing.T, opts blit.FilePickerOpts) *blit.FilePicker {
 	t.Helper()
-	fp := tuikit.NewFilePicker(opts)
-	fp.SetTheme(tuikit.DefaultTheme())
+	fp := blit.NewFilePicker(opts)
+	fp.SetTheme(blit.DefaultTheme())
 	fp.SetSize(80, 20)
 	fp.SetFocused(true)
 	return fp
@@ -42,7 +42,7 @@ func newTestFilePicker(t *testing.T, opts tuikit.FilePickerOpts) *tuikit.FilePic
 
 func TestFilePicker_View(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
+	fp := newTestFilePicker(t, blit.FilePickerOpts{Root: dir})
 	view := fp.View()
 	if view == "" {
 		t.Fatal("expected non-empty view")
@@ -51,11 +51,11 @@ func TestFilePicker_View(t *testing.T) {
 
 func TestFilePicker_Navigate(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
+	fp := newTestFilePicker(t, blit.FilePickerOpts{Root: dir})
 
 	// Press down — should move within the tree.
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 	view := fp.View()
 	if view == "" {
 		t.Fatal("view after navigate should not be empty")
@@ -64,18 +64,18 @@ func TestFilePicker_Navigate(t *testing.T) {
 
 func TestFilePicker_ExpandDirectory(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
+	fp := newTestFilePicker(t, blit.FilePickerOpts{Root: dir})
 
 	// Root is already expanded; navigate to subdir and expand it.
 	// Move down to first child (file1.txt or subdir).
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 	// Move down again.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 	// Expand with right.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 	view := fp.View()
 	if view == "" {
 		t.Fatal("view after expand should not be empty")
@@ -84,16 +84,16 @@ func TestFilePicker_ExpandDirectory(t *testing.T) {
 
 func TestFilePicker_SearchFilter(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
+	fp := newTestFilePicker(t, blit.FilePickerOpts{Root: dir})
 
 	// Activate search with "/".
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 
 	// Type "file" to filter.
 	for _, r := range "file" {
-		updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, tuikit.Context{})
-		fp = updated.(*tuikit.FilePicker)
+		updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}}, blit.Context{})
+		fp = updated.(*blit.FilePicker)
 	}
 
 	view := fp.View()
@@ -104,15 +104,15 @@ func TestFilePicker_SearchFilter(t *testing.T) {
 
 func TestFilePicker_SearchEsc(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
+	fp := newTestFilePicker(t, blit.FilePickerOpts{Root: dir})
 
 	// Activate search.
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 
 	// Escape closes search — should return tree view.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEsc}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEsc}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 	view := fp.View()
 	if view == "" {
 		t.Fatal("view after search close should not be empty")
@@ -122,7 +122,7 @@ func TestFilePicker_SearchEsc(t *testing.T) {
 func TestFilePicker_Select(t *testing.T) {
 	dir := makeTempDir(t)
 	var selected string
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{
+	fp := newTestFilePicker(t, blit.FilePickerOpts{
 		Root: dir,
 		OnSelect: func(path string) {
 			selected = path
@@ -131,10 +131,10 @@ func TestFilePicker_Select(t *testing.T) {
 
 	// Navigate to a file and press enter.
 	// Down moves to first child (file1.txt in alphabetical order).
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEnter}, tuikit.Context{})
-	_ = updated.(*tuikit.FilePicker)
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyEnter}, blit.Context{})
+	_ = updated.(*blit.FilePicker)
 
 	// We may or may not land on a file (depends on sorting), but no panic.
 	_ = selected
@@ -142,22 +142,22 @@ func TestFilePicker_Select(t *testing.T) {
 
 func TestFilePicker_LazyLoad(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
+	fp := newTestFilePicker(t, blit.FilePickerOpts{Root: dir})
 
 	// Navigate down to subdir and expand.
 	// The subdir node should lazy-load its children on expand.
-	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ := fp.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 
 	// Expand — triggers lazy load.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyRight}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 
 	// Move into expanded children — should work without panic.
-	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, tuikit.Context{})
-	fp = updated.(*tuikit.FilePicker)
+	updated, _ = fp.Update(tea.KeyMsg{Type: tea.KeyDown}, blit.Context{})
+	fp = updated.(*blit.FilePicker)
 
 	view := fp.View()
 	if view == "" {
@@ -167,7 +167,7 @@ func TestFilePicker_LazyLoad(t *testing.T) {
 
 func TestFilePicker_PreviewPane(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{
+	fp := newTestFilePicker(t, blit.FilePickerOpts{
 		Root:        dir,
 		PreviewPane: true,
 	})
@@ -179,7 +179,7 @@ func TestFilePicker_PreviewPane(t *testing.T) {
 
 func TestFilePicker_KeyBindings(t *testing.T) {
 	dir := makeTempDir(t)
-	fp := newTestFilePicker(t, tuikit.FilePickerOpts{Root: dir})
+	fp := newTestFilePicker(t, blit.FilePickerOpts{Root: dir})
 	binds := fp.KeyBindings()
 	if len(binds) == 0 {
 		t.Fatal("expected non-empty key bindings")

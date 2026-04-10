@@ -20,7 +20,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	tuikit "github.com/moneycaringcoder/tuikit-go"
+	blit "github.com/blitui/blit"
 )
 
 // tickMsg drives the fake log generator.
@@ -28,14 +28,14 @@ type tickMsg struct{}
 
 // model is the root Bubble Tea model.
 type model struct {
-	lv     *tuikit.LogViewer
+	lv     *blit.LogViewer
 	width  int
 	height int
 }
 
 func newModel() model {
-	lv := tuikit.NewLogViewer()
-	lv.SetTheme(tuikit.DefaultTheme())
+	lv := blit.NewLogViewer()
+	lv.SetTheme(blit.DefaultTheme())
 	return model{lv: lv}
 }
 
@@ -59,8 +59,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
-		comp, cmd := m.lv.Update(msg, tuikit.Context{})
-		m.lv = comp.(*tuikit.LogViewer)
+		comp, cmd := m.lv.Update(msg, blit.Context{})
+		m.lv = comp.(*blit.LogViewer)
 		return m, cmd
 
 	case tickMsg:
@@ -68,8 +68,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tick()
 	}
 
-	comp, cmd := m.lv.Update(msg, tuikit.Context{})
-	m.lv = comp.(*tuikit.LogViewer)
+	comp, cmd := m.lv.Update(msg, blit.Context{})
+	m.lv = comp.(*blit.LogViewer)
 	return m, cmd
 }
 
@@ -108,14 +108,14 @@ var msgTemplates = []msgTemplate{
 	{"health check passed", false},
 }
 
-func appendFakeLog(lv *tuikit.LogViewer) {
-	levels := []tuikit.LogLevel{
-		tuikit.LogDebug,
-		tuikit.LogInfo,
-		tuikit.LogInfo,
-		tuikit.LogInfo,
-		tuikit.LogWarn,
-		tuikit.LogError,
+func appendFakeLog(lv *blit.LogViewer) {
+	levels := []blit.LogLevel{
+		blit.LogDebug,
+		blit.LogInfo,
+		blit.LogInfo,
+		blit.LogInfo,
+		blit.LogWarn,
+		blit.LogError,
 	}
 	level := levels[rand.Intn(len(levels))]
 	src := sources[rand.Intn(len(sources))]
@@ -127,7 +127,7 @@ func appendFakeLog(lv *tuikit.LogViewer) {
 		msg = tmpl.text
 	}
 
-	lv.Append(tuikit.LogLine{
+	lv.Append(blit.LogLine{
 		Level:     level,
 		Timestamp: time.Now(),
 		Message:   msg,

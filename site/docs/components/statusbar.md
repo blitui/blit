@@ -7,7 +7,7 @@ The left and right content sources can be plain `func() string` closures (legacy
 ## Construction
 
 ```go
-sb := tuikit.NewStatusBar(tuikit.StatusBarOpts{
+sb := blit.NewStatusBar(blit.StatusBarOpts{
     Left:  func() string { return " ? help  q quit" },
     Right: func() string { return fmt.Sprintf(" %d items", count) },
 })
@@ -16,7 +16,7 @@ sb := tuikit.NewStatusBar(tuikit.StatusBarOpts{
 Or via the App option (most common):
 
 ```go
-tuikit.WithStatusBar(
+blit.WithStatusBar(
     func() string { return " ? help  q quit" },
     func() string { return fmt.Sprintf(" %d items", count) },
 )
@@ -27,10 +27,10 @@ tuikit.WithStatusBar(
 For content that changes asynchronously (background polling, WebSocket streams), use `*Signal[string]`. Signal updates are coalesced into one notification per frame via dirty-bit logic:
 
 ```go
-leftSig  := tuikit.NewSignal(" connected")
-rightSig := tuikit.NewSignal(" 0 items")
+leftSig  := blit.NewSignal(" connected")
+rightSig := blit.NewSignal(" 0 items")
 
-tuikit.WithStatusBarSignal(leftSig, rightSig)
+blit.WithStatusBarSignal(leftSig, rightSig)
 
 // From any goroutine:
 rightSig.Set(fmt.Sprintf(" %d items", count))
@@ -45,7 +45,7 @@ The StatusBar renders the left string flush-left and the right string flush-righ
 The bar inherits its foreground color from `theme.Muted`. To produce accent or color-coded segments, embed lipgloss-styled strings in the closure:
 
 ```go
-tuikit.WithStatusBar(
+blit.WithStatusBar(
     func() string {
         return lipgloss.NewStyle().
             Foreground(lipgloss.Color(theme.Accent)).

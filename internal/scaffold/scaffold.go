@@ -1,4 +1,4 @@
-// Package scaffold generates tuitest boilerplate for a given package path.
+// Package scaffold generates blit boilerplate for a given package path.
 package scaffold
 
 import (
@@ -28,7 +28,7 @@ type Result struct {
 	Content []byte
 }
 
-// Generate produces a _test.go file with tuitest.NewTestModel boilerplate.
+// Generate produces a _test.go file with btest.NewTestModel boilerplate.
 // The generated source passes go vet immediately.
 func Generate(opts Options) (*Result, error) {
 	pkgName := pkgNameFromPath(opts.PkgPath)
@@ -114,16 +114,16 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/moneycaringcoder/tuikit-go/tuitest"
+	"github.com/blitui/blit/btest"
 )
 
 // Test{{.Component}} is a generated test stub. Replace the stub model with a
 // real tea.Model from your package and extend the assertions.
 func Test{{.Component}}(t *testing.T) {
 	// TODO: replace &stub{{.Component}}{} with your model, e.g. mypkg.New{{.Component}}().
-	tm := tuitest.NewTestModel(t, &stub{{.Component}}{}, 80, 24)
+	tm := btest.NewTestModel(t, &stub{{.Component}}{}, 80, 24)
 
-	tm.RequireScreen(func(t testing.TB, s *tuitest.Screen) {
+	tm.RequireScreen(func(t testing.TB, s *btest.Screen) {
 		if s.String() == "" {
 			t.Log("screen is empty — wire up your model and add assertions here")
 		}
