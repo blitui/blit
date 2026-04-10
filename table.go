@@ -567,9 +567,8 @@ func (t *Table) renderRow(row Row, idx int, cols []Column, origIdxs []int, width
 		if ss, ok := t.theme.Style("row.cursor"); ok {
 			cs = ss.Focus
 			if t.cursorTween.Running() {
-				// Animate the background from muted to the cursor style's background.
 				bg := Interpolate[lipgloss.Color](
-					lipgloss.Color(t.theme.Muted),
+					lipgloss.Color(t.theme.Border),
 					lipgloss.Color(t.theme.Cursor),
 					t.cursorTween.Progress(time.Now()), EaseOutCubic,
 				)
@@ -579,7 +578,7 @@ func (t *Table) renderRow(row Row, idx int, cols []Column, origIdxs []int, width
 			bg := lipgloss.Color(t.theme.Cursor)
 			if t.cursorTween.Running() {
 				bg = Interpolate[lipgloss.Color](
-					lipgloss.Color(t.theme.Muted),
+					lipgloss.Color(t.theme.Border),
 					lipgloss.Color(t.theme.Cursor),
 					t.cursorTween.Progress(time.Now()), EaseOutCubic,
 				)
@@ -658,11 +657,16 @@ func (t *Table) alignCellStyled(content string, width int, align Alignment, rs *
 		pad = rs.Render(pad)
 	}
 
-	// Apply row-level background to content so flash/cursor backgrounds
-	// cover the full cell, not just the padding around styled text.
+	// Apply row-level background (and foreground when set) to content so
+	// flash/cursor backgrounds cover the full cell and cursor-row text
+	// stays readable regardless of CellRenderer foreground choices.
 	if rs != nil {
 		if bg := rs.GetBackground(); bg != (lipgloss.NoColor{}) {
-			content = lipgloss.NewStyle().Background(bg).Render(content)
+			override := lipgloss.NewStyle().Background(bg)
+			if fg := rs.GetForeground(); fg != (lipgloss.NoColor{}) {
+				override = override.Foreground(fg)
+			}
+			content = override.Render(content)
 		}
 	}
 
