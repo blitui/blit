@@ -29,8 +29,10 @@ func (h *Help) setRegistry(r *Registry) { h.reg = r }
 // SetTheme implements the Themed interface.
 func (h *Help) SetTheme(t Theme) { h.theme = t }
 
+// Init initializes the Help component.
 func (h *Help) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates Help state.
 func (h *Help) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
@@ -42,6 +44,7 @@ func (h *Help) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	return h, nil
 }
 
+// View renders the Help as a string.
 func (h *Help) View() string {
 	if !h.active || h.reg == nil {
 		return ""
@@ -107,14 +110,20 @@ func (h *Help) View() string {
 		boxStyle.Render(content))
 }
 
+// KeyBindings returns the key bindings for the Help.
 func (h *Help) KeyBindings() []KeyBind {
 	return []KeyBind{
 		{Key: "esc", Label: "Close help", Group: "OTHER"},
 	}
 }
 
+// SetSize sets the width and height of the Help.
 func (h *Help) SetSize(w, ht int) { h.width = w; h.height = ht }
+// Focused reports whether the Help is focused.
 func (h *Help) Focused() bool     { return h.focused }
+// SetFocused sets the focus state of the Help.
 func (h *Help) SetFocused(f bool) { h.focused = f }
+// IsActive reports whether the Help overlay is currently visible.
 func (h *Help) IsActive() bool    { return h.active }
+// Close deactivates the Help and resets its state.
 func (h *Help) Close()            { h.active = false }

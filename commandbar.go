@@ -33,8 +33,10 @@ func NewCommandBar(commands []Command) *CommandBar {
 	return &CommandBar{commands: commands}
 }
 
+// Init initializes the CommandBar component.
 func (c *CommandBar) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates CommandBar state.
 func (c *CommandBar) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		return c.handleKey(msg)
@@ -121,6 +123,7 @@ func (c *CommandBar) tabComplete() {
 	}
 }
 
+// View renders the CommandBar as a string.
 func (c *CommandBar) View() string {
 	if !c.active {
 		return ""
@@ -144,6 +147,7 @@ func (c *CommandBar) View() string {
 	return line
 }
 
+// KeyBindings returns the key bindings for the CommandBar.
 func (c *CommandBar) KeyBindings() []KeyBind {
 	var bindings []KeyBind
 	for _, cmd := range c.commands {
@@ -156,11 +160,17 @@ func (c *CommandBar) KeyBindings() []KeyBind {
 	return bindings
 }
 
+// SetSize sets the width and height of the CommandBar.
 func (c *CommandBar) SetSize(w, h int)  { c.width = w; c.height = h }
+// Focused reports whether the CommandBar is focused.
 func (c *CommandBar) Focused() bool     { return c.focused }
+// SetFocused sets the focus state of the CommandBar.
 func (c *CommandBar) SetFocused(f bool) { c.focused = f }
+// IsActive reports whether the CommandBar overlay is currently visible.
 func (c *CommandBar) IsActive() bool    { return c.active }
+// SetActive shows or hides the CommandBar overlay.
 func (c *CommandBar) SetActive(v bool)  { c.active = v }
+// Close deactivates the CommandBar and resets its state.
 func (c *CommandBar) Close() {
 	c.active = false
 	c.input = ""

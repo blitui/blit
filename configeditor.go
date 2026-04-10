@@ -63,8 +63,10 @@ func NewConfigEditor(fields []ConfigField) *ConfigEditor {
 // SetTheme implements the Themed interface.
 func (c *ConfigEditor) SetTheme(t Theme) { c.theme = t }
 
+// Init initializes the ConfigEditor component.
 func (c *ConfigEditor) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates ConfigEditor state.
 func (c *ConfigEditor) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		return c.handleKey(msg)
@@ -141,6 +143,7 @@ func (c *ConfigEditor) handleEditKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 	return c, Consumed()
 }
 
+// View renders the ConfigEditor as a string.
 func (c *ConfigEditor) View() string {
 	if !c.active {
 		return ""
@@ -227,6 +230,7 @@ func (c *ConfigEditor) View() string {
 		boxStyle.Render(content))
 }
 
+// KeyBindings returns the key bindings for the ConfigEditor.
 func (c *ConfigEditor) KeyBindings() []KeyBind {
 	if c.editing {
 		return []KeyBind{
@@ -242,8 +246,13 @@ func (c *ConfigEditor) KeyBindings() []KeyBind {
 	}
 }
 
+// SetSize sets the width and height of the ConfigEditor.
 func (c *ConfigEditor) SetSize(w, h int)  { c.width = w; c.height = h }
+// Focused reports whether the ConfigEditor is focused.
 func (c *ConfigEditor) Focused() bool     { return c.focused }
+// SetFocused sets the focus state of the ConfigEditor.
 func (c *ConfigEditor) SetFocused(f bool) { c.focused = f }
+// IsActive reports whether the ConfigEditor overlay is currently visible.
 func (c *ConfigEditor) IsActive() bool    { return c.active }
+// Close deactivates the ConfigEditor and resets its state.
 func (c *ConfigEditor) Close()            { c.active = false; c.editing = false; c.errMsg = "" }

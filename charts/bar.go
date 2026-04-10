@@ -44,14 +44,21 @@ func NewBar(data []float64, labels []string, horizontal bool) *Bar {
 	}
 }
 
+// Init initializes the Bar component.
 func (b *Bar) Init() tea.Cmd { return nil }
+// Update handles incoming messages and updates Bar state.
 func (b *Bar) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return b, nil
 }
+// KeyBindings returns the key bindings for the Bar.
 func (b *Bar) KeyBindings() []blit.KeyBind { return nil }
+// SetSize sets the width and height of the Bar.
 func (b *Bar) SetSize(w, h int)              { b.width = w; b.height = h }
+// Focused reports whether the Bar is focused.
 func (b *Bar) Focused() bool                 { return b.focused }
+// SetFocused sets the focus state of the Bar.
 func (b *Bar) SetFocused(f bool)             { b.focused = f }
+// SetTheme updates the theme used by the Bar.
 func (b *Bar) SetTheme(t blit.Theme)       { b.theme = t }
 
 // barColor returns the color for bar i.
@@ -69,6 +76,7 @@ func (b *Bar) barColor(i int) lipgloss.Color {
 	return defaults[i%len(defaults)]
 }
 
+// View renders the Bar as a string.
 func (b *Bar) View() string {
 	if b.width < 2 || b.height < 2 || len(b.Data) == 0 {
 		return ""

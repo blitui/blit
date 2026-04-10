@@ -197,16 +197,21 @@ func (f *TextField) WithRequired() *TextField { f.required = true; return f }
 // WithValidator attaches a validator function.
 func (f *TextField) WithValidator(v Validator) *TextField { f.validator = v; return f }
 
+// Value returns the current value of the TextField.
 func (f *TextField) Value() string     { return f.input.Value() }
+// SetValue sets the current value of the TextField.
 func (f *TextField) SetValue(v string) { f.input.SetValue(v) }
 
+// Validate checks the current value against the field's validation rules.
 func (f *TextField) Validate() error {
 	f.err = f.validate(f.input.Value())
 	return f.err
 }
 
+// Init initializes the TextField component.
 func (f *TextField) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates TextField state.
 func (f *TextField) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	f.input, cmd = f.input.Update(msg)
@@ -216,6 +221,7 @@ func (f *TextField) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
+// SetFocused sets the focus state of the TextField.
 func (f *TextField) SetFocused(focused bool) {
 	if focused {
 		f.input.Focus()
@@ -224,6 +230,7 @@ func (f *TextField) SetFocused(focused bool) {
 	}
 }
 
+// View renders the TextField as a string.
 func (f *TextField) View(focused bool, theme Theme, width int) string {
 	labelLine := f.renderLabel(focused, theme)
 	if h := f.renderHint(theme); h != "" {
@@ -280,16 +287,21 @@ func (f *PasswordField) WithRequired() *PasswordField { f.required = true; retur
 // WithValidator attaches a validator function.
 func (f *PasswordField) WithValidator(v Validator) *PasswordField { f.validator = v; return f }
 
+// Value returns the current value of the PasswordField.
 func (f *PasswordField) Value() string     { return f.input.Value() }
+// SetValue sets the current value of the PasswordField.
 func (f *PasswordField) SetValue(v string) { f.input.SetValue(v) }
 
+// Validate checks the current value against the field's validation rules.
 func (f *PasswordField) Validate() error {
 	f.err = f.validate(f.input.Value())
 	return f.err
 }
 
+// Init initializes the PasswordField component.
 func (f *PasswordField) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates PasswordField state.
 func (f *PasswordField) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	f.input, cmd = f.input.Update(msg)
@@ -299,6 +311,7 @@ func (f *PasswordField) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
+// SetFocused sets the focus state of the PasswordField.
 func (f *PasswordField) SetFocused(focused bool) {
 	if focused {
 		f.input.Focus()
@@ -307,6 +320,7 @@ func (f *PasswordField) SetFocused(focused bool) {
 	}
 }
 
+// View renders the PasswordField as a string.
 func (f *PasswordField) View(focused bool, theme Theme, width int) string {
 	labelLine := f.renderLabel(focused, theme)
 	if h := f.renderHint(theme); h != "" {
@@ -355,6 +369,7 @@ func (f *SelectField) WithDefault(v string) *SelectField {
 	return f
 }
 
+// Value returns the current value of the SelectField.
 func (f *SelectField) Value() string {
 	if len(f.options) == 0 {
 		return ""
@@ -362,6 +377,7 @@ func (f *SelectField) Value() string {
 	return f.options[f.selected]
 }
 
+// SetValue sets the current value of the SelectField.
 func (f *SelectField) SetValue(v string) {
 	for i, opt := range f.options {
 		if opt == v {
@@ -371,14 +387,18 @@ func (f *SelectField) SetValue(v string) {
 	}
 }
 
+// Validate checks the current value against the field's validation rules.
 func (f *SelectField) Validate() error {
 	f.err = f.validate(f.Value())
 	return f.err
 }
 
+// Init initializes the SelectField component.
 func (f *SelectField) Init() tea.Cmd     { return nil }
+// SetFocused sets the focus state of the SelectField.
 func (f *SelectField) SetFocused(_ bool) {}
 
+// Update handles incoming messages and updates SelectField state.
 func (f *SelectField) Update(msg tea.Msg) tea.Cmd {
 	if km, ok := msg.(tea.KeyMsg); ok {
 		switch km.String() {
@@ -397,6 +417,7 @@ func (f *SelectField) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
+// View renders the SelectField as a string.
 func (f *SelectField) View(focused bool, theme Theme, _ int) string {
 	labelLine := f.renderLabel(focused, theme)
 	if h := f.renderHint(theme); h != "" {
@@ -446,6 +467,7 @@ func (f *MultiSelectField) WithHint(hint string) *MultiSelectField { f.hint = hi
 // WithRequired marks the field as required (at least one option must be selected).
 func (f *MultiSelectField) WithRequired() *MultiSelectField { f.required = true; return f }
 
+// Value returns the current value of the MultiSelectField.
 func (f *MultiSelectField) Value() string {
 	var parts []string
 	for i, opt := range f.options {
@@ -456,6 +478,7 @@ func (f *MultiSelectField) Value() string {
 	return strings.Join(parts, ",")
 }
 
+// SetValue sets the current value of the MultiSelectField.
 func (f *MultiSelectField) SetValue(v string) {
 	f.selected = make(map[int]bool)
 	for _, part := range strings.Split(v, ",") {
@@ -467,6 +490,7 @@ func (f *MultiSelectField) SetValue(v string) {
 	}
 }
 
+// Validate checks the current value against the field's validation rules.
 func (f *MultiSelectField) Validate() error {
 	if f.required && len(f.selected) == 0 {
 		f.err = fmt.Errorf("select at least one option")
@@ -476,9 +500,12 @@ func (f *MultiSelectField) Validate() error {
 	return nil
 }
 
+// Init initializes the MultiSelectField component.
 func (f *MultiSelectField) Init() tea.Cmd     { return nil }
+// SetFocused sets the focus state of the MultiSelectField.
 func (f *MultiSelectField) SetFocused(_ bool) {}
 
+// Update handles incoming messages and updates MultiSelectField state.
 func (f *MultiSelectField) Update(msg tea.Msg) tea.Cmd {
 	if km, ok := msg.(tea.KeyMsg); ok {
 		switch km.String() {
@@ -500,6 +527,7 @@ func (f *MultiSelectField) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
+// View renders the MultiSelectField as a string.
 func (f *MultiSelectField) View(focused bool, theme Theme, _ int) string {
 	labelLine := f.renderLabel(focused, theme)
 	if focused {
@@ -552,6 +580,7 @@ func (f *ConfirmField) WithHint(hint string) *ConfirmField { f.hint = hint; retu
 // WithDefault sets the initial boolean value.
 func (f *ConfirmField) WithDefault(v bool) *ConfirmField { f.value = v; return f }
 
+// Value returns the current value of the ConfirmField.
 func (f *ConfirmField) Value() string {
 	if f.value {
 		return "true"
@@ -559,14 +588,19 @@ func (f *ConfirmField) Value() string {
 	return "false"
 }
 
+// SetValue sets the current value of the ConfirmField.
 func (f *ConfirmField) SetValue(v string) {
 	f.value = v == "true" || v == "yes" || v == "1"
 }
 
+// Validate checks the current value against the field's validation rules.
 func (f *ConfirmField) Validate() error   { f.err = nil; return nil }
+// Init initializes the ConfirmField component.
 func (f *ConfirmField) Init() tea.Cmd     { return nil }
+// SetFocused sets the focus state of the ConfirmField.
 func (f *ConfirmField) SetFocused(_ bool) {}
 
+// Update handles incoming messages and updates ConfirmField state.
 func (f *ConfirmField) Update(msg tea.Msg) tea.Cmd {
 	if km, ok := msg.(tea.KeyMsg); ok {
 		switch km.String() {
@@ -581,6 +615,7 @@ func (f *ConfirmField) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
+// View renders the ConfirmField as a string.
 func (f *ConfirmField) View(focused bool, theme Theme, _ int) string {
 	labelLine := f.renderLabel(focused, theme)
 	if h := f.renderHint(theme); h != "" {
@@ -637,9 +672,12 @@ func (f *NumberField) WithDefault(v float64) *NumberField {
 	return f
 }
 
+// Value returns the current value of the NumberField.
 func (f *NumberField) Value() string     { return f.input.Value() }
+// SetValue sets the current value of the NumberField.
 func (f *NumberField) SetValue(v string) { f.input.SetValue(v) }
 
+// Validate checks the current value against the field's validation rules.
 func (f *NumberField) Validate() error {
 	v := strings.TrimSpace(f.input.Value())
 	if f.required && v == "" {
@@ -665,8 +703,10 @@ func (f *NumberField) Validate() error {
 	return nil
 }
 
+// Init initializes the NumberField component.
 func (f *NumberField) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates NumberField state.
 func (f *NumberField) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	f.input, cmd = f.input.Update(msg)
@@ -676,6 +716,7 @@ func (f *NumberField) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
+// SetFocused sets the focus state of the NumberField.
 func (f *NumberField) SetFocused(focused bool) {
 	if focused {
 		f.input.Focus()
@@ -684,6 +725,7 @@ func (f *NumberField) SetFocused(focused bool) {
 	}
 }
 
+// View renders the NumberField as a string.
 func (f *NumberField) View(focused bool, theme Theme, width int) string {
 	labelLine := f.renderLabel(focused, theme)
 	if h := f.renderHint(theme); h != "" {

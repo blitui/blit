@@ -147,8 +147,10 @@ func (l *ListView[T]) ItemCount() int {
 	return len(l.items)
 }
 
+// Init initializes the ListView component.
 func (l *ListView[T]) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates ListView state.
 func (l *ListView[T]) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -232,6 +234,7 @@ func (l *ListView[T]) HandleKey(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
+// View renders the ListView as a string.
 func (l *ListView[T]) View() string {
 	if !l.ready {
 		return ""
@@ -283,6 +286,7 @@ func (l *ListView[T]) renderDetail() string {
 	return strings.Repeat(" ", l.width) + blank
 }
 
+// KeyBindings returns the key bindings for the ListView.
 func (l *ListView[T]) KeyBindings() []KeyBind {
 	bindings := []KeyBind{
 		{Key: "up/k", Label: "Scroll up", Group: "NAVIGATION"},
@@ -296,6 +300,7 @@ func (l *ListView[T]) KeyBindings() []KeyBind {
 	return bindings
 }
 
+// SetSize sets the width and height of the ListView.
 func (l *ListView[T]) SetSize(w, h int) {
 	l.width = w
 	l.height = h
@@ -333,8 +338,11 @@ func (l *ListView[T]) viewportHeight() int {
 	return h
 }
 
+// Focused reports whether the ListView is focused.
 func (l *ListView[T]) Focused() bool     { return l.focused }
+// SetFocused sets the focus state of the ListView.
 func (l *ListView[T]) SetFocused(f bool) { l.focused = f; l.rebuildContent() }
+// SetTheme updates the theme used by the ListView.
 func (l *ListView[T]) SetTheme(th Theme) { l.theme = th }
 
 func (l *ListView[T]) startCursorTween() {

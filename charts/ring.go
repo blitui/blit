@@ -42,14 +42,21 @@ func NewRing(value, max float64, label string) *Ring {
 	}
 }
 
+// Init initializes the Ring component.
 func (r *Ring) Init() tea.Cmd { return nil }
+// Update handles incoming messages and updates Ring state.
 func (r *Ring) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return r, nil
 }
+// KeyBindings returns the key bindings for the Ring.
 func (r *Ring) KeyBindings() []blit.KeyBind { return nil }
+// SetSize sets the width and height of the Ring.
 func (r *Ring) SetSize(w, h int)              { r.width = w; r.height = h }
+// Focused reports whether the Ring is focused.
 func (r *Ring) Focused() bool                 { return r.focused }
+// SetFocused sets the focus state of the Ring.
 func (r *Ring) SetFocused(f bool)             { r.focused = f }
+// SetTheme updates the theme used by the Ring.
 func (r *Ring) SetTheme(t blit.Theme)       { r.theme = t }
 
 // quarterBlocks maps (topFill, bottomFill) → unicode block character.
@@ -61,6 +68,7 @@ var quarterBlocks = map[[2]bool]rune{
 	{true, true}:   '█',
 }
 
+// View renders the Ring as a string.
 func (r *Ring) View() string {
 	if r.width < 3 || r.height < 3 {
 		return ""

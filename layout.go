@@ -99,15 +99,22 @@ type Sized struct {
 	C Component // The wrapped component.
 }
 
+// Init initializes the Sized component.
 func (s Sized) Init() tea.Cmd { return s.C.Init() }
+// Update handles incoming messages and updates Sized state.
 func (s Sized) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	c, cmd := s.C.Update(msg, ctx)
 	return Sized{W: s.W, C: c}, cmd
 }
+// View renders the Sized as a string.
 func (s Sized) View() string           { return s.C.View() }
+// KeyBindings returns the key bindings for the Sized.
 func (s Sized) KeyBindings() []KeyBind { return s.C.KeyBindings() }
+// SetSize sets the width and height of the Sized.
 func (s Sized) SetSize(w, h int)       { s.C.SetSize(w, h) }
+// Focused reports whether the Sized is focused.
 func (s Sized) Focused() bool          { return s.C.Focused() }
+// SetFocused sets the focus state of the Sized.
 func (s Sized) SetFocused(f bool)      { s.C.SetFocused(f) }
 
 // Flex wraps a Component that grows proportionally to fill remaining space.
@@ -118,15 +125,22 @@ type Flex struct {
 	C    Component // The wrapped component.
 }
 
+// Init initializes the Flex component.
 func (f Flex) Init() tea.Cmd { return f.C.Init() }
+// Update handles incoming messages and updates Flex state.
 func (f Flex) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	c, cmd := f.C.Update(msg, ctx)
 	return Flex{Grow: f.Grow, C: c}, cmd
 }
+// View renders the Flex as a string.
 func (f Flex) View() string           { return f.C.View() }
+// KeyBindings returns the key bindings for the Flex.
 func (f Flex) KeyBindings() []KeyBind { return f.C.KeyBindings() }
+// SetSize sets the width and height of the Flex.
 func (f Flex) SetSize(w, h int)       { f.C.SetSize(w, h) }
+// Focused reports whether the Flex is focused.
 func (f Flex) Focused() bool          { return f.C.Focused() }
+// SetFocused sets the focus state of the Flex.
 func (f Flex) SetFocused(foc bool)    { f.C.SetFocused(foc) }
 
 // SetTheme implements Themed by delegating to the wrapped component.
