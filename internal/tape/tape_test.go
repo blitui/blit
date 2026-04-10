@@ -150,6 +150,61 @@ func TestGenerate_TickEmitsSleep(t *testing.T) {
 	}
 }
 
+func TestGenerateWithOptions_Speed2x(t *testing.T) {
+	sess := &btest.Session{
+		Version: 2, Cols: 80, Lines: 24,
+		Steps: []btest.SessionStep{
+			{Kind: "key", Key: "enter"},
+			{Kind: "tick"},
+		},
+	}
+	out := tape.GenerateWithOptions(sess, tape.Options{Speed: 2.0})
+	// At 2x speed, default 100ms becomes 50ms.
+	if !contains(out, "Sleep 50ms\n") {
+		t.Errorf("expected Sleep 50ms at 2x speed:\n%s", out)
+	}
+	if contains(out, "Sleep 100ms\n") {
+		t.Errorf("should not contain default Sleep 100ms at 2x speed:\n%s", out)
+	}
+}
+
+func TestGenerateWithOptions_SpeedHalf(t *testing.T) {
+	sess := &btest.Session{
+		Version: 2, Cols: 80, Lines: 24,
+		Steps: []btest.SessionStep{
+			{Kind: "key", Key: "enter"},
+		},
+	}
+	out := tape.GenerateWithOptions(sess, tape.Options{Speed: 0.5})
+	// At 0.5x speed, default 100ms becomes 200ms.
+	if !contains(out, "Sleep 200ms\n") {
+		t.Errorf("expected Sleep 200ms at 0.5x speed:\n%s", out)
+	}
+}
+
+func TestGenerateWithOptions_ZeroSpeedDefaultsTo1x(t *testing.T) {
+	sess := &btest.Session{
+		Version: 2, Cols: 80, Lines: 24,
+		Steps: []btest.SessionStep{
+			{Kind: "key", Key: "enter"},
+		},
+	}
+	out := tape.GenerateWithOptions(sess, tape.Options{Speed: 0})
+	if !contains(out, "Sleep 100ms\n") {
+		t.Errorf("zero speed should default to 1x (100ms):\n%s", out)
+	}
+}
+
+func TestGenerate_BackwardsCompatible(t *testing.T) {
+	sess := fixtureSession()
+	// Generate (no options) should produce same output as 1x speed.
+	got := tape.Generate(sess)
+	want := tape.GenerateWithOptions(sess, tape.Options{Speed: 1.0})
+	if got != want {
+		t.Errorf("Generate() should equal GenerateWithOptions(1x)\n--- Generate ---\n%s\n--- WithOptions ---\n%s", got, want)
+	}
+}
+
 func contains(s, sub string) bool {
 	return len(s) >= len(sub) && (s == sub || len(sub) == 0 ||
 		func() bool {

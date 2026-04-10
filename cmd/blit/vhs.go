@@ -24,8 +24,9 @@ import (
 func runVHS(args []string) int {
 	fs := flag.NewFlagSet("vhs", flag.ContinueOnError)
 	outGIF := fs.String("o", "", "render GIF to this path via the vhs binary")
+	speed := fs.Float64("speed", 1.0, "playback speed multiplier (e.g. 2 for faster, 0.5 for slower)")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: blit vhs <session>.tuisess [-o out.gif]")
+		fmt.Fprintln(os.Stderr, "usage: blit vhs <session>.tuisess [-o out.gif] [-speed N]")
 		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Without -o, the tape script is printed to stdout.")
 		fmt.Fprintln(os.Stderr, "With -o, the vhs binary is invoked to produce a GIF.")
@@ -49,7 +50,7 @@ func runVHS(args []string) int {
 		return 1
 	}
 
-	script := tape.Generate(sess)
+	script := tape.GenerateWithOptions(sess, tape.Options{Speed: *speed})
 
 	if *outGIF == "" {
 		// No render requested — just print the tape script.

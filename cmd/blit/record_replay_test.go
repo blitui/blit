@@ -146,7 +146,43 @@ func TestReplayLoadsV1Session(t *testing.T) {
 		t.Errorf("version = %d, want 1", sess.Version)
 	}
 	// runReplaySession should return 0 for a valid session.
-	code := runReplaySession(&sess, path, 1.0)
+	code := runReplaySession(&sess, path, 1.0, nil)
+	if code != 0 {
+		t.Errorf("runReplaySession = %d, want 0", code)
+	}
+}
+
+// TestReplaySkipKeys verifies that --skip filters out specified keys.
+func TestReplaySkipKeys(t *testing.T) {
+	dir := t.TempDir()
+	sess := tuiSessFile{
+		Version: 2,
+		Cols:    40,
+		Lines:   5,
+		Steps: []recordStep{
+			{Kind: "key", Key: "h"},
+			{Kind: "key", Key: "ctrl+c"},
+			{Kind: "key", Key: "i"},
+		},
+	}
+	data, _ := json.MarshalIndent(sess, "", "  ")
+	path := filepath.Join(dir, "skip.tuisess")
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	rawData, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var rs replaySessFile
+	if err := json.Unmarshal(rawData, &rs); err != nil {
+		t.Fatal(err)
+	}
+
+	// Skip ctrl+c — only "h" and "i" should be applied.
+	skipSet := map[string]bool{"ctrl+c": true}
+	code := runReplaySession(&rs, path, 100.0, skipSet)
 	if code != 0 {
 		t.Errorf("runReplaySession = %d, want 0", code)
 	}
