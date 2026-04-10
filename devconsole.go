@@ -60,8 +60,11 @@ type devConsole struct {
 	// snapshot of app state for rendering (set each frame by the app)
 	snapshot devConsoleSnapshot
 
-	// providers holds registered DebugProviders for custom debug sections.
+	// providers holds registered DebugProviders for debug sections.
 	providers []DebugProvider
+
+	// activeTab is the index of the currently selected provider tab.
+	activeTab int
 }
 
 // devConsoleSnapshot captures a point-in-time view of app state so the
@@ -83,13 +86,30 @@ type signalInfo struct {
 	value string
 }
 
-// newDevConsole creates a devConsole. autoEnable checks BLIT_DEVCONSOLE env.
+// newDevConsole creates a devConsole with built-in providers.
+// autoEnable checks BLIT_DEVCONSOLE env.
 func newDevConsole() *devConsole {
 	dc := &devConsole{}
 	if os.Getenv("BLIT_DEVCONSOLE") == "1" {
 		dc.active = true
 	}
+	dc.providers = []DebugProvider{
+		&frameStatsProvider{dc: dc},
+		&componentTreeProvider{dc: dc},
+		&signalMonitorProvider{dc: dc},
+		&keyLogProvider{dc: dc},
+		&logViewerProvider{dc: dc},
+		&themeInspectorProvider{dc: dc},
+	}
 	return dc
+}
+
+// Name returns the module name for the dev console.
+func (dc *devConsole) Name() string { return "devConsole" }
+
+// Providers returns the registered debug providers.
+func (dc *devConsole) Providers() []DebugProvider {
+	return dc.providers
 }
 
 // recordFrame pushes the current timestamp into the FPS ring buffer.
@@ -170,6 +190,20 @@ func (dc *devConsole) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 		case "esc", "ctrl+\\":
 			dc.active = false
 			return dc, nil
+		// Tab navigation
+		case "left":
+			if len(dc.providers) > 0 {
+				dc.activeTab = (dc.activeTab - 1 + len(dc.providers)) % len(dc.providers)
+			}
+		case "right":
+			if len(dc.providers) > 0 {
+				dc.activeTab = (dc.activeTab + 1) % len(dc.providers)
+			}
+		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
+			idx := int(msg.String()[0]-'0') - 1
+			if idx >= 0 && idx < len(dc.providers) {
+				dc.activeTab = idx
+			}
 		// Resize: alt+arrows
 		case "alt+up":
 			if dc.h > 5 {
@@ -302,53 +336,25 @@ func (dc *devConsole) renderPanel() string {
 		Foreground(lipgloss.Color(t.Accent)).
 		Render("blit dev console")
 
-	fps := dc.fps()
-	ft := dc.frameTimeMs()
-	perfLine := fmt.Sprintf("FPS: %.1f  frame: %.2fms", fps, ft)
+	// Build tab bar
+	tabBar := dc.renderTabBar(w-4, t)
 
-	var treeLines []string
-	snap := dc.snapshot
-	for i, name := range snap.componentNames {
-		focused := i < len(snap.componentFocus) && snap.componentFocus[i]
-		marker := "  "
-		if focused {
-			marker = "* "
-		}
-		treeLines = append(treeLines, marker+name)
-	}
-	treeSection := "Components:\n" + strings.Join(treeLines, "\n")
-
-	var sigLines []string
-	for _, s := range snap.signals {
-		sigLines = append(sigLines, fmt.Sprintf("  %s = %s", s.label, s.value))
-	}
-	sigSection := "Signals:"
-	if len(sigLines) > 0 {
-		sigSection += "\n" + strings.Join(sigLines, "\n")
-	} else {
-		sigSection += " (none)"
-	}
-
-	keys := dc.recentKeys()
-	keySection := "Keys: " + strings.Join(keys, " ")
-
-	var logSection string
-	if len(snap.logLines) > 0 {
-		logSection = "Logs:\n" + strings.Join(snap.logLines, "\n")
-	}
-
-	accentSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Accent)).Render("  ")
-	textSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Text)).Render("  ")
-	mutedSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Muted)).Render("  ")
-	posSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Positive)).Render("  ")
-	negSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Negative)).Render("  ")
-	themeLine := fmt.Sprintf("Theme: %s  Accent%s Text%s Muted%s Pos%s Neg%s",
-		snap.themeName, accentSwatch, textSwatch, mutedSwatch, posSwatch, negSwatch)
-
+	// Render active provider content
 	innerW := w - 4
 	if innerW < 1 {
 		innerW = 1
 	}
+	innerH := h - 5 // border(2) + header(1) + tab bar(1) + padding
+	if innerH < 1 {
+		innerH = 1
+	}
+
+	var content string
+	if dc.activeTab >= 0 && dc.activeTab < len(dc.providers) {
+		content = dc.providers[dc.activeTab].View(innerW, innerH, t)
+	}
+
+	// Truncate content lines to fit
 	truncate := func(s string) string {
 		var out []string
 		for _, line := range strings.Split(s, "\n") {
@@ -361,36 +367,59 @@ func (dc *devConsole) renderPanel() string {
 		return strings.Join(out, "\n")
 	}
 
-	sections := []string{
-		header,
-		truncate(perfLine),
-		truncate(treeSection),
-		truncate(sigSection),
-		truncate(keySection),
-	}
-	if logSection != "" {
-		sections = append(sections, truncate(logSection))
-	}
-	sections = append(sections, truncate(themeLine))
+	content = truncate(content)
 
-	innerH := h - 2
-	if innerH < 1 {
-		innerH = 1
+	// Clamp content to available height
+	contentLines := strings.Split(content, "\n")
+	if len(contentLines) > innerH {
+		contentLines = contentLines[:innerH]
 	}
-	body := strings.Join(sections, "\n")
-	bodyLines := strings.Split(body, "\n")
-	if len(bodyLines) > innerH {
-		bodyLines = bodyLines[:innerH]
-	}
-	body = strings.Join(bodyLines, "\n")
+	content = strings.Join(contentLines, "\n")
+
+	body := strings.Join([]string{header, tabBar, content}, "\n")
 
 	return border.Render(body)
+}
+
+// renderTabBar renders the tab bar showing all provider names.
+func (dc *devConsole) renderTabBar(width int, t Theme) string {
+	if len(dc.providers) == 0 {
+		return ""
+	}
+
+	var tabs []string
+	for i, p := range dc.providers {
+		label := p.Name()
+		if i == dc.activeTab {
+			tab := lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("#1a1a2e")).
+				Background(lipgloss.Color(t.Accent)).
+				Render(" " + label + " ")
+			tabs = append(tabs, tab)
+		} else {
+			tab := lipgloss.NewStyle().
+				Foreground(lipgloss.Color(t.Muted)).
+				Render(" " + label + " ")
+			tabs = append(tabs, tab)
+		}
+	}
+
+	bar := strings.Join(tabs, "")
+	// Truncate if wider than available space
+	runes := []rune(bar)
+	if len(runes) > width {
+		runes = runes[:width]
+	}
+	return string(runes)
 }
 
 // KeyBindings implements Component.
 func (dc *devConsole) KeyBindings() []KeyBind {
 	return []KeyBind{
 		{Key: "esc", Label: "Close dev console", Group: "DEV"},
+		{Key: "left/right", Label: "Switch tab", Group: "DEV"},
+		{Key: "1-9", Label: "Jump to tab", Group: "DEV"},
 		{Key: "alt+arrows", Label: "Resize", Group: "DEV"},
 		{Key: "shift+arrows", Label: "Move", Group: "DEV"},
 	}
@@ -448,4 +477,100 @@ func WithDevConsole() Option {
 		}
 		a.devConsole.active = true
 	}
+}
+
+// --- Built-in DebugProvider implementations ---
+
+// frameStatsProvider renders FPS and frame time.
+type frameStatsProvider struct{ dc *devConsole }
+
+func (p *frameStatsProvider) Name() string { return "Frame Stats" }
+func (p *frameStatsProvider) View(w, h int, theme Theme) string {
+	fps := p.dc.fps()
+	ft := p.dc.frameTimeMs()
+	return fmt.Sprintf("FPS: %.1f  frame: %.2fms", fps, ft)
+}
+func (p *frameStatsProvider) Data() map[string]any {
+	return map[string]any{
+		"fps":          p.dc.fps(),
+		"frameTimeMs":  p.dc.frameTimeMs(),
+		"frameCount":   p.dc.frameCount,
+	}
+}
+
+// componentTreeProvider renders the component tree with focus markers.
+type componentTreeProvider struct{ dc *devConsole }
+
+func (p *componentTreeProvider) Name() string { return "Components" }
+func (p *componentTreeProvider) View(w, h int, theme Theme) string {
+	snap := p.dc.snapshot
+	var lines []string
+	for i, name := range snap.componentNames {
+		focused := i < len(snap.componentFocus) && snap.componentFocus[i]
+		marker := "  "
+		if focused {
+			marker = "* "
+		}
+		lines = append(lines, marker+name)
+	}
+	if len(lines) == 0 {
+		return "Components: (none)"
+	}
+	return "Components:\n" + strings.Join(lines, "\n")
+}
+
+// signalMonitorProvider renders signal values.
+type signalMonitorProvider struct{ dc *devConsole }
+
+func (p *signalMonitorProvider) Name() string { return "Signals" }
+func (p *signalMonitorProvider) View(w, h int, theme Theme) string {
+	snap := p.dc.snapshot
+	if len(snap.signals) == 0 {
+		return "Signals: (none)"
+	}
+	var lines []string
+	for _, s := range snap.signals {
+		lines = append(lines, fmt.Sprintf("  %s = %s", s.label, s.value))
+	}
+	return "Signals:\n" + strings.Join(lines, "\n")
+}
+
+// keyLogProvider renders recent keypresses.
+type keyLogProvider struct{ dc *devConsole }
+
+func (p *keyLogProvider) Name() string { return "Keys" }
+func (p *keyLogProvider) View(w, h int, theme Theme) string {
+	keys := p.dc.recentKeys()
+	if len(keys) == 0 {
+		return "Keys: (none)"
+	}
+	return "Keys: " + strings.Join(keys, " ")
+}
+
+// logViewerProvider renders recent log lines.
+type logViewerProvider struct{ dc *devConsole }
+
+func (p *logViewerProvider) Name() string { return "Logs" }
+func (p *logViewerProvider) View(w, h int, theme Theme) string {
+	snap := p.dc.snapshot
+	if len(snap.logLines) == 0 {
+		return "Logs: (none)"
+	}
+	return "Logs:\n" + strings.Join(snap.logLines, "\n")
+}
+
+// themeInspectorProvider renders theme name and color swatches.
+type themeInspectorProvider struct{ dc *devConsole }
+
+func (p *themeInspectorProvider) Name() string { return "Theme" }
+func (p *themeInspectorProvider) View(w, h int, theme Theme) string {
+	t := theme
+	snap := p.dc.snapshot
+	accentSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Accent)).Render("  ")
+	textSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Text)).Render("  ")
+	mutedSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Muted)).Render("  ")
+	posSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Positive)).Render("  ")
+	negSwatch := lipgloss.NewStyle().Background(lipgloss.Color(t.Negative)).Render("  ")
+	return fmt.Sprintf("Theme: %s  Accent%s Text%s Muted%s Pos%s Neg%s",
+		snap.themeName, accentSwatch, textSwatch, mutedSwatch, posSwatch, negSwatch)
 }
