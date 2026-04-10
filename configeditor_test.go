@@ -107,6 +107,66 @@ func TestConfigEditorValidation(t *testing.T) {
 	}
 }
 
+func TestConfigEditorValidateField(t *testing.T) {
+	setCalled := false
+	fields := []ConfigField{
+		{
+			Label: "Port",
+			Group: "General",
+			Get:   func() string { return "8080" },
+			Validate: func(v string) error {
+				if v == "bad" {
+					return fmt.Errorf("port must be numeric")
+				}
+				return nil
+			},
+			Set: func(v string) error {
+				setCalled = true
+				return nil
+			},
+		},
+	}
+	ce := NewConfigEditor(fields)
+	ce.SetTheme(DefaultTheme())
+	ce.SetSize(80, 24)
+	ce.active = true
+
+	// Enter edit mode, clear buffer, type "bad"
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
+	for range 4 {
+		ce.Update(tea.KeyMsg{Type: tea.KeyBackspace}, Context{})
+	}
+	for _, ch := range "bad" {
+		ce.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{ch}}, Context{})
+	}
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
+
+	if ce.errMsg == "" {
+		t.Error("Validate should set errMsg for invalid input")
+	}
+	if setCalled {
+		t.Error("Set should not be called when Validate fails")
+	}
+
+	// Now escape, re-enter, type valid value
+	ce.Update(tea.KeyMsg{Type: tea.KeyEscape}, Context{})
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
+	for range 4 {
+		ce.Update(tea.KeyMsg{Type: tea.KeyBackspace}, Context{})
+	}
+	for _, ch := range "9090" {
+		ce.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{ch}}, Context{})
+	}
+	ce.Update(tea.KeyMsg{Type: tea.KeyEnter}, Context{})
+
+	if !setCalled {
+		t.Error("Set should be called when Validate passes")
+	}
+	if ce.errMsg != "" {
+		t.Errorf("errMsg should be empty after valid input, got %q", ce.errMsg)
+	}
+}
+
 func TestConfigEditorView(t *testing.T) {
 	fields := []ConfigField{
 		{Label: "Name", Group: "General", Hint: "your name", Get: func() string { return "Alice" }},
