@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -503,6 +504,105 @@ func TestLoadConfig_EnvOverridesBool(t *testing.T) {
 
 	if !cfg.Value.Debug {
 		t.Error("Debug = false, want true (from env)")
+	}
+}
+
+func TestConfig_CLICommands_Get(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	cmds := cfg.CLICommands()
+
+	// get should succeed for known fields.
+	if err := cmds["get"]([]string{"interval"}); err != nil {
+		t.Errorf("get interval: %v", err)
+	}
+
+	// get should fail for unknown fields.
+	if err := cmds["get"]([]string{"nonexistent"}); err == nil {
+		t.Error("get nonexistent: expected error")
+	}
+
+	// get should fail with no args.
+	if err := cmds["get"](nil); err == nil {
+		t.Error("get with no args: expected error")
+	}
+}
+
+func TestConfig_CLICommands_Set(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	cmds := cfg.CLICommands()
+
+	// set should update the value and save.
+	if err := cmds["set"]([]string{"interval", "99"}); err != nil {
+		t.Fatalf("set interval: %v", err)
+	}
+	if cfg.Value.Interval != 99 {
+		t.Errorf("Interval = %d, want 99", cfg.Value.Interval)
+	}
+
+	// Verify persisted by reloading.
+	cfg2, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("reload: %v", err)
+	}
+	if cfg2.Value.Interval != 99 {
+		t.Errorf("reloaded Interval = %d, want 99", cfg2.Value.Interval)
+	}
+
+	// set should fail for unknown fields.
+	if err := cmds["set"]([]string{"nonexistent", "val"}); err == nil {
+		t.Error("set nonexistent: expected error")
+	}
+
+	// set should fail with insufficient args.
+	if err := cmds["set"]([]string{"interval"}); err == nil {
+		t.Error("set with 1 arg: expected error")
+	}
+}
+
+func TestConfig_CLICommands_List(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+
+	cfg, err := LoadConfig[testModuleConfig]("test", WithConfigPath(path))
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+
+	cmds := cfg.CLICommands()
+
+	// list should not return an error.
+	if err := cmds["list"](nil); err != nil {
+		t.Errorf("list: %v", err)
+	}
+}
+
+func TestYamlFieldName(t *testing.T) {
+	rt := reflect.TypeOf(testModuleConfig{})
+
+	// Interval has yaml:"interval" tag.
+	f, _ := rt.FieldByName("Interval")
+	if got := yamlFieldName(f); got != "interval" {
+		t.Errorf("yamlFieldName(Interval) = %q, want %q", got, "interval")
+	}
+
+	// Secret has yaml:"secret" tag.
+	f, _ = rt.FieldByName("Secret")
+	if got := yamlFieldName(f); got != "secret" {
+		t.Errorf("yamlFieldName(Secret) = %q, want %q", got, "secret")
 	}
 }
 
