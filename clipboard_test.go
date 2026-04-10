@@ -42,9 +42,3 @@ func TestCopyToClipboardWithNotify(t *testing.T) {
 	}
 }
 
-func TestCopyToClipboardMsg(t *testing.T) {
-	msg := CopyToClipboardMsg{Text: "data"}
-	if msg.Text != "data" {
-		t.Errorf("got %q, want %q", msg.Text, "data")
-	}
-}

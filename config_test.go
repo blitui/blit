@@ -98,8 +98,6 @@ func TestDefaultConfigPath(t *testing.T) {
 }
 
 func TestEnsureConfigDir(t *testing.T) {
-	// We can't test with a real app name easily, but we can verify the function
-	// returns a path containing the app name and that it's callable.
 	dir, err := EnsureConfigDir("blit-test-ensure")
 	if err != nil {
 		t.Fatalf("EnsureConfigDir: %v", err)
