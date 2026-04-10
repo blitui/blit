@@ -281,33 +281,26 @@ func (t *Tabs) renderHorizontalBar() string {
 
 	tabRow := strings.Join(parts, lipgloss.NewStyle().Foreground(lipgloss.Color(t.theme.Border)).Render("│"))
 
-	// Build underline row: accent chars under active tab, dashes elsewhere.
-	underlineParts := t.buildUnderline(parts)
-	underlineRow := strings.Join(underlineParts, "┴")
+	// Build a single border line under the tabs with ┴ at separator positions.
+	borderStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(t.theme.Border))
+	accentStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(t.theme.Accent))
+	connector := borderStyle.Render("┴")
 
-	borderLine := lipgloss.NewStyle().Foreground(lipgloss.Color(t.theme.Border)).Render(
-		strings.Repeat("─", t.width),
-	)
-
-	return lipgloss.JoinVertical(lipgloss.Left, tabRow, underlineRow, borderLine)
-}
-
-func (t *Tabs) buildUnderline(renderedParts []string) []string {
-	parts := make([]string, len(renderedParts))
-	for i, p := range renderedParts {
+	underlineParts := make([]string, len(parts))
+	for i, p := range parts {
 		w := lipgloss.Width(p)
 		if i == t.active {
-			// Gradient-like underline using accent color block characters.
-			bar := strings.Repeat("▔", w)
-			parts[i] = lipgloss.NewStyle().
-				Foreground(lipgloss.Color(t.theme.Accent)).
-				Render(bar)
+			underlineParts[i] = accentStyle.Render(strings.Repeat("━", w))
 		} else {
-			parts[i] = strings.Repeat(" ", w)
+			underlineParts[i] = borderStyle.Render(strings.Repeat("─", w))
 		}
 	}
-	return parts
+	underlineRow := strings.Join(underlineParts, connector)
+
+	return lipgloss.JoinVertical(lipgloss.Left, tabRow, underlineRow)
 }
+
+
 
 func (t *Tabs) tabLabel(item TabItem) string {
 	if item.Glyph != "" {
