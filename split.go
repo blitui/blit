@@ -109,8 +109,7 @@ func (s *Split) distributeSize() {
 	}
 }
 
-// --- Component interface ---
-
+// Init initializes both child components and returns their combined commands.
 func (s *Split) Init() tea.Cmd {
 	var cmds []tea.Cmd
 	if s.A != nil {

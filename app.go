@@ -1268,13 +1268,13 @@ func (a *App) Notify(msg string, duration time.Duration) {
 	}
 }
 
-// Send sends a message to the running App from outside the Bubble Tea event loop.
 // Model returns the underlying tea.Model for use with btest or other
 // testing frameworks that need a tea.Model directly.
 func (a *App) Model() tea.Model {
 	return a.model
 }
 
+// Send pushes a message into the running App from outside the Bubble Tea event loop.
 // Use this to push data from background goroutines (WebSocket streams, API polling, etc.).
 // The message will be delivered to all components via Update.
 func (a *App) Send(msg tea.Msg) {

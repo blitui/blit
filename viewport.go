@@ -99,8 +99,7 @@ func (v *Viewport) viewHeight() int {
 	return v.height
 }
 
-// --- Component interface ---
-
+// Init initializes the Viewport component. It returns nil.
 func (v *Viewport) Init() tea.Cmd { return nil }
 
 // Update handles incoming messages and updates Viewport state.
