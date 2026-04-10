@@ -9,6 +9,36 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// runBatchCmd executes a tea.Cmd that may return a tea.BatchMsg and collects
+// all resulting messages. For non-batch cmds, returns a single-element slice.
+func runBatchCmd(cmd tea.Cmd) []tea.Msg {
+	if cmd == nil {
+		return nil
+	}
+	msg := cmd()
+	if batch, ok := msg.(tea.BatchMsg); ok {
+		var msgs []tea.Msg
+		for _, c := range batch {
+			if c != nil {
+				msgs = append(msgs, c())
+			}
+		}
+		return msgs
+	}
+	return []tea.Msg{msg}
+}
+
+// findMsg searches a message slice for a message of type T.
+func findMsg[T any](msgs []tea.Msg) (T, bool) {
+	for _, m := range msgs {
+		if v, ok := m.(T); ok {
+			return v, true
+		}
+	}
+	var zero T
+	return zero, false
+}
+
 // --- BackoffStrategy tests ---
 
 func TestExponentialBackoff(t *testing.T) {
@@ -90,10 +120,14 @@ func TestPollerWithOpts_BasicPoll(t *testing.T) {
 	if cmd == nil {
 		t.Fatal("first Check should return a cmd")
 	}
-	msg := cmd()
-	sm, ok := msg.(PollerSuccessMsg)
+	msgs := runBatchCmd(cmd)
+	// Should contain PollerStartMsg and PollerSuccessMsg.
+	if _, ok := findMsg[PollerStartMsg](msgs); !ok {
+		t.Error("expected PollerStartMsg in batch")
+	}
+	sm, ok := findMsg[PollerSuccessMsg](msgs)
 	if !ok {
-		t.Fatalf("got %T, want PollerSuccessMsg", msg)
+		t.Fatalf("expected PollerSuccessMsg in batch, got %v", msgs)
 	}
 	if sm.Name != "test" {
 		t.Errorf("name = %q, want %q", sm.Name, "test")
@@ -199,10 +233,13 @@ func TestPollerWithOpts_Backoff(t *testing.T) {
 		t.Fatal("first Check should return a cmd")
 	}
 
-	msg := cmd()
-	errMsg, ok := msg.(PollerErrorMsg)
+	msgs := runBatchCmd(cmd)
+	if _, ok := findMsg[PollerStartMsg](msgs); !ok {
+		t.Error("expected PollerStartMsg in batch")
+	}
+	errMsg, ok := findMsg[PollerErrorMsg](msgs)
 	if !ok {
-		t.Fatalf("got %T, want PollerErrorMsg", msg)
+		t.Fatalf("expected PollerErrorMsg in batch, got %v", msgs)
 	}
 	if errMsg.Name != "backoff-test" {
 		t.Errorf("name = %q, want %q", errMsg.Name, "backoff-test")
@@ -260,16 +297,120 @@ func TestPollerWithOpts_BackoffWithRetries(t *testing.T) {
 		t.Fatal("Check should return a cmd")
 	}
 
-	msg := cmd()
-	sm, ok := msg.(PollerSuccessMsg)
+	msgs := runBatchCmd(cmd)
+	if _, ok := findMsg[PollerStartMsg](msgs); !ok {
+		t.Error("expected PollerStartMsg in batch")
+	}
+	sm, ok := findMsg[PollerSuccessMsg](msgs)
 	if !ok {
-		t.Fatalf("got %T, want PollerSuccessMsg (retry should succeed)", msg)
+		t.Fatalf("expected PollerSuccessMsg in batch (retry should succeed), got %v", msgs)
 	}
 	if inner, ok := sm.Msg.(testMsg); !ok || inner.val != "recovered" {
 		t.Errorf("inner = %v, want testMsg{recovered}", sm.Msg)
 	}
 	if fetchCalls != 3 {
 		t.Errorf("fetchCalls = %d, want 3", fetchCalls)
+	}
+}
+
+func TestPollerWithOpts_StartMsg(t *testing.T) {
+	c := newFakeClock()
+
+	p := NewPollerWithOpts(PollerOpts{
+		Name:     "start-test",
+		Interval: 100 * time.Millisecond,
+		Fetch: func() (tea.Msg, error) {
+			return testMsg{"ok"}, nil
+		},
+		Backoff: NoBackoff(),
+		Clock:   c,
+	})
+
+	cmd := p.Check(TickMsg{})
+	if cmd == nil {
+		t.Fatal("Check should return a cmd")
+	}
+
+	msgs := runBatchCmd(cmd)
+	startMsg, ok := findMsg[PollerStartMsg](msgs)
+	if !ok {
+		t.Fatal("expected PollerStartMsg in batch")
+	}
+	if startMsg.Name != "start-test" {
+		t.Errorf("start msg name = %q, want %q", startMsg.Name, "start-test")
+	}
+}
+
+func TestPollerWithOpts_LegacyPollerNoStartMsg(t *testing.T) {
+	c := newFakeClock()
+	p := NewPollerWithClock(100*time.Millisecond, dummyCmd, c)
+
+	cmd := p.Check(TickMsg{})
+	if cmd == nil {
+		t.Fatal("Check should return a cmd")
+	}
+
+	// Legacy pollers return a direct cmd, not a batch.
+	msg := cmd()
+	if _, ok := msg.(PollerStartMsg); ok {
+		t.Error("legacy poller should not emit PollerStartMsg")
+	}
+}
+
+func TestPollerWithOpts_AutoToast(t *testing.T) {
+	c := newFakeClock()
+
+	p := NewPollerWithOpts(PollerOpts{
+		Name:     "toast-test",
+		Interval: 100 * time.Millisecond,
+		Fetch: func() (tea.Msg, error) {
+			return nil, fmt.Errorf("fetch failed")
+		},
+		Backoff:   NoBackoff(),
+		AutoToast: true,
+		Clock:     c,
+	})
+
+	cmd := p.Check(TickMsg{})
+	msgs := runBatchCmd(cmd)
+
+	errMsg, ok := findMsg[PollerErrorMsg](msgs)
+	if !ok {
+		t.Fatal("expected PollerErrorMsg")
+	}
+	if errMsg.Toast == nil {
+		t.Fatal("AutoToast is true but Toast is nil")
+	}
+	if errMsg.Toast.Severity != SeverityError {
+		t.Errorf("toast severity = %v, want SeverityError", errMsg.Toast.Severity)
+	}
+	if errMsg.Toast.Title == "" {
+		t.Error("toast title should not be empty")
+	}
+}
+
+func TestPollerWithOpts_NoAutoToast(t *testing.T) {
+	c := newFakeClock()
+
+	p := NewPollerWithOpts(PollerOpts{
+		Name:     "no-toast",
+		Interval: 100 * time.Millisecond,
+		Fetch: func() (tea.Msg, error) {
+			return nil, fmt.Errorf("fetch failed")
+		},
+		Backoff: NoBackoff(),
+		Clock:   c,
+	})
+
+	cmd := p.Check(TickMsg{})
+	msgs := runBatchCmd(cmd)
+
+	errMsg, ok := findMsg[PollerErrorMsg](msgs)
+	if !ok {
+		t.Fatal("expected PollerErrorMsg")
+	}
+	if errMsg.Toast != nil {
+		t.Error("AutoToast is false but Toast is non-nil")
 	}
 }
 

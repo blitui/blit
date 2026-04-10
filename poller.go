@@ -111,6 +111,11 @@ type PollerOpts struct {
 	// MaxRetries is the maximum number of retry attempts. Default: 3.
 	MaxRetries int
 
+	// AutoToast enables automatic toast notifications on fetch errors and
+	// rate limiting. When true, PollerErrorMsg and PollerRateLimitedMsg
+	// include a pre-built Toast field that can be returned as a Cmd.
+	AutoToast bool
+
 	// Clock for testing. Default: real clock.
 	Clock Clock
 }
@@ -139,16 +144,22 @@ type PollerSuccessMsg struct {
 }
 
 // PollerErrorMsg is sent when all retries are exhausted.
+// When AutoToast is enabled, Toast is populated with a pre-built ToastMsg
+// that the consumer can return as a Cmd for automatic toast display.
 type PollerErrorMsg struct {
 	Name     string
 	Err      error
 	Attempts int
+	Toast    *ToastMsg
 }
 
 // PollerRateLimitedMsg is sent on rate limit detection.
+// When AutoToast is enabled, Toast is populated with a pre-built ToastMsg
+// that the consumer can return as a Cmd for automatic toast display.
 type PollerRateLimitedMsg struct {
 	Name    string
 	ResetAt time.Time
+	Toast   *ToastMsg
 }
 
 // Poller manages periodic command execution on top of blit's TickMsg.
@@ -179,6 +190,7 @@ type Poller struct {
 	lastError         error
 	isRateLimited     bool
 	rateLimitReset    time.Time
+	autoToast         bool
 	enhanced          bool
 }
 
@@ -206,6 +218,7 @@ func NewPollerWithClock(interval time.Duration, cmd func() tea.Cmd, clock Clock)
 // Returns a tea.Cmd if it's time to poll, nil otherwise.
 // ForceRefresh takes priority and works even when paused.
 // For enhanced pollers, rate limiting is respected (except on ForceRefresh).
+// Enhanced pollers emit a PollerStartMsg before the fetch begins.
 func (p *Poller) Check(msg TickMsg) tea.Cmd {
 	now := p.clock.Now()
 
@@ -217,7 +230,7 @@ func (p *Poller) Check(msg TickMsg) tea.Cmd {
 	if p.needsRefresh {
 		p.needsRefresh = false
 		p.lastPoll = now
-		return p.cmd()
+		return p.withStartMsg(p.cmd())
 	}
 
 	if p.paused {
@@ -231,9 +244,21 @@ func (p *Poller) Check(msg TickMsg) tea.Cmd {
 
 	if now.Sub(p.lastPoll) >= p.interval {
 		p.lastPoll = now
-		return p.cmd()
+		return p.withStartMsg(p.cmd())
 	}
 	return nil
+}
+
+// withStartMsg wraps cmd with a PollerStartMsg for enhanced pollers.
+// For legacy pollers, it returns cmd unchanged.
+func (p *Poller) withStartMsg(cmd tea.Cmd) tea.Cmd {
+	if !p.enhanced || cmd == nil {
+		return cmd
+	}
+	startCmd := func() tea.Msg {
+		return PollerStartMsg{Name: p.name}
+	}
+	return tea.Batch(startCmd, cmd)
 }
 
 // SetInterval changes the polling interval.
@@ -287,6 +312,7 @@ func NewPollerWithOpts(opts PollerOpts) *Poller {
 		onError:     opts.OnError,
 		backoff:     opts.Backoff,
 		maxRetries:  opts.MaxRetries,
+		autoToast:   opts.AutoToast,
 		enhanced:    true,
 	}
 
@@ -299,7 +325,8 @@ func NewPollerWithOpts(opts PollerOpts) *Poller {
 }
 
 // enhancedFetch builds a tea.Cmd that runs the Fetch function with retry/backoff
-// and emits PollerStartMsg, PollerSuccessMsg, PollerErrorMsg, or PollerRateLimitedMsg.
+// and emits PollerSuccessMsg or PollerErrorMsg. When AutoToast is enabled,
+// PollerErrorMsg includes a pre-built Toast field.
 func (p *Poller) enhancedFetch() tea.Cmd {
 	return func() tea.Msg {
 		for attempt := 0; attempt <= p.maxRetries; attempt++ {
@@ -336,7 +363,16 @@ func (p *Poller) enhancedFetch() tea.Cmd {
 		if p.onError != nil {
 			p.onError(p.lastError)
 		}
-		return PollerErrorMsg{Name: p.name, Err: p.lastError, Attempts: p.maxRetries + 1}
+
+		errMsg := PollerErrorMsg{Name: p.name, Err: p.lastError, Attempts: p.maxRetries + 1}
+		if p.autoToast {
+			errMsg.Toast = &ToastMsg{
+				Severity: SeverityError,
+				Title:    fmt.Sprintf("Poller %q failed", p.name),
+				Body:     p.lastError.Error(),
+			}
+		}
+		return errMsg
 	}
 }
 
