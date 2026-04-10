@@ -25,6 +25,17 @@ func DraculaTheme() Theme {
 		Cursor:      lipgloss.Color("#ff79c6"),
 		Border:      lipgloss.Color("#44475a"),
 		Flash:       lipgloss.Color("#f1fa8c"),
+		Warn:        lipgloss.Color("#f1fa8c"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#8be9fd",
+			"create":  "#50fa7b",
+			"delete":  "#ff5555",
+			"review":  "#bd93f9",
+			"comment": "#6272a4",
+			"issue":   "#ffb86c",
+			"release": "#ff79c6",
+			"local":   "#8be9fd",
+		},
 	}
 }
 
@@ -40,6 +51,17 @@ func CatppuccinMochaTheme() Theme {
 		Cursor:      lipgloss.Color("#89b4fa"),
 		Border:      lipgloss.Color("#313244"),
 		Flash:       lipgloss.Color("#f9e2af"),
+		Warn:        lipgloss.Color("#f9e2af"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#89dceb",
+			"create":  "#a6e3a1",
+			"delete":  "#f38ba8",
+			"review":  "#cba6f7",
+			"comment": "#585b70",
+			"issue":   "#fab387",
+			"release": "#f5c2e7",
+			"local":   "#94e2d5",
+		},
 	}
 }
 
@@ -55,6 +77,17 @@ func TokyoNightTheme() Theme {
 		Cursor:      lipgloss.Color("#bb9af7"),
 		Border:      lipgloss.Color("#292e42"),
 		Flash:       lipgloss.Color("#e0af68"),
+		Warn:        lipgloss.Color("#e0af68"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#7dcfff",
+			"create":  "#9ece6a",
+			"delete":  "#f7768e",
+			"review":  "#bb9af7",
+			"comment": "#565f89",
+			"issue":   "#ff9e64",
+			"release": "#c0caf5",
+			"local":   "#73daca",
+		},
 	}
 }
 
@@ -70,6 +103,17 @@ func NordTheme() Theme {
 		Cursor:      lipgloss.Color("#88c0d0"),
 		Border:      lipgloss.Color("#3b4252"),
 		Flash:       lipgloss.Color("#ebcb8b"),
+		Warn:        lipgloss.Color("#ebcb8b"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#88c0d0",
+			"create":  "#a3be8c",
+			"delete":  "#bf616a",
+			"review":  "#b48ead",
+			"comment": "#4c566a",
+			"issue":   "#d08770",
+			"release": "#81a1c1",
+			"local":   "#8fbcbb",
+		},
 	}
 }
 
@@ -85,6 +129,17 @@ func GruvboxDarkTheme() Theme {
 		Cursor:      lipgloss.Color("#83a598"),
 		Border:      lipgloss.Color("#504945"),
 		Flash:       lipgloss.Color("#d3869b"),
+		Warn:        lipgloss.Color("#fabd2f"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#83a598",
+			"create":  "#b8bb26",
+			"delete":  "#fb4934",
+			"review":  "#d3869b",
+			"comment": "#928374",
+			"issue":   "#fe8019",
+			"release": "#fabd2f",
+			"local":   "#8ec07c",
+		},
 	}
 }
 
@@ -100,6 +155,17 @@ func RosePineTheme() Theme {
 		Cursor:      lipgloss.Color("#9ccfd8"),
 		Border:      lipgloss.Color("#403d52"),
 		Flash:       lipgloss.Color("#f6c177"),
+		Warn:        lipgloss.Color("#f6c177"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#9ccfd8",
+			"create":  "#31748f",
+			"delete":  "#eb6f92",
+			"review":  "#c4a7e7",
+			"comment": "#6e6a86",
+			"issue":   "#f6c177",
+			"release": "#ebbcba",
+			"local":   "#9ccfd8",
+		},
 	}
 }
 
@@ -115,6 +181,17 @@ func KanagawaTheme() Theme {
 		Cursor:      lipgloss.Color("#957fb8"),
 		Border:      lipgloss.Color("#2a2a37"),
 		Flash:       lipgloss.Color("#e98a00"),
+		Warn:        lipgloss.Color("#e98a00"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#7fb4ca",
+			"create":  "#98bb6c",
+			"delete":  "#e46876",
+			"review":  "#957fb8",
+			"comment": "#727169",
+			"issue":   "#ffa066",
+			"release": "#d27e99",
+			"local":   "#7aa89f",
+		},
 	}
 }
 
@@ -130,5 +207,16 @@ func OneDarkTheme() Theme {
 		Cursor:      lipgloss.Color("#c678dd"),
 		Border:      lipgloss.Color("#3e4451"),
 		Flash:       lipgloss.Color("#e5c07b"),
+		Warn:        lipgloss.Color("#e5c07b"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#56b6c2",
+			"create":  "#98c379",
+			"delete":  "#e06c75",
+			"review":  "#c678dd",
+			"comment": "#5c6370",
+			"issue":   "#d19a66",
+			"release": "#61afef",
+			"local":   "#56b6c2",
+		},
 	}
 }

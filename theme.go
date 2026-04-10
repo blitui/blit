@@ -20,6 +20,7 @@ type Theme struct {
 	Cursor      lipgloss.Color            // Cursor/selection highlight
 	Border      lipgloss.Color            // Borders, separators
 	Flash       lipgloss.Color            // Temporary notification background
+	Warn        lipgloss.Color            // Warnings, caution states (yellow/amber)
 	Extra       map[string]lipgloss.Color // App-specific color tokens
 	Glyphs      *Glyphs                   // Optional glyph override; nil uses DefaultGlyphs
 	Borders     *BorderSet                // Optional border override; nil uses DefaultBorders
@@ -77,6 +78,7 @@ func DefaultTheme() Theme {
 		Cursor:      lipgloss.Color("#38bdf8"),
 		Border:      lipgloss.Color("#374151"),
 		Flash:       lipgloss.Color("#facc15"),
+		Warn:        lipgloss.Color("#eab308"),
 	}
 }
 
@@ -92,6 +94,7 @@ func LightTheme() Theme {
 		Cursor:      lipgloss.Color("#0284c7"),
 		Border:      lipgloss.Color("#d1d5db"),
 		Flash:       lipgloss.Color("#eab308"),
+		Warn:        lipgloss.Color("#ca8a04"),
 	}
 }
 
@@ -110,6 +113,7 @@ func ThemeFromMap(m map[string]string) Theme {
 		"cursor":       &t.Cursor,
 		"border":       &t.Border,
 		"flash":        &t.Flash,
+		"warn":         &t.Warn,
 	}
 	for k, v := range m {
 		if ptr, ok := builtins[k]; ok {
