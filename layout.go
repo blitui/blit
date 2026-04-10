@@ -478,19 +478,17 @@ func resolveVBoxSlots(v *VBox) []flexItem {
 	return items
 }
 
-// childHeight returns the height to pass to an HBox child given cross-axis alignment.
-func childHeight(align FlexAlign, totalH, _ int) int {
-	if align == FlexAlignStretch {
-		return totalH
-	}
+// childHeight returns the height to pass to an HBox child for SetSize.
+// All alignments receive the full cross-axis dimension; visual alignment
+// (start/center/end) is applied later in alignCrossHBox at render time.
+func childHeight(_ FlexAlign, totalH, _ int) int {
 	return totalH
 }
 
-// childWidth returns the width to pass to a VBox child given cross-axis alignment.
-func childWidth(align FlexAlign, totalW, _ int) int {
-	if align == FlexAlignStretch {
-		return totalW
-	}
+// childWidth returns the width to pass to a VBox child for SetSize.
+// All alignments receive the full cross-axis dimension; visual alignment
+// (start/center/end) is applied later in alignCrossVBox at render time.
+func childWidth(_ FlexAlign, totalW, _ int) int {
 	return totalW
 }
 
