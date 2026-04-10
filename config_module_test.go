@@ -509,10 +509,7 @@ func TestConfig_AsSignal_WatchFileEmits(t *testing.T) {
 
 	// Poll for the signal to update (debounce is 200ms).
 	deadline := time.After(3 * time.Second)
-	for {
-		if sig.Get().Interval == 88 {
-			break
-		}
+	for sig.Get().Interval != 88 {
 		select {
 		case <-deadline:
 			t.Fatalf("timed out: signal Interval = %d, want 88", sig.Get().Interval)
