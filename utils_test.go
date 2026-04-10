@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func TestRelativeTime(t *testing.T) {
@@ -105,6 +107,70 @@ func TestSparkline(t *testing.T) {
 		result, _ := Sparkline(data, 10, &SparklineOpts{Mono: true})
 		if result == "" {
 			t.Error("Sparkline mono mode should return non-empty string")
+		}
+	})
+}
+
+func TestTruncateUtil(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		maxWidth int
+		want     string
+	}{
+		{"fits", "hello", 10, "hello"},
+		{"exact", "hello", 5, "hello"},
+		{"truncated", "hello world", 8, "hello w…"},
+		{"very short", "abcdef", 2, "a…"},
+		{"single char", "abcdef", 1, "…"},
+		{"empty input", "", 5, ""},
+		{"zero width", "hello", 0, "…"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Truncate(tc.input, tc.maxWidth)
+			if lipgloss.Width(got) > tc.maxWidth && tc.maxWidth > 0 {
+				t.Errorf("Truncate(%q, %d) width=%d exceeds max", tc.input, tc.maxWidth, lipgloss.Width(got))
+			}
+			if got != tc.want {
+				t.Errorf("Truncate(%q, %d) = %q, want %q", tc.input, tc.maxWidth, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDivider(t *testing.T) {
+	theme := DefaultTheme()
+	d := Divider(20, theme)
+	if !strings.Contains(d, "─") {
+		t.Errorf("Divider should contain ─ chars, got %q", d)
+	}
+
+	d0 := Divider(0, theme)
+	if strings.Contains(d0, "─") {
+		t.Errorf("Divider(0) should be empty, got %q", d0)
+	}
+}
+
+func TestBadge(t *testing.T) {
+	t.Run("basic", func(t *testing.T) {
+		b := Badge("INFO", lipgloss.Color("#00ff00"), false)
+		if !strings.Contains(b, "INFO") {
+			t.Errorf("Badge should contain text, got %q", b)
+		}
+	})
+
+	t.Run("bold", func(t *testing.T) {
+		b := Badge("WARN", lipgloss.Color("#ff0000"), true)
+		if !strings.Contains(b, "WARN") {
+			t.Errorf("Bold badge should contain text, got %q", b)
+		}
+	})
+
+	t.Run("empty text", func(t *testing.T) {
+		b := Badge("", lipgloss.Color("#000000"), false)
+		if strings.Contains(b, "INFO") {
+			t.Error("Empty badge should not contain text")
 		}
 	})
 }
