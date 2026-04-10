@@ -228,8 +228,12 @@ type runOpts struct {
 }
 
 func runGoTest(opts runOpts, packages []string) int {
+	// When --junit or --html is specified, force JSON mode so we can parse
+	// the output and generate reports automatically.
+	reportMode := opts.junit != "" || opts.htmlOut != ""
+
 	args := []string{"test"}
-	if opts.jsonOut {
+	if opts.jsonOut || reportMode {
 		args = append(args, "-json")
 	}
 	if opts.verbose {
@@ -245,17 +249,8 @@ func runGoTest(opts runOpts, packages []string) int {
 		args = append(args, "-timeout", opts.timeout)
 	}
 	args = append(args, packages...)
-	if opts.update || opts.junit != "" || opts.htmlOut != "" {
-		args = append(args, "-args")
-		if opts.update {
-			args = append(args, "-btest.update")
-		}
-		if opts.junit != "" {
-			args = append(args, "-btest.junit="+opts.junit)
-		}
-		if opts.htmlOut != "" {
-			args = append(args, "-btest.html="+opts.htmlOut)
-		}
+	if opts.update {
+		args = append(args, "-args", "-btest.update")
 	}
 
 	start := time.Now()
@@ -279,6 +274,49 @@ func runGoTest(opts runOpts, packages []string) int {
 		return exitCode
 	}
 
+	if reportMode || opts.jsonOut {
+		// Capture output for parsing and optional display.
+		out, runErr := cmd.CombinedOutput()
+		duration := time.Since(start).Seconds()
+		exitCode := 0
+		if runErr != nil {
+			if exit, ok := runErr.(*exec.ExitError); ok {
+				exitCode = exit.ExitCode()
+			} else {
+				fmt.Fprintf(os.Stderr, "[blit] run failed: %v\n", runErr)
+				return 1
+			}
+		}
+
+		if opts.jsonOut && !reportMode {
+			// User just wants raw JSON output.
+			_, _ = os.Stdout.Write(out)
+		} else {
+			// Parse events and generate reports.
+			events := parseTestEvents(strings.NewReader(string(out)))
+			report := buildReport(events, strings.Join(packages, " "))
+			printTestSummary(report)
+
+			if opts.junit != "" {
+				if err := report.WriteJUnit(opts.junit); err != nil {
+					fmt.Fprintf(os.Stderr, "[blit] failed to write JUnit report: %v\n", err)
+				} else {
+					fmt.Fprintf(os.Stderr, "[blit] JUnit report written to %s\n", opts.junit)
+				}
+			}
+			if opts.htmlOut != "" {
+				if err := report.WriteHTML(opts.htmlOut); err != nil {
+					fmt.Fprintf(os.Stderr, "[blit] failed to write HTML report: %v\n", err)
+				} else {
+					fmt.Fprintf(os.Stderr, "[blit] HTML report written to %s\n", opts.htmlOut)
+				}
+			}
+		}
+
+		writeRunRecord(duration, exitCode, opts.keep, packages)
+		return exitCode
+	}
+
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	runErr := cmd.Run()
@@ -296,6 +334,30 @@ func runGoTest(opts runOpts, packages []string) int {
 
 	writeRunRecord(duration, exitCode, opts.keep, packages)
 	return exitCode
+}
+
+// printTestSummary prints a concise test summary from a parsed report.
+func printTestSummary(report *btest.Report) {
+	total, passed, failed, skipped := report.Totals()
+	duration := report.TotalDuration()
+
+	if failed > 0 {
+		for _, r := range report.Results {
+			if !r.Passed && !r.Skipped {
+				fmt.Printf("FAIL %s/%s (%.2fs)\n", r.Package, r.Name, r.Duration.Seconds())
+				if r.Failure != "" {
+					for _, line := range strings.Split(r.Failure, "\n") {
+						if strings.TrimSpace(line) != "" {
+							fmt.Printf("  %s\n", line)
+						}
+					}
+				}
+			}
+		}
+		fmt.Println()
+	}
+	fmt.Printf("[blit] %d passed, %d failed, %d skipped (%d total) in %.2fs\n",
+		passed, failed, skipped, total, duration.Seconds())
 }
 
 // printFailuresOnly filters go test output to show only FAIL lines

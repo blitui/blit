@@ -1,13 +1,10 @@
 package btest
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
 )
-
-var update = flag.Bool("update", false, "update golden files")
 
 // AssertGolden compares the screen content against a golden file.
 // If the file doesn't exist or -update flag is set, it creates/updates the golden file.
@@ -18,7 +15,7 @@ func AssertGolden(t testing.TB, s *Screen, name string) {
 	goldenPath := filepath.Join("testdata", name+".golden")
 	actual := s.String()
 
-	if *update {
+	if *updateSnapshots {
 		dir := filepath.Dir(goldenPath)
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			t.Fatalf("failed to create golden file directory: %v", err)
