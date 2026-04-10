@@ -112,8 +112,8 @@ func buildApp() *tuikit.App {
 		}
 		val := row[colIdx]
 		var style lipgloss.Style
-		switch {
-		case colIdx == 2:
+		switch colIdx {
+		case 2:
 			switch val {
 			case "Delivered":
 				style = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Positive))
@@ -124,7 +124,7 @@ func buildApp() *tuikit.App {
 			default:
 				style = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Accent))
 			}
-		case colIdx == 4:
+		case 4:
 			style = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Positive))
 			val = "$" + val
 		default:

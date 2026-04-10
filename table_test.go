@@ -545,7 +545,7 @@ func TestTableVirtualCursorNavigation(t *testing.T) {
 func TestTableVirtualOnRowClick(t *testing.T) {
 	cols := []Column{{Title: "Name", Width: 20}}
 	p := &intProvider{total: 1000}
-	var clicked int = -1
+	clicked := -1
 	tbl := NewTable(cols, nil, TableOpts{
 		Virtual:     true,
 		RowProvider: p,

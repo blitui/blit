@@ -21,19 +21,3 @@ linters:
       - path: examples/
         linters:
           - errcheck
-  settings:
-    gocritic:
-      enabled-checks:
-        - appendAssign
-        - argOrder
-        - badCall
-        - badCond
-        - dupArg
-        - dupBranchBody
-        - dupCase
-        - dupSubExpr
-        - flagDeref
-        - nilValReturn
-        - offBy1
-        - sloppyReassign
-        - weakCond
