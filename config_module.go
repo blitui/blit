@@ -271,7 +271,7 @@ func applyDefaults(v any) {
 		if !fv.IsZero() {
 			continue
 		}
-		setReflectValue(fv, m.Default)
+		_ = setReflectValue(fv, m.Default)
 	}
 }
 
