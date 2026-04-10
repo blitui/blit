@@ -160,10 +160,12 @@ func scaffoldProject(dir string, opts initOpts) error {
 		}
 
 		if err := tmpl.Execute(f, opts); err != nil {
-			f.Close()
+			_ = f.Close()
 			return fmt.Errorf("execute template %s: %w", relPath, err)
 		}
-		f.Close()
+		if err := f.Close(); err != nil {
+			return fmt.Errorf("close %s: %w", fullPath, err)
+		}
 
 		fmt.Printf("  created %s\n", relPath)
 	}
