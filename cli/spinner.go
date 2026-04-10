@@ -20,8 +20,11 @@ type SpinnerResult struct {
 func Spin(message string) *SpinnerResult {
 	done := make(chan struct{})
 	var once sync.Once
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	go func() {
+		defer wg.Done()
 		i := 0
 		ticker := time.NewTicker(80 * time.Millisecond)
 		defer ticker.Stop()
@@ -41,6 +44,7 @@ func Spin(message string) *SpinnerResult {
 	return &SpinnerResult{
 		Stop: func() {
 			once.Do(func() { close(done) })
+			wg.Wait()
 		},
 	}
 }
