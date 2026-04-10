@@ -1,25 +1,48 @@
 # Examples
 
-## minimal
+Run any example with `go run ./examples/<name>`.
 
-The simplest possible tuikit app. A sci-fi movie watchlist in ~30 lines — ListView, StatusBar, Help, and Theme.
+## Getting Started
 
-```
-go run ./examples/minimal
-```
+| Example | Description |
+|---------|-------------|
+| [minimal](minimal/) | Simplest tuikit app — a movie watchlist in ~30 lines |
+| [dashboard](dashboard/) | Full-featured dashboard with Table, DualPane, ConfigEditor, overlays, and keybindings |
+| [monitor](monitor/) | Service fleet dashboard with live data, CollapsibleSection, DetailOverlay, CommandBar, and notifications |
 
-## dashboard
+## Components
 
-Full-featured dashboard with Table, DualPane, ConfigEditor, custom cell rendering, keybindings, and overlays. A "Galactic Pizza Delivery" tracker that shows off most of tuikit's components.
+| Example | Description |
+|---------|-------------|
+| [bigtable](bigtable/) | Virtualized Table over 1,000,000 rows with lazy row rendering |
+| [charts](charts/) | All chart types in a 2x3 grid: bar, line, ring, gauge, heatmap, sparkline |
+| [form](form/) | Form component with validators and wizard mode |
+| [logview](logview/) | LogViewer streaming fake logs at 50 Hz with level filtering |
+| [picker](picker/) | File browser with fuzzy filtering and content preview |
+| [tabs](tabs/) | Tabs component nesting a Table, list, and text pane |
+| [filetree](filetree/) | Tree component as a file browser |
 
-```
-go run ./examples/dashboard
-```
+## Layout
 
-## cli-demo
+| Example | Description |
+|---------|-------------|
+| [flex](flex/) | HBox/VBox flex layout with mixed fixed and flex children |
+| [splitpane](splitpane/) | Split layout with Viewport and Breadcrumbs |
 
-Interactive CLI primitives — Confirm, Select, Input, Spinner, and ProgressBar. Shows that tuikit isn't just for full-screen TUIs; the `cli/` package gives you one-liner interactive prompts.
+## CLI
 
-```
-go run ./examples/cli-demo
-```
+| Example | Description |
+|---------|-------------|
+| [cli-demo](cli-demo/) | Interactive CLI primitives (confirm, select, input, spinner, progress) without a full-screen TUI |
+
+## Theming
+
+| Example | Description |
+|---------|-------------|
+| [theme-dev](theme-dev/) | Theme hot-reload — edit theme.yaml while running and watch colors update live |
+
+## Networking
+
+| Example | Description |
+|---------|-------------|
+| [ssh-serve](ssh-serve/) | Host a tuikit dashboard over SSH via Charm Wish |
