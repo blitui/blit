@@ -581,7 +581,7 @@ func (m *watchModel) failedPackages() []string {
 // ----------------------------------------------------------------------------
 
 func (m *watchModel) pollCmd() tea.Cmd {
-	return tea.Tick(500*time.Millisecond, func(time.Time) tea.Msg {
+	return tea.Tick(2*time.Second, func(time.Time) tea.Msg {
 		return pollTickMsg{}
 	})
 }
