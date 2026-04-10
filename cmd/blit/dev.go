@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -17,8 +18,20 @@ type devOpts struct {
 	binName string // output binary name
 }
 
+// configExts are file extensions that trigger a config/theme hot-reload
+// notification instead of a full rebuild.
+var configExts = map[string]bool{
+	".yaml": true,
+	".yml":  true,
+	".json": true,
+	".toml": true,
+}
+
 // runDev implements the `blit dev` subcommand.
 // It builds the target package, runs the binary, and restarts on file changes.
+// Config/theme file changes (.yaml, .yml, .json, .toml) are detected but do
+// not trigger a rebuild — the app's built-in watchers (WithThemeHotReload,
+// Config.WatchFile) handle those at runtime.
 func runDev(args []string) int {
 	opts := devOpts{}
 
@@ -37,13 +50,15 @@ func runDev(args []string) int {
 	opts.binName = filepath.Join(os.TempDir(), "blit-dev-"+filepath.Base(opts.pkg))
 
 	fmt.Printf("[blit dev] watching %s\n", opts.pkg)
+	fmt.Println("[blit dev] .go changes rebuild+restart | config/theme changes hot-reload in-app")
 
 	// Trap Ctrl+C to clean up.
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
 	var proc *exec.Cmd
-	lastHash := snapshotTree(".")
+	lastGoHash := snapshotTree(".")
+	lastCfgHash := snapshotConfigTree(".")
 
 	// Initial build + run.
 	var err error
@@ -64,20 +79,34 @@ func runDev(args []string) int {
 			return 0
 
 		case <-ticker.C:
-			h := snapshotTree(".")
-			if h == lastHash {
+			goHash := snapshotTree(".")
+			cfgHash := snapshotConfigTree(".")
+
+			goChanged := goHash != lastGoHash
+			cfgChanged := cfgHash != lastCfgHash
+
+			if !goChanged && !cfgChanged {
 				continue
 			}
-			lastHash = h
+
+			lastCfgHash = cfgHash
+
+			// Config/theme files changed but no Go files — no restart needed.
+			if cfgChanged && !goChanged {
+				fmt.Println("[blit dev] config/theme file changed (hot-reload handled by app)")
+				continue
+			}
+
+			lastGoHash = goHash
 
 			// Debounce: wait 100ms and re-check.
 			time.Sleep(100 * time.Millisecond)
 			h2 := snapshotTree(".")
-			if h2 != h {
-				lastHash = h2
+			if h2 != goHash {
+				lastGoHash = h2
 			}
 
-			fmt.Println("[blit dev] change detected, rebuilding...")
+			fmt.Println("[blit dev] .go change detected, rebuilding...")
 			stopProcess(proc)
 
 			proc, err = buildAndRun(opts)
@@ -165,4 +194,34 @@ func detectMainPackage() string {
 		}
 	}
 	return ""
+}
+
+// snapshotConfigTree returns a coarse hash of config/theme file modification
+// times under root. Used to detect changes to .yaml, .yml, .json, and .toml
+// files without triggering a full rebuild.
+func snapshotConfigTree(root string) string {
+	var sb strings.Builder
+	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		if d.IsDir() {
+			name := d.Name()
+			if name == ".git" || name == "node_modules" || name == "vendor" || strings.HasPrefix(name, ".omc") {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		ext := strings.ToLower(filepath.Ext(path))
+		if !configExts[ext] {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return nil
+		}
+		fmt.Fprintf(&sb, "%s:%d\n", path, info.ModTime().UnixNano())
+		return nil
+	})
+	return sb.String()
 }
