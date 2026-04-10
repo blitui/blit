@@ -1,6 +1,10 @@
 package tuikit
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"reflect"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 // Alignment controls text alignment in table columns.
 type Alignment int
@@ -85,18 +89,19 @@ type Themed interface {
 // consumedMsg signals that a component handled a key event.
 type consumedMsg struct{}
 
+// consumedCmd is the package-level sentinel used by Consumed and isConsumed.
+var consumedCmd = func() tea.Msg { return consumedMsg{} }
+
 // Consumed returns a tea.Cmd that signals the App that a key was handled.
 // When a component's Update returns this, the App stops dispatching the key
 // to other components.
-func Consumed() tea.Cmd {
-	return func() tea.Msg { return consumedMsg{} }
-}
+func Consumed() tea.Cmd { return consumedCmd }
 
-// isConsumed checks whether a tea.Cmd will produce a consumedMsg.
+// isConsumed checks whether a tea.Cmd is the Consumed sentinel without
+// executing it as a side effect.
 func isConsumed(cmd tea.Cmd) bool {
 	if cmd == nil {
 		return false
 	}
-	_, ok := cmd().(consumedMsg)
-	return ok
+	return reflect.ValueOf(cmd).Pointer() == reflect.ValueOf(consumedCmd).Pointer()
 }

@@ -76,49 +76,14 @@ func interpolateColor(from, to string, t float64) string {
 }
 
 func parseHexColor(s string) (int, int, int) {
-	if len(s) == 7 && s[0] == '#' {
-		var r, g, b int
-		_, err := scanHex(s[1:3], s[3:5], s[5:7], &r, &g, &b)
-		if err {
-			return -1, -1, -1
-		}
-		return r, g, b
+	if len(s) != 7 || s[0] != '#' {
+		return -1, -1, -1
 	}
-	return -1, -1, -1
-}
-
-func scanHex(rs, gs, bs string, r, g, b *int) (int, bool) {
-	*r = hexPair(rs)
-	*g = hexPair(gs)
-	*b = hexPair(bs)
-	if *r < 0 || *g < 0 || *b < 0 {
-		return 0, true
+	r, g, b := parseHex(s)
+	if r == 0 && g == 0 && b == 0 && s != "#000000" {
+		return -1, -1, -1
 	}
-	return 0, false
-}
-
-func hexPair(s string) int {
-	if len(s) != 2 {
-		return -1
-	}
-	hi := hexDigit(s[0])
-	lo := hexDigit(s[1])
-	if hi < 0 || lo < 0 {
-		return -1
-	}
-	return hi*16 + lo
-}
-
-func hexDigit(c byte) int {
-	switch {
-	case c >= '0' && c <= '9':
-		return int(c - '0')
-	case c >= 'a' && c <= 'f':
-		return int(c-'a') + 10
-	case c >= 'A' && c <= 'F':
-		return int(c-'A') + 10
-	}
-	return -1
+	return int(r), int(g), int(b)
 }
 
 func rgbToHex(r, g, b int) string {

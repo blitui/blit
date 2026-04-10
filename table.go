@@ -284,6 +284,11 @@ func (t *Table) VisibleRowCount() int {
 
 func (t *Table) Init() tea.Cmd { return nil }
 
+// CapturesInput implements InputCapture. Returns true when the table is
+// in filtering mode so that global keybindings (like q-to-quit) are
+// bypassed and keystrokes are routed directly to the filter input.
+func (t *Table) CapturesInput() bool { return t.filtering }
+
 func (t *Table) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:

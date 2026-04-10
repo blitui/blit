@@ -3,6 +3,7 @@ package tuikit
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -267,7 +268,7 @@ func (fp *FilePicker) renderSearch(width int) string {
 		itemLines = []string{mutedStyle.Render("  No results")}
 	}
 
-	count := mutedStyle.Render(" " + pickerItoa(len(fp.searchResults)) + " results")
+	count := mutedStyle.Render(" " + strconv.Itoa(len(fp.searchResults)) + " results")
 	return lipgloss.JoinVertical(lipgloss.Left, inputView, strings.Join(itemLines, "\n"), count)
 }
 

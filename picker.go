@@ -1,6 +1,7 @@
 package tuikit
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -277,7 +278,7 @@ func (p *Picker) renderList(width int) string {
 	}
 
 	countStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(p.theme.Muted))
-	info := countStyle.Render(" " + pickerItoa(len(p.filtered)) + "/" + pickerItoa(len(p.items)) + " items")
+	info := countStyle.Render(" " + strconv.Itoa(len(p.filtered)) + "/" + strconv.Itoa(len(p.items)) + " items")
 
 	listContent := strings.Join(itemLines, "\n")
 	return lipgloss.JoinVertical(lipgloss.Left, inputView, listContent, info)
@@ -421,21 +422,3 @@ func sortRanked(items []rankedItem) {
 	}
 }
 
-func pickerItoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	neg := n < 0
-	if neg {
-		n = -n
-	}
-	b := make([]byte, 0, 10)
-	for n > 0 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-		n /= 10
-	}
-	if neg {
-		b = append([]byte{'-'}, b...)
-	}
-	return string(b)
-}

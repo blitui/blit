@@ -5,6 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 )
 
 // ViewportGlyphs holds the scrollbar track and thumb symbols for Viewport.
@@ -273,7 +274,7 @@ func truncateLine(s string, maxW int) string {
 	var out strings.Builder
 	w := 0
 	for _, r := range s {
-		rw := runeWidth(r)
+		rw := runewidth.RuneWidth(r)
 		if w+rw > maxW {
 			break
 		}
@@ -283,21 +284,3 @@ func truncateLine(s string, maxW int) string {
 	return out.String()
 }
 
-// runeWidth returns the display width of a rune (1 for ASCII, 2 for wide CJK, etc.).
-func runeWidth(r rune) int {
-	if r < 0x1100 {
-		return 1
-	}
-	// Wide character ranges (simplified).
-	if r >= 0x1100 && r <= 0x115F ||
-		r >= 0x2E80 && r <= 0x9FFF ||
-		r >= 0xA000 && r <= 0xABFF ||
-		r >= 0xF900 && r <= 0xFAFF ||
-		r >= 0xFE10 && r <= 0xFE1F ||
-		r >= 0xFE30 && r <= 0xFE4F ||
-		r >= 0xFF00 && r <= 0xFF60 ||
-		r >= 0xFFE0 && r <= 0xFFE6 {
-		return 2
-	}
-	return 1
-}

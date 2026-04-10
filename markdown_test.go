@@ -23,7 +23,7 @@ func testTheme() tuikit.Theme {
 // TestMarkdown_HeadingColor verifies that a rendered heading contains the
 // Accent color token from the theme (G4: heading color == theme.Accent).
 func TestMarkdown_HeadingColor(t *testing.T) {
-	// TODO(v0.10): glamour.WithStyles does not consistently apply H1..H6
+	// TODO: glamour.WithStyles does not consistently apply H1..H6
 	// color overrides to heading output in our non-TTY test environment —
 	// glamour falls back to document Text color. Revisit theme injection
 	// path in markdown.go; likely need WithEnvironmentConfig or explicit
@@ -34,7 +34,7 @@ func TestMarkdown_HeadingColor(t *testing.T) {
 // TestMarkdown_CodeBlockBackground verifies that a fenced code block uses the
 // Muted token as background (G4: code block bg == theme.Muted).
 func TestMarkdown_CodeBlockBackground(t *testing.T) {
-	// TODO(v0.10): see TestMarkdown_HeadingColor — same glamour theming gap.
+	// TODO: see TestMarkdown_HeadingColor — same glamour theming gap.
 	t.Skip("glamour code-block theming needs rework — see .omc/plans/POST-V0.12-FOLLOWUPS.md")
 }
 
@@ -61,7 +61,7 @@ func TestMarkdown_PlainText(t *testing.T) {
 // TestMarkdown_MultipleHeadingLevels ensures H1–H3 all render without panic.
 func TestMarkdown_MultipleHeadingLevels(t *testing.T) {
 	theme := testTheme()
-	// TODO(v0.10): glamour heading color overrides don't land consistently
+	// TODO: glamour heading color overrides don't land consistently
 	// in the test env. Assert non-empty rendering only until theme injection
 	// is reworked — see .omc/plans/POST-V0.12-FOLLOWUPS.md.
 	for _, md := range []string{"# H1", "## H2", "### H3"} {
@@ -80,7 +80,7 @@ func TestMarkdown_ReleaseNotesHighlight(t *testing.T) {
 	o := tuikit.NewReleaseNotesOverlayThemed("v1.0.0", notes, theme)
 
 	// The rendered overlay should at least mention both section titles.
-	// TODO(v0.10): tighten to assert specific theme colors once lipgloss
+	// TODO: tighten to assert specific theme colors once lipgloss
 	// color profile is forced in tests — see POST-V0.12-FOLLOWUPS.md.
 	joined := strings.Join(o.Lines, "\n")
 	if !strings.Contains(joined, "BREAKING") {
@@ -102,7 +102,7 @@ func TestMarkdown_SetThemeReRendersLines(t *testing.T) {
 	o.SetTheme(theme)
 	after := strings.Join(o.Lines, "\n")
 
-	// TODO(v0.10): once glamour heading theming is reworked, re-tighten to
+	// TODO: once glamour heading theming is reworked, re-tighten to
 	// assert the accent RGB segment is present — see POST-V0.12-FOLLOWUPS.md.
 	if after == "" {
 		t.Errorf("SetTheme produced empty lines")

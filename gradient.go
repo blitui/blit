@@ -9,11 +9,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Gradient defines a linear color gradient between two lipgloss colors.
 type Gradient struct {
 	Start lipgloss.Color
 	End   lipgloss.Color
 }
 
+// RenderAt returns the interpolated color at position t (0.0 to 1.0).
 func (g Gradient) RenderAt(t float64) lipgloss.Color {
 	t = math.Max(0, math.Min(1, t))
 	sr, sg, sb := parseHex(string(g.Start))
@@ -24,6 +26,7 @@ func (g Gradient) RenderAt(t float64) lipgloss.Color {
 	return lipgloss.Color(fmt.Sprintf("#%02x%02x%02x", r, gv, b))
 }
 
+// RenderText applies the gradient across each character of the string.
 func (g Gradient) RenderText(s string) string {
 	runes := []rune(s)
 	n := len(runes)
@@ -42,6 +45,7 @@ func (g Gradient) RenderText(s string) string {
 	return sb.String()
 }
 
+// RenderGradient renders text with the given gradient. Convenience wrapper for Gradient.RenderText.
 func RenderGradient(text string, g Gradient) string {
 	return g.RenderText(text)
 }
