@@ -61,10 +61,15 @@ nav:
   - Components:
     - components/table.md
     - components/listview.md
-    - components/logviewer.md
-    - components/statusbar.md
     - components/tabs.md
+    - components/form.md
+    - components/tree.md
     - components/picker.md
+    - components/filepicker.md
+    - components/split.md
+    - components/logviewer.md
+    - components/charts.md
+    - components/statusbar.md
     - components/toasts.md
     - components/progress.md
     - components/help.md
