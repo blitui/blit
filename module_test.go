@@ -131,11 +131,14 @@ func TestModuleWithProvidersRegistration(t *testing.T) {
 	if a.devConsole == nil {
 		t.Fatal("expected devConsole to be created for module with providers")
 	}
-	if len(a.devConsole.providers) != 1 {
-		t.Fatalf("expected 1 provider, got %d", len(a.devConsole.providers))
+	// 6 built-in providers + 1 from the module
+	if len(a.devConsole.providers) != 7 {
+		t.Fatalf("expected 7 providers (6 built-in + 1 custom), got %d", len(a.devConsole.providers))
 	}
-	if a.devConsole.providers[0].Name() != "metrics" {
-		t.Errorf("expected provider name %q, got %q", "metrics", a.devConsole.providers[0].Name())
+	// The custom provider should be appended after built-ins
+	last := a.devConsole.providers[len(a.devConsole.providers)-1]
+	if last.Name() != "metrics" {
+		t.Errorf("expected last provider name %q, got %q", "metrics", last.Name())
 	}
 }
 
@@ -199,11 +202,13 @@ func TestWithDebugProvider(t *testing.T) {
 	if a.devConsole == nil {
 		t.Fatal("expected devConsole to be created for standalone provider")
 	}
-	if len(a.devConsole.providers) != 1 {
-		t.Fatalf("expected 1 provider, got %d", len(a.devConsole.providers))
+	// 6 built-in providers + 1 standalone
+	if len(a.devConsole.providers) != 7 {
+		t.Fatalf("expected 7 providers (6 built-in + 1 standalone), got %d", len(a.devConsole.providers))
 	}
-	if a.devConsole.providers[0].Name() != "standalone" {
-		t.Errorf("expected provider name %q, got %q", "standalone", a.devConsole.providers[0].Name())
+	last := a.devConsole.providers[len(a.devConsole.providers)-1]
+	if last.Name() != "standalone" {
+		t.Errorf("expected last provider name %q, got %q", "standalone", last.Name())
 	}
 }
 
