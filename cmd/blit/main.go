@@ -78,6 +78,8 @@ func main() {
 			os.Exit(runReview(os.Args[2:]))
 		case "theme":
 			os.Exit(runTheme(os.Args[2:]))
+		case "build":
+			os.Exit(runBuild(os.Args[2:]))
 		case "vhs":
 			os.Exit(runVHS(os.Args[2:]))
 		}
