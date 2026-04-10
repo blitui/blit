@@ -86,6 +86,9 @@ func main() {
 			os.Exit(runDoctor(os.Args[2:]))
 		case "vhs":
 			os.Exit(runVHS(os.Args[2:]))
+		case "fuzz":
+			cfg, pkgs := parseFuzzFlags(os.Args[2:])
+			os.Exit(runFuzz(pkgs, cfg))
 		}
 	}
 
