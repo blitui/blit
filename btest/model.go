@@ -8,12 +8,20 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// TickMsg is sent by TriggerTick and AdvanceClock to simulate timer events.
+// Components can type-assert on this message to handle ticks deterministically
+// in tests.
+type TickMsg struct {
+	Time time.Time
+}
+
 // TestModel wraps a tea.Model for easy testing.
 type TestModel struct {
 	t     testing.TB
 	model tea.Model
 	cols  int
 	lines int
+	clock *FakeClock
 }
 
 // NewTestModel creates a test wrapper around a Bubble Tea model.
@@ -104,12 +112,49 @@ func (tm *TestModel) SendKeys(keys ...string) {
 	}
 }
 
+// WithClock attaches a FakeClock to this TestModel. AdvanceClock and
+// TriggerTick will use it. Returns the TestModel for chaining.
+func (tm *TestModel) WithClock(clock *FakeClock) *TestModel {
+	tm.clock = clock
+	return tm
+}
+
+// Clock returns the attached FakeClock, or nil if none was set.
+func (tm *TestModel) Clock() *FakeClock {
+	return tm.clock
+}
+
+// AdvanceClock advances the attached FakeClock by d and sends a TickMsg to the
+// model. Any timers registered with AfterFunc that cross their deadline will
+// fire. Panics if no clock is attached.
+func (tm *TestModel) AdvanceClock(d time.Duration) {
+	tm.t.Helper()
+	if tm.clock == nil {
+		tm.t.Fatal("btest: AdvanceClock called but no clock attached (use WithClock)")
+	}
+	tm.clock.Advance(d)
+	tm.SendMsg(TickMsg{Time: tm.clock.Now()})
+}
+
+// TriggerTick sends a TickMsg with the current clock time (or time.Now if no
+// clock is attached). Use this to simulate a timer/poller tick.
+func (tm *TestModel) TriggerTick() {
+	tm.t.Helper()
+	var now time.Time
+	if tm.clock != nil {
+		now = tm.clock.Now()
+	} else {
+		now = time.Now()
+	}
+	tm.SendMsg(TickMsg{Time: now})
+}
+
 // SendTick sends a generic tick message. Useful for testing time-based
 // components like pollers, spinners, and animations.
+// Deprecated: Use TriggerTick or AdvanceClock instead.
 func (tm *TestModel) SendTick() {
 	tm.t.Helper()
-	// Use a zero-value time for simplicity; components typically don't inspect it.
-	tm.SendMsg(tea.KeyMsg{})
+	tm.TriggerTick()
 }
 
 // WaitFor repeatedly sends tick messages until the predicate returns true or
