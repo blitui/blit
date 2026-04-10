@@ -226,7 +226,8 @@ type FailureCapture struct {
 }
 
 // failureCaptureDir is the directory where FailureCapture JSON files land.
-const failureCaptureDir = ".blit/failures"
+// Exported as a var so tests can redirect it to a temp directory.
+var failureCaptureDir = ".blit/failures"
 
 // namer is the subset of testing.TB that exposes Name(). The standard
 // *testing.T and *testing.B implement it; minimal fake TBs used in meta-tests
