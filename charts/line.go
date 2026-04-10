@@ -37,14 +37,21 @@ func NewLine(series [][]float64, colors []string, smooth bool) *Line {
 	}
 }
 
+// Init initializes the Line component.
 func (l *Line) Init() tea.Cmd { return nil }
+// Update handles incoming messages and updates Line state.
 func (l *Line) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return l, nil
 }
+// KeyBindings returns the key bindings for the Line.
 func (l *Line) KeyBindings() []blit.KeyBind { return nil }
+// SetSize sets the width and height of the Line.
 func (l *Line) SetSize(w, h int)              { l.width = w; l.height = h }
+// Focused reports whether the Line is focused.
 func (l *Line) Focused() bool                 { return l.focused }
+// SetFocused sets the focus state of the Line.
 func (l *Line) SetFocused(f bool)             { l.focused = f }
+// SetTheme updates the theme used by the Line.
 func (l *Line) SetTheme(t blit.Theme)       { l.theme = t }
 
 // seriesColor returns the lipgloss color for series i.
@@ -62,6 +69,7 @@ func (l *Line) seriesColor(i int) lipgloss.Color {
 	return defaults[i%len(defaults)]
 }
 
+// View renders the Line as a string.
 func (l *Line) View() string {
 	if l.width < 2 || l.height < 2 || len(l.Series) == 0 {
 		return ""

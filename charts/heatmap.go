@@ -45,14 +45,21 @@ func NewHeatmap(grid [][]float64, palette string) *Heatmap {
 	}
 }
 
+// Init initializes the Heatmap component.
 func (h *Heatmap) Init() tea.Cmd { return nil }
+// Update handles incoming messages and updates Heatmap state.
 func (h *Heatmap) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return h, nil
 }
+// KeyBindings returns the key bindings for the Heatmap.
 func (h *Heatmap) KeyBindings() []blit.KeyBind { return nil }
+// SetSize sets the width and height of the Heatmap.
 func (h *Heatmap) SetSize(w, hh int)             { h.width = w; h.height = hh }
+// Focused reports whether the Heatmap is focused.
 func (h *Heatmap) Focused() bool                 { return h.focused }
+// SetFocused sets the focus state of the Heatmap.
 func (h *Heatmap) SetFocused(f bool)             { h.focused = f }
+// SetTheme updates the theme used by the Heatmap.
 func (h *Heatmap) SetTheme(t blit.Theme)       { h.theme = t }
 
 // cellColor returns the background color for a normalized value t ∈ [0, 1].
@@ -71,6 +78,7 @@ func (h *Heatmap) cellColor(t float64) lipgloss.Color {
 	}
 }
 
+// View renders the Heatmap as a string.
 func (h *Heatmap) View() string {
 	if h.width < 2 || h.height < 1 || len(h.Grid) == 0 {
 		return ""

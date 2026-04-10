@@ -41,12 +41,15 @@ func NewStatusBar(opts StatusBarOpts) *StatusBar {
 	}
 }
 
+// Init initializes the StatusBar component.
 func (s *StatusBar) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates StatusBar state.
 func (s *StatusBar) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	return s, nil
 }
 
+// View renders the StatusBar as a string.
 func (s *StatusBar) View() string {
 	left := ""
 	right := ""
@@ -78,9 +81,13 @@ func (s *StatusBar) View() string {
 	return style.Render(content)
 }
 
+// KeyBindings returns the key bindings for the StatusBar.
 func (s *StatusBar) KeyBindings() []KeyBind { return nil }
+// SetSize sets the width and height of the StatusBar.
 func (s *StatusBar) SetSize(w, h int)       { s.width = w; s.height = h }
+// Focused reports whether the StatusBar is focused.
 func (s *StatusBar) Focused() bool          { return s.focused }
+// SetFocused sets the focus state of the StatusBar.
 func (s *StatusBar) SetFocused(f bool)      { s.focused = f }
 
 // SetTheme implements the Themed interface.

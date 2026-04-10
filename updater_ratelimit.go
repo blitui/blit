@@ -17,6 +17,7 @@ type RateLimitError struct {
 	Body       string
 }
 
+// Error returns the error message.
 func (e *RateLimitError) Error() string {
 	if !e.ResetAt.IsZero() {
 		return fmt.Sprintf("github rate-limited (status %d, resets %s)",

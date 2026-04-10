@@ -282,6 +282,7 @@ func (t *Table) VisibleRowCount() int {
 	return len(t.visible)
 }
 
+// Init initializes the Table component.
 func (t *Table) Init() tea.Cmd { return nil }
 
 // CapturesInput implements InputCapture. Returns true when the table is
@@ -289,6 +290,7 @@ func (t *Table) Init() tea.Cmd { return nil }
 // bypassed and keystrokes are routed directly to the filter input.
 func (t *Table) CapturesInput() bool { return t.filtering }
 
+// Update handles incoming messages and updates Table state.
 func (t *Table) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -457,6 +459,7 @@ func (t *Table) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 	return t, nil
 }
 
+// View renders the Table as a string.
 func (t *Table) View() string {
 	if t.width == 0 || t.height == 0 {
 		return ""
@@ -874,6 +877,7 @@ func (t *Table) renderDetail() string {
 	return strings.Repeat(" ", t.width) + blank
 }
 
+// KeyBindings returns the key bindings for the Table.
 func (t *Table) KeyBindings() []KeyBind {
 	bindings := []KeyBind{
 		{Key: "up/k", Label: "Move up", Group: "NAVIGATION"},
@@ -902,6 +906,7 @@ func (t *Table) KeyBindings() []KeyBind {
 	return bindings
 }
 
+// SetSize sets the width and height of the Table.
 func (t *Table) SetSize(w, h int) {
 	t.width = w
 	t.height = h
@@ -913,7 +918,9 @@ func (t *Table) startCursorTween() {
 	t.cursorTween.Start(time.Now())
 }
 
+// Focused reports whether the Table is focused.
 func (t *Table) Focused() bool     { return t.focused }
+// SetFocused sets the focus state of the Table.
 func (t *Table) SetFocused(f bool) { t.focused = f }
 
 // SetTheme implements the Themed interface.

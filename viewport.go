@@ -103,6 +103,7 @@ func (v *Viewport) viewHeight() int {
 
 func (v *Viewport) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates Viewport state.
 func (v *Viewport) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -156,6 +157,7 @@ func (v *Viewport) HandleKey(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
+// View renders the Viewport as a string.
 func (v *Viewport) View() string {
 	if !v.ready || v.width < 2 || v.height < 1 {
 		return ""
@@ -237,6 +239,7 @@ func (v *Viewport) renderScrollbar(viewH int) []string {
 	return bar
 }
 
+// KeyBindings returns the key bindings for the Viewport.
 func (v *Viewport) KeyBindings() []KeyBind {
 	return []KeyBind{
 		{Key: "up/k", Label: "Scroll up", Group: "VIEWPORT"},
@@ -250,6 +253,7 @@ func (v *Viewport) KeyBindings() []KeyBind {
 	}
 }
 
+// SetSize sets the width and height of the Viewport.
 func (v *Viewport) SetSize(w, h int) {
 	v.width = w
 	v.height = h
@@ -257,8 +261,11 @@ func (v *Viewport) SetSize(w, h int) {
 	v.clampOffset()
 }
 
+// Focused reports whether the Viewport is focused.
 func (v *Viewport) Focused() bool     { return v.focused }
+// SetFocused sets the focus state of the Viewport.
 func (v *Viewport) SetFocused(f bool) { v.focused = f }
+// SetTheme updates the theme used by the Viewport.
 func (v *Viewport) SetTheme(th Theme) { v.theme = th }
 
 func (v *Viewport) clampOffset() {

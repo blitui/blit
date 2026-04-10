@@ -122,6 +122,7 @@ func (s *Split) Init() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
+// Update handles incoming messages and updates Split state.
 func (s *Split) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -219,6 +220,7 @@ func (s *Split) syncChildFocus() {
 	}
 }
 
+// View renders the Split as a string.
 func (s *Split) View() string {
 	if s.width == 0 || s.height == 0 {
 		return ""
@@ -299,6 +301,7 @@ func padLines(lines []string, w, h int) []string {
 	return out
 }
 
+// KeyBindings returns the key bindings for the Split.
 func (s *Split) KeyBindings() []KeyBind {
 	binds := []KeyBind{
 		{Key: "tab", Label: "Switch pane focus", Group: "SPLIT"},
@@ -320,19 +323,23 @@ func (s *Split) KeyBindings() []KeyBind {
 	return binds
 }
 
+// SetSize sets the width and height of the Split.
 func (s *Split) SetSize(w, h int) {
 	s.width = w
 	s.height = h
 	s.distributeSize()
 }
 
+// Focused reports whether the Split is focused.
 func (s *Split) Focused() bool { return s.focused }
 
+// SetFocused sets the focus state of the Split.
 func (s *Split) SetFocused(f bool) {
 	s.focused = f
 	s.syncChildFocus()
 }
 
+// SetTheme updates the theme used by the Split.
 func (s *Split) SetTheme(th Theme) {
 	s.theme = th
 	if t, ok := s.A.(Themed); ok {

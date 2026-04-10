@@ -50,8 +50,10 @@ func (d *DetailOverlay[T]) Item() T {
 	return d.item
 }
 
+// Init initializes the DetailOverlay component.
 func (d *DetailOverlay[T]) Init() tea.Cmd { return nil }
 
+// Update handles incoming messages and updates DetailOverlay state.
 func (d *DetailOverlay[T]) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		if d.opts.OnKey != nil {
@@ -64,6 +66,7 @@ func (d *DetailOverlay[T]) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd)
 	return d, nil
 }
 
+// View renders the DetailOverlay as a string.
 func (d *DetailOverlay[T]) View() string {
 	if !d.active {
 		return ""
@@ -121,6 +124,7 @@ func (d *DetailOverlay[T]) View() string {
 		boxStyle.Render(body))
 }
 
+// KeyBindings returns the key bindings for the DetailOverlay.
 func (d *DetailOverlay[T]) KeyBindings() []KeyBind {
 	bindings := []KeyBind{
 		{Key: "esc", Label: "Close", Group: "DETAIL"},
@@ -129,11 +133,17 @@ func (d *DetailOverlay[T]) KeyBindings() []KeyBind {
 	return bindings
 }
 
+// SetSize sets the width and height of the DetailOverlay.
 func (d *DetailOverlay[T]) SetSize(w, h int)  { d.width = w; d.height = h }
+// Focused reports whether the DetailOverlay is focused.
 func (d *DetailOverlay[T]) Focused() bool     { return d.focused }
+// SetFocused sets the focus state of the DetailOverlay.
 func (d *DetailOverlay[T]) SetFocused(f bool) { d.focused = f }
+// IsActive reports whether the DetailOverlay overlay is currently visible.
 func (d *DetailOverlay[T]) IsActive() bool    { return d.active }
+// SetActive shows or hides the DetailOverlay overlay.
 func (d *DetailOverlay[T]) SetActive(v bool)  { d.active = v }
+// Close deactivates the DetailOverlay and resets its state.
 func (d *DetailOverlay[T]) Close()            { d.active = false }
 
 // SetTheme implements the Themed interface.
