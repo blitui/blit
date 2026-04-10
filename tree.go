@@ -57,6 +57,15 @@ type TreeOpts struct {
 	// OnToggle is called when the user expands or collapses a node. Optional.
 	OnToggle func(node *Node)
 
+	// OnContext is called when the user triggers the context action on a node
+	// (default key: "c"). Optional.
+	OnContext func(node *Node)
+
+	// LoadChildren, if non-nil, is called the first time a node with nil
+	// Children is expanded. It should return the children to attach.
+	// This enables lazy loading of deep or dynamic trees.
+	LoadChildren func(node *Node) []*Node
+
 	// Selection sets the selection mode. Default is SelectionNone.
 	Selection SelectionMode
 
@@ -79,6 +88,9 @@ type Tree struct {
 	width   int
 	height  int
 	scroll  int
+
+	// filter is the active search/filter query. Empty means no filter.
+	filter string
 }
 
 // flatNode is an entry in the linearised visible-node list.
@@ -152,6 +164,24 @@ func (t *Tree) walkAll(nodes []*Node, fn func(*Node)) {
 	}
 }
 
+// Filter returns the current filter query, or "" if no filter is active.
+func (t *Tree) Filter() string { return t.filter }
+
+// SetFilter applies a search filter. Only nodes whose Title contains the
+// query (case-insensitive) are shown, along with their ancestors. An empty
+// query clears the filter.
+func (t *Tree) SetFilter(query string) {
+	t.filter = query
+	t.rebuild()
+	t.cursor = 0
+	t.scroll = 0
+}
+
+// ClearFilter removes the active filter and rebuilds the flat view.
+func (t *Tree) ClearFilter() {
+	t.SetFilter("")
+}
+
 // Init implements Component.
 func (t *Tree) Init() tea.Cmd { return nil }
 
@@ -209,11 +239,17 @@ func (t *Tree) handleKey(msg tea.KeyMsg) tea.Cmd {
 
 	case "right", "l":
 		node := t.CursorNode()
-		if node != nil && len(node.Children) > 0 && !node.Expanded {
-			node.Expanded = true
-			t.rebuild()
-			if t.opts.OnToggle != nil {
-				t.opts.OnToggle(node)
+		if node != nil && !node.Expanded {
+			// Lazy load children on first expand if callback is set.
+			if node.Children == nil && t.opts.LoadChildren != nil {
+				node.Children = t.opts.LoadChildren(node)
+			}
+			if len(node.Children) > 0 {
+				node.Expanded = true
+				t.rebuild()
+				if t.opts.OnToggle != nil {
+					t.opts.OnToggle(node)
+				}
 			}
 		}
 		return Consumed()
@@ -249,12 +285,23 @@ func (t *Tree) handleKey(msg tea.KeyMsg) tea.Cmd {
 			t.applySelection(node)
 			return Consumed()
 		}
+		// Lazy load on first toggle.
+		if node.Children == nil && t.opts.LoadChildren != nil {
+			node.Children = t.opts.LoadChildren(node)
+		}
 		if len(node.Children) > 0 {
 			node.Expanded = !node.Expanded
 			t.rebuild()
 			if t.opts.OnToggle != nil {
 				t.opts.OnToggle(node)
 			}
+		}
+		return Consumed()
+
+	case "c":
+		node := t.CursorNode()
+		if node != nil && t.opts.OnContext != nil {
+			t.opts.OnContext(node)
 		}
 		return Consumed()
 	}
@@ -362,7 +409,7 @@ func (t *Tree) View() string {
 
 // KeyBindings implements Component.
 func (t *Tree) KeyBindings() []KeyBind {
-	return []KeyBind{
+	binds := []KeyBind{
 		{Key: "up/k", Label: "Move up", Group: "TREE"},
 		{Key: "down/j", Label: "Move down", Group: "TREE"},
 		{Key: "right/l", Label: "Expand", Group: "TREE"},
@@ -370,6 +417,10 @@ func (t *Tree) KeyBindings() []KeyBind {
 		{Key: "enter", Label: "Select", Group: "TREE"},
 		{Key: "space", Label: "Toggle expand", Group: "TREE"},
 	}
+	if t.opts.OnContext != nil {
+		binds = append(binds, KeyBind{Key: "c", Label: "Context menu", Group: "TREE"})
+	}
+	return binds
 }
 
 // SetSize implements Component.
@@ -403,9 +454,24 @@ func (t *Tree) applySelection(node *Node) {
 // rebuild linearises all currently visible nodes into t.flat.
 func (t *Tree) rebuild() {
 	t.flat = t.flat[:0]
-	for i, root := range t.roots {
-		isLast := i == len(t.roots)-1
-		t.buildFlat(root, 0, isLast, "")
+	if t.filter == "" {
+		for i, root := range t.roots {
+			isLast := i == len(t.roots)-1
+			t.buildFlat(root, 0, isLast, "")
+		}
+	} else {
+		lowerFilter := strings.ToLower(t.filter)
+		// Collect matching roots (nodes that match or have matching descendants).
+		var matching []*Node
+		for _, root := range t.roots {
+			if t.nodeMatches(root, lowerFilter) {
+				matching = append(matching, root)
+			}
+		}
+		for i, root := range matching {
+			isLast := i == len(matching)-1
+			t.buildFlatFiltered(root, 0, isLast, "", lowerFilter)
+		}
 	}
 }
 
@@ -430,6 +496,49 @@ func (t *Tree) buildFlat(node *Node, depth int, isLast bool, prefix string) {
 			childIsLast := i == len(node.Children)-1
 			t.buildFlat(child, depth+1, childIsLast, childPrefix)
 		}
+	}
+}
+
+// nodeMatches returns true if the node or any descendant matches the filter.
+func (t *Tree) nodeMatches(node *Node, lowerFilter string) bool {
+	if strings.Contains(strings.ToLower(node.Title), lowerFilter) {
+		return true
+	}
+	for _, child := range node.Children {
+		if t.nodeMatches(child, lowerFilter) {
+			return true
+		}
+	}
+	return false
+}
+
+// buildFlatFiltered adds only matching nodes and their matching ancestors.
+func (t *Tree) buildFlatFiltered(node *Node, depth int, isLast bool, prefix string, lowerFilter string) {
+	t.flat = append(t.flat, flatNode{
+		node:   node,
+		depth:  depth,
+		isLast: isLast,
+		prefix: prefix,
+	})
+	// Always show children of matching ancestors when filtered.
+	g := t.theme.glyphsOrDefault()
+	childPrefix := prefix
+	if depth > 0 {
+		if isLast {
+			childPrefix = prefix + g.TreeEmpty + " "
+		} else {
+			childPrefix = prefix + g.TreePipe + " "
+		}
+	}
+	var matching []*Node
+	for _, child := range node.Children {
+		if t.nodeMatches(child, lowerFilter) {
+			matching = append(matching, child)
+		}
+	}
+	for i, child := range matching {
+		childIsLast := i == len(matching)-1
+		t.buildFlatFiltered(child, depth+1, childIsLast, childPrefix, lowerFilter)
 	}
 }
 

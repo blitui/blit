@@ -437,6 +437,211 @@ func TestTree_ZeroSize(t *testing.T) {
 	}
 }
 
+func TestTree_LazyLoading(t *testing.T) {
+	loadCalled := 0
+	parent := &blit.Node{Title: "parent"} // nil Children — lazy loadable
+	roots := []*blit.Node{parent}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		LoadChildren: func(node *blit.Node) []*blit.Node {
+			loadCalled++
+			return []*blit.Node{
+				{Title: "lazy-child-1"},
+				{Title: "lazy-child-2"},
+			}
+		},
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	// Right arrow should trigger lazy load.
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRight}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	if loadCalled != 1 {
+		t.Fatalf("LoadChildren called %d times, want 1", loadCalled)
+	}
+	if !parent.Expanded {
+		t.Fatal("parent should be expanded after right arrow")
+	}
+	if len(parent.Children) != 2 {
+		t.Fatalf("parent.Children = %d, want 2", len(parent.Children))
+	}
+
+	// Collapse and re-expand should NOT call LoadChildren again.
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyLeft}, blit.Context{})
+	tree = updated.(*blit.Tree)
+	updated, _ = tree.Update(tea.KeyMsg{Type: tea.KeyRight}, blit.Context{})
+	_ = updated.(*blit.Tree)
+	if loadCalled != 1 {
+		t.Fatalf("LoadChildren called %d times on re-expand, want 1", loadCalled)
+	}
+}
+
+func TestTree_LazyLoadingSpaceToggle(t *testing.T) {
+	loadCalled := 0
+	parent := &blit.Node{Title: "parent"} // nil Children
+	roots := []*blit.Node{parent}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{
+		LoadChildren: func(node *blit.Node) []*blit.Node {
+			loadCalled++
+			return []*blit.Node{{Title: "child"}}
+		},
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	// Space should trigger lazy load too.
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeySpace}, blit.Context{})
+	_ = updated.(*blit.Tree)
+	if loadCalled != 1 {
+		t.Fatalf("LoadChildren via space called %d times, want 1", loadCalled)
+	}
+	if !parent.Expanded {
+		t.Fatal("parent should be expanded after space")
+	}
+}
+
+func TestTree_LazyLoadingNoCallback(t *testing.T) {
+	// Node with nil Children and no LoadChildren — should not panic on expand.
+	parent := &blit.Node{Title: "parent"}
+	tree := blit.NewTree([]*blit.Node{parent}, blit.TreeOpts{})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRight}, blit.Context{})
+	_ = updated.(*blit.Tree)
+	if parent.Expanded {
+		t.Fatal("node with nil children and no loader should not expand")
+	}
+}
+
+func TestTree_Filter(t *testing.T) {
+	child1 := &blit.Node{Title: "apple"}
+	child2 := &blit.Node{Title: "banana"}
+	parent := &blit.Node{Title: "fruits", Children: []*blit.Node{child1, child2}, Expanded: true}
+	leaf := &blit.Node{Title: "vegetable"}
+	roots := []*blit.Node{parent, leaf}
+
+	tree := blit.NewTree(roots, blit.TreeOpts{})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	// Filter for "apple" — should show parent (ancestor) + apple.
+	tree.SetFilter("apple")
+	if tree.Filter() != "apple" {
+		t.Fatalf("Filter() = %q, want %q", tree.Filter(), "apple")
+	}
+
+	view := tree.View()
+	if !containsStr(view, "apple") {
+		t.Fatalf("filtered view should contain 'apple':\n%s", view)
+	}
+	if containsStr(view, "banana") {
+		t.Fatalf("filtered view should NOT contain 'banana':\n%s", view)
+	}
+	if containsStr(view, "vegetable") {
+		t.Fatalf("filtered view should NOT contain 'vegetable':\n%s", view)
+	}
+
+	// Clear filter — all nodes visible again.
+	tree.ClearFilter()
+	if tree.Filter() != "" {
+		t.Fatal("Filter() should be empty after ClearFilter")
+	}
+	view = tree.View()
+	if !containsStr(view, "vegetable") {
+		t.Fatalf("unfiltered view should contain 'vegetable':\n%s", view)
+	}
+}
+
+func TestTree_FilterCaseInsensitive(t *testing.T) {
+	node := &blit.Node{Title: "MyDocument"}
+	tree := blit.NewTree([]*blit.Node{node}, blit.TreeOpts{})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+
+	tree.SetFilter("mydoc")
+	view := tree.View()
+	if !containsStr(view, "MyDocument") {
+		t.Fatalf("case-insensitive filter should match:\n%s", view)
+	}
+}
+
+func TestTree_FilterNoMatch(t *testing.T) {
+	node := &blit.Node{Title: "hello"}
+	tree := blit.NewTree([]*blit.Node{node}, blit.TreeOpts{})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+
+	tree.SetFilter("zzz")
+	view := tree.View()
+	// Should show empty tree indicator.
+	if containsStr(view, "hello") {
+		t.Fatalf("filtered view should not contain 'hello':\n%s", view)
+	}
+}
+
+func TestTree_OnContext(t *testing.T) {
+	var contextNode *blit.Node
+	child := &blit.Node{Title: "child"}
+	parent := &blit.Node{Title: "parent", Children: []*blit.Node{child}}
+	tree := blit.NewTree([]*blit.Node{parent}, blit.TreeOpts{
+		OnContext: func(n *blit.Node) { contextNode = n },
+	})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	// Press 'c' to trigger context menu on cursor node.
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("c")}, blit.Context{})
+	_ = updated.(*blit.Tree)
+	if contextNode != parent {
+		t.Fatalf("OnContext should be called with parent, got %v", contextNode)
+	}
+}
+
+func TestTree_OnContextNoCallback(t *testing.T) {
+	node := &blit.Node{Title: "item"}
+	tree := blit.NewTree([]*blit.Node{node}, blit.TreeOpts{})
+	tree.SetTheme(blit.DefaultTheme())
+	tree.SetSize(80, 20)
+	tree.SetFocused(true)
+
+	// 'c' with no OnContext should not panic.
+	updated, _ := tree.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("c")}, blit.Context{})
+	_ = updated.(*blit.Tree)
+}
+
+func TestTree_ContextKeyBinding(t *testing.T) {
+	// With OnContext set, KeyBindings should include "c".
+	tree := blit.NewTree([]*blit.Node{{Title: "x"}}, blit.TreeOpts{
+		OnContext: func(n *blit.Node) {},
+	})
+	binds := tree.KeyBindings()
+	found := false
+	for _, b := range binds {
+		if b.Key == "c" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("KeyBindings should include 'c' when OnContext is set")
+	}
+
+	// Without OnContext, no "c" binding.
+	tree2 := blit.NewTree([]*blit.Node{{Title: "x"}}, blit.TreeOpts{})
+	for _, b := range tree2.KeyBindings() {
+		if b.Key == "c" {
+			t.Fatal("KeyBindings should NOT include 'c' when OnContext is nil")
+		}
+	}
+}
+
 // containsStr is a simple helper to avoid importing strings in _test.
 func containsStr(s, substr string) bool {
 	for i := 0; i <= len(s)-len(substr); i++ {
