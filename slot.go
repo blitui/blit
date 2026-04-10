@@ -1,6 +1,6 @@
 package blit
 
-// Named slots for composing an App shell.
+// SlotName identifies a named region in the App shell.
 //
 // Slots are the canonical way to assemble an App as of v0.10. Instead of
 // juggling separate options for components, layouts, status bars, and

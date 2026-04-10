@@ -34,8 +34,7 @@ func NewBreadcrumbs(segments []string) *Breadcrumbs {
 	}
 }
 
-// --- Component interface ---
-
+// Init initializes the Breadcrumbs component. It returns nil.
 func (b *Breadcrumbs) Init() tea.Cmd { return nil }
 // Update handles incoming messages and updates Breadcrumbs state.
 func (b *Breadcrumbs) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
