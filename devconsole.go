@@ -539,9 +539,9 @@ func (p *frameStatsProvider) View(w, h int, theme Theme) string {
 }
 func (p *frameStatsProvider) Data() map[string]any {
 	return map[string]any{
-		"fps":          p.dc.fps(),
-		"frameTimeMs":  p.dc.frameTimeMs(),
-		"frameCount":   p.dc.frameCount,
+		"fps":         p.dc.fps(),
+		"frameTimeMs": p.dc.frameTimeMs(),
+		"frameCount":  p.dc.frameCount,
 	}
 }
 

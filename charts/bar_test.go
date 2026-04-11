@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/lipgloss"
 	blit "github.com/blitui/blit"
 	"github.com/blitui/blit/charts"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func TestBarVerticalRender(t *testing.T) {

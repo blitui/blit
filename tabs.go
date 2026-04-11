@@ -300,8 +300,6 @@ func (t *Tabs) renderHorizontalBar() string {
 	return lipgloss.JoinVertical(lipgloss.Left, tabRow, underlineRow)
 }
 
-
-
 func (t *Tabs) tabLabel(item TabItem) string {
 	if item.Glyph != "" {
 		return item.Glyph + " " + item.Title

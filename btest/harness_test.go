@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/blitui/blit/btest"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // harnessModel is a minimal tea.Model that records keys and renders them.

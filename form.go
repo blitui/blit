@@ -198,7 +198,8 @@ func (f *TextField) WithRequired() *TextField { f.required = true; return f }
 func (f *TextField) WithValidator(v Validator) *TextField { f.validator = v; return f }
 
 // Value returns the current value of the TextField.
-func (f *TextField) Value() string     { return f.input.Value() }
+func (f *TextField) Value() string { return f.input.Value() }
+
 // SetValue sets the current value of the TextField.
 func (f *TextField) SetValue(v string) { f.input.SetValue(v) }
 
@@ -288,7 +289,8 @@ func (f *PasswordField) WithRequired() *PasswordField { f.required = true; retur
 func (f *PasswordField) WithValidator(v Validator) *PasswordField { f.validator = v; return f }
 
 // Value returns the current value of the PasswordField.
-func (f *PasswordField) Value() string     { return f.input.Value() }
+func (f *PasswordField) Value() string { return f.input.Value() }
+
 // SetValue sets the current value of the PasswordField.
 func (f *PasswordField) SetValue(v string) { f.input.SetValue(v) }
 
@@ -394,7 +396,8 @@ func (f *SelectField) Validate() error {
 }
 
 // Init initializes the SelectField component.
-func (f *SelectField) Init() tea.Cmd     { return nil }
+func (f *SelectField) Init() tea.Cmd { return nil }
+
 // SetFocused sets the focus state of the SelectField.
 func (f *SelectField) SetFocused(_ bool) {}
 
@@ -501,7 +504,8 @@ func (f *MultiSelectField) Validate() error {
 }
 
 // Init initializes the MultiSelectField component.
-func (f *MultiSelectField) Init() tea.Cmd     { return nil }
+func (f *MultiSelectField) Init() tea.Cmd { return nil }
+
 // SetFocused sets the focus state of the MultiSelectField.
 func (f *MultiSelectField) SetFocused(_ bool) {}
 
@@ -594,9 +598,11 @@ func (f *ConfirmField) SetValue(v string) {
 }
 
 // Validate checks the current value against the field's validation rules.
-func (f *ConfirmField) Validate() error   { f.err = nil; return nil }
+func (f *ConfirmField) Validate() error { f.err = nil; return nil }
+
 // Init initializes the ConfirmField component.
-func (f *ConfirmField) Init() tea.Cmd     { return nil }
+func (f *ConfirmField) Init() tea.Cmd { return nil }
+
 // SetFocused sets the focus state of the ConfirmField.
 func (f *ConfirmField) SetFocused(_ bool) {}
 
@@ -673,7 +679,8 @@ func (f *NumberField) WithDefault(v float64) *NumberField {
 }
 
 // Value returns the current value of the NumberField.
-func (f *NumberField) Value() string     { return f.input.Value() }
+func (f *NumberField) Value() string { return f.input.Value() }
+
 // SetValue sets the current value of the NumberField.
 func (f *NumberField) SetValue(v string) { f.input.SetValue(v) }
 

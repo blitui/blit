@@ -3,10 +3,10 @@ package charts_test
 import (
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	blit "github.com/blitui/blit"
 	"github.com/blitui/blit/charts"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // ---------- Bar ----------

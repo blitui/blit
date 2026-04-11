@@ -7,9 +7,9 @@ import (
 )
 
 type testConfig struct {
-	Name     string `yaml:"name"`
-	Port     int    `yaml:"port"`
-	Verbose  bool   `yaml:"verbose"`
+	Name    string `yaml:"name"`
+	Port    int    `yaml:"port"`
+	Verbose bool   `yaml:"verbose"`
 }
 
 func TestSaveAndLoadYAML(t *testing.T) {

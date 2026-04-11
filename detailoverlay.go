@@ -134,17 +134,22 @@ func (d *DetailOverlay[T]) KeyBindings() []KeyBind {
 }
 
 // SetSize sets the width and height of the DetailOverlay.
-func (d *DetailOverlay[T]) SetSize(w, h int)  { d.width = w; d.height = h }
+func (d *DetailOverlay[T]) SetSize(w, h int) { d.width = w; d.height = h }
+
 // Focused reports whether the DetailOverlay is focused.
-func (d *DetailOverlay[T]) Focused() bool     { return d.focused }
+func (d *DetailOverlay[T]) Focused() bool { return d.focused }
+
 // SetFocused sets the focus state of the DetailOverlay.
 func (d *DetailOverlay[T]) SetFocused(f bool) { d.focused = f }
+
 // IsActive reports whether the DetailOverlay overlay is currently visible.
-func (d *DetailOverlay[T]) IsActive() bool    { return d.active }
+func (d *DetailOverlay[T]) IsActive() bool { return d.active }
+
 // SetActive shows or hides the DetailOverlay overlay.
-func (d *DetailOverlay[T]) SetActive(v bool)  { d.active = v }
+func (d *DetailOverlay[T]) SetActive(v bool) { d.active = v }
+
 // Close deactivates the DetailOverlay and resets its state.
-func (d *DetailOverlay[T]) Close()            { d.active = false }
+func (d *DetailOverlay[T]) Close() { d.active = false }
 
 // SetTheme implements the Themed interface.
 func (d *DetailOverlay[T]) SetTheme(t Theme) { d.theme = t }

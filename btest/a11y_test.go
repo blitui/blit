@@ -129,7 +129,7 @@ func TestANSI256ToRGB_Grayscale(t *testing.T) {
 func TestContrastReport_Violations(t *testing.T) {
 	report := &ContrastReport{
 		Results: []ContrastResult{
-			CheckContrast(RGB{0, 0, 0}, RGB{255, 255, 255}),     // pass
+			CheckContrast(RGB{0, 0, 0}, RGB{255, 255, 255}),       // pass
 			CheckContrast(RGB{200, 200, 200}, RGB{255, 255, 255}), // fail
 		},
 	}

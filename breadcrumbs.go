@@ -40,20 +40,26 @@ func NewBreadcrumbs(segments []string) *Breadcrumbs {
 
 // Init initializes the Breadcrumbs component. It returns nil.
 func (b *Breadcrumbs) Init() tea.Cmd { return nil }
+
 // Update handles incoming messages and updates Breadcrumbs state.
 func (b *Breadcrumbs) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	return b, nil
 }
+
 // KeyBindings returns the key bindings for the Breadcrumbs.
 func (b *Breadcrumbs) KeyBindings() []KeyBind { return nil }
+
 // SetSize sets the width and height of the Breadcrumbs.
-func (b *Breadcrumbs) SetSize(w, h int)       { b.width = w; b.height = h }
+func (b *Breadcrumbs) SetSize(w, h int) { b.width = w; b.height = h }
+
 // Focused reports whether the Breadcrumbs is focused.
-func (b *Breadcrumbs) Focused() bool          { return b.focused }
+func (b *Breadcrumbs) Focused() bool { return b.focused }
+
 // SetFocused sets the focus state of the Breadcrumbs.
-func (b *Breadcrumbs) SetFocused(f bool)      { b.focused = f }
+func (b *Breadcrumbs) SetFocused(f bool) { b.focused = f }
+
 // SetTheme updates the theme used by the Breadcrumbs.
-func (b *Breadcrumbs) SetTheme(th Theme)      { b.theme = th }
+func (b *Breadcrumbs) SetTheme(th Theme) { b.theme = th }
 
 // View renders the Breadcrumbs as a string.
 func (b *Breadcrumbs) View() string {

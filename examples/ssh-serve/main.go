@@ -20,9 +20,9 @@ import (
 	"syscall"
 	"time"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 // MissionControl is the sidebar panel showing delivery stats.
@@ -45,9 +45,9 @@ func (m *MissionControl) Update(msg tea.Msg, ctx blit.Context) (blit.Component, 
 	return m, nil
 }
 func (m *MissionControl) KeyBindings() []blit.KeyBind { return nil }
-func (m *MissionControl) SetSize(w, h int)              { m.width, m.height = w, h }
-func (m *MissionControl) Focused() bool                 { return m.focused }
-func (m *MissionControl) SetFocused(f bool)             { m.focused = f }
+func (m *MissionControl) SetSize(w, h int)            { m.width, m.height = w, h }
+func (m *MissionControl) Focused() bool               { return m.focused }
+func (m *MissionControl) SetFocused(f bool)           { m.focused = f }
 func (m *MissionControl) SetTheme(t blit.Theme)       { m.theme = t }
 
 func (m *MissionControl) View() string {

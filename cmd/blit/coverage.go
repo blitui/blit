@@ -25,8 +25,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/blitui/blit/charts"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const coverageOut = ".blit/coverage.out"

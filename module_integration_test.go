@@ -33,7 +33,7 @@ type contextCapture struct {
 	lastCtx *Context
 }
 
-func (m *contextCapture) Name() string { return m.name }
+func (m *contextCapture) Name() string  { return m.name }
 func (m *contextCapture) Init() tea.Cmd { return nil }
 func (m *contextCapture) Update(msg tea.Msg, ctx Context) (Module, tea.Cmd) {
 	*m.lastCtx = ctx
@@ -46,7 +46,7 @@ type replacingModule struct {
 	iteration int
 }
 
-func (m *replacingModule) Name() string { return m.name }
+func (m *replacingModule) Name() string  { return m.name }
 func (m *replacingModule) Init() tea.Cmd { return nil }
 func (m *replacingModule) Update(msg tea.Msg, ctx Context) (Module, tea.Cmd) {
 	return &replacingModule{name: m.name, iteration: m.iteration + 1}, nil

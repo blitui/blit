@@ -16,9 +16,9 @@ import (
 // value polled from disk) appear in the editor without wiring a manual
 // refresh.
 type ConfigField struct {
-	Label  string             // Display label
-	Group  string             // Group heading (e.g., "General", "Display")
-	Hint   string             // Help text shown below the field
+	Label    string             // Display label
+	Group    string             // Group heading (e.g., "General", "Display")
+	Hint     string             // Help text shown below the field
 	Get      func() string      // Legacy getter. Ignored when Source is set.
 	Source   any                // Optional: func() string, *Signal[string], or StringSource.
 	Set      func(string) error // Sets a new value, returns error if invalid
@@ -247,12 +247,16 @@ func (c *ConfigEditor) KeyBindings() []KeyBind {
 }
 
 // SetSize sets the width and height of the ConfigEditor.
-func (c *ConfigEditor) SetSize(w, h int)  { c.width = w; c.height = h }
+func (c *ConfigEditor) SetSize(w, h int) { c.width = w; c.height = h }
+
 // Focused reports whether the ConfigEditor is focused.
-func (c *ConfigEditor) Focused() bool     { return c.focused }
+func (c *ConfigEditor) Focused() bool { return c.focused }
+
 // SetFocused sets the focus state of the ConfigEditor.
 func (c *ConfigEditor) SetFocused(f bool) { c.focused = f }
+
 // IsActive reports whether the ConfigEditor overlay is currently visible.
-func (c *ConfigEditor) IsActive() bool    { return c.active }
+func (c *ConfigEditor) IsActive() bool { return c.active }
+
 // Close deactivates the ConfigEditor and resets its state.
-func (c *ConfigEditor) Close()            { c.active = false; c.editing = false; c.errMsg = "" }
+func (c *ConfigEditor) Close() { c.active = false; c.editing = false; c.errMsg = "" }

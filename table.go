@@ -919,7 +919,8 @@ func (t *Table) startCursorTween() {
 }
 
 // Focused reports whether the Table is focused.
-func (t *Table) Focused() bool     { return t.focused }
+func (t *Table) Focused() bool { return t.focused }
+
 // SetFocused sets the focus state of the Table.
 func (t *Table) SetFocused(f bool) { t.focused = f }
 

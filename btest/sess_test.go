@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/blitui/blit/btest"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // sessModel is a tiny deterministic model that just echoes the keys it saw.

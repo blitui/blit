@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 	"github.com/OWNER/myapp/internal/updatewire"
+	blit "github.com/blitui/blit"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func main() {

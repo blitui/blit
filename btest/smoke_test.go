@@ -61,13 +61,12 @@ func TestSmokeTest_Passes(t *testing.T) {
 	btest.SmokeTest(t, &smokeStubModel{}, nil)
 }
 
-
 // emptyModel returns empty view to test failure detection.
 type emptyModel struct{}
 
-func (m *emptyModel) Init() tea.Cmd                            { return nil }
+func (m *emptyModel) Init() tea.Cmd                           { return nil }
 func (m *emptyModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) { return m, nil }
-func (m *emptyModel) View() string                             { return "" }
+func (m *emptyModel) View() string                            { return "" }
 
 func TestSmoke_EmptyViewFails(t *testing.T) {
 	report := btest.Smoke(t, &emptyModel{}, nil)

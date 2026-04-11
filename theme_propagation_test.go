@@ -19,14 +19,14 @@ type themedStub struct {
 	height     int
 }
 
-func (s *themedStub) Init() tea.Cmd                                              { return nil }
+func (s *themedStub) Init() tea.Cmd                                                  { return nil }
 func (s *themedStub) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) { return s, nil }
-func (s *themedStub) View() string                                               { return s.name }
-func (s *themedStub) KeyBindings() []blit.KeyBind                                { return nil }
-func (s *themedStub) SetSize(w, h int)                                           { s.width = w; s.height = h }
-func (s *themedStub) Focused() bool                                              { return s.focused }
-func (s *themedStub) SetFocused(f bool)                                          { s.focused = f }
-func (s *themedStub) SetTheme(t blit.Theme)                                      { s.theme = t; s.themeCalls++ }
+func (s *themedStub) View() string                                                   { return s.name }
+func (s *themedStub) KeyBindings() []blit.KeyBind                                    { return nil }
+func (s *themedStub) SetSize(w, h int)                                               { s.width = w; s.height = h }
+func (s *themedStub) Focused() bool                                                  { return s.focused }
+func (s *themedStub) SetFocused(f bool)                                              { s.focused = f }
+func (s *themedStub) SetTheme(t blit.Theme)                                          { s.theme = t; s.themeCalls++ }
 
 // themedOverlayStub is a minimal Overlay that tracks SetTheme calls.
 type themedOverlayStub struct {

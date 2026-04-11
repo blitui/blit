@@ -19,8 +19,8 @@ import (
 	"os"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	blit "github.com/blitui/blit"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // tickMsg drives the fake log generator.

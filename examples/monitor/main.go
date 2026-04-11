@@ -17,9 +17,9 @@ import (
 	"strings"
 	"time"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 // ── Service data ──────────────────────────────────────────────────────────
@@ -117,11 +117,11 @@ func newFleetPanel(svcs []service) *FleetPanel {
 	}
 }
 
-func (p *FleetPanel) Init() tea.Cmd                 { return nil }
+func (p *FleetPanel) Init() tea.Cmd               { return nil }
 func (p *FleetPanel) KeyBindings() []blit.KeyBind { return nil }
-func (p *FleetPanel) SetSize(w, h int)              { p.width = w; p.height = h }
-func (p *FleetPanel) Focused() bool                 { return p.focused }
-func (p *FleetPanel) SetFocused(f bool)             { p.focused = f }
+func (p *FleetPanel) SetSize(w, h int)            { p.width = w; p.height = h }
+func (p *FleetPanel) Focused() bool               { return p.focused }
+func (p *FleetPanel) SetFocused(f bool)           { p.focused = f }
 func (p *FleetPanel) SetTheme(t blit.Theme)       { p.theme = t }
 func (p *FleetPanel) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return p, nil

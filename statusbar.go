@@ -83,12 +83,15 @@ func (s *StatusBar) View() string {
 
 // KeyBindings returns the key bindings for the StatusBar.
 func (s *StatusBar) KeyBindings() []KeyBind { return nil }
+
 // SetSize sets the width and height of the StatusBar.
-func (s *StatusBar) SetSize(w, h int)       { s.width = w; s.height = h }
+func (s *StatusBar) SetSize(w, h int) { s.width = w; s.height = h }
+
 // Focused reports whether the StatusBar is focused.
-func (s *StatusBar) Focused() bool          { return s.focused }
+func (s *StatusBar) Focused() bool { return s.focused }
+
 // SetFocused sets the focus state of the StatusBar.
-func (s *StatusBar) SetFocused(f bool)      { s.focused = f }
+func (s *StatusBar) SetFocused(f bool) { s.focused = f }
 
 // SetTheme implements the Themed interface.
 func (s *StatusBar) SetTheme(t Theme) { s.theme = t }

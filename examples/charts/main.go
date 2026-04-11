@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	blit "github.com/blitui/blit"
 	"github.com/blitui/blit/charts"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // dashboard is the root component that tiles all charts.

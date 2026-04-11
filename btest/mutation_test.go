@@ -246,4 +246,3 @@ func TestMutationTest_DropCmd(t *testing.T) {
 		t.Errorf("total = %d, want 1", report.Total)
 	}
 }
-

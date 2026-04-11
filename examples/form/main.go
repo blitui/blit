@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 func buildForm(wizard bool, onSubmit func(map[string]string)) *blit.Form {

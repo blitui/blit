@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	blit "github.com/blitui/blit"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // totalRows is the logical dataset size. A million rows is ~40 MB if you were

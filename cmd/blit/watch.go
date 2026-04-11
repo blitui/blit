@@ -26,10 +26,10 @@ import (
 	"sync"
 	"time"
 
+	blit "github.com/blitui/blit"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 // ----------------------------------------------------------------------------

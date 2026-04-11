@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	blit "github.com/blitui/blit"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestDialog_NewDefaults(t *testing.T) {

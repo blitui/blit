@@ -261,9 +261,11 @@ func (v *Viewport) SetSize(w, h int) {
 }
 
 // Focused reports whether the Viewport is focused.
-func (v *Viewport) Focused() bool     { return v.focused }
+func (v *Viewport) Focused() bool { return v.focused }
+
 // SetFocused sets the focus state of the Viewport.
 func (v *Viewport) SetFocused(f bool) { v.focused = f }
+
 // SetTheme updates the theme used by the Viewport.
 func (v *Viewport) SetTheme(th Theme) { v.theme = th }
 
@@ -293,4 +295,3 @@ func truncateLine(s string, maxW int) string {
 	}
 	return out.String()
 }
-

@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	blit "github.com/blitui/blit"
 	"github.com/blitui/blit/btest"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type formModel struct {

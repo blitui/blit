@@ -14,7 +14,7 @@ type testModuleConfig struct {
 	Theme    string   `yaml:"theme"    blit:"label=Theme,group=Appearance,default=dark,options=dark|light|auto"`
 	Repos    []string `yaml:"repos"    blit:"label=Repos,group=Data,hint=owner/repo format"`
 	Debug    bool     `yaml:"debug"    blit:"label=Debug mode,group=Advanced,default=false"`
-	Secret   string   `yaml:"secret"`  // No blit tag — should be skipped by Editor
+	Secret   string   `yaml:"secret"` // No blit tag — should be skipped by Editor
 }
 
 func TestParseBlitTag(t *testing.T) {

@@ -19,12 +19,13 @@ linters:
     - nilerr
   disable:
     - depguard
-  settings:
-    gocyclo:
-      min-complexity: 25
+
+linters-settings:
+  gocyclo:
+    min-complexity: 25
 
 issues:
-  exclude-rules:
+  rules:
     - path: _test\.go
       linters:
         - errcheck

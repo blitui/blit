@@ -339,9 +339,11 @@ func (l *ListView[T]) viewportHeight() int {
 }
 
 // Focused reports whether the ListView is focused.
-func (l *ListView[T]) Focused() bool     { return l.focused }
+func (l *ListView[T]) Focused() bool { return l.focused }
+
 // SetFocused sets the focus state of the ListView.
 func (l *ListView[T]) SetFocused(f bool) { l.focused = f; l.rebuildContent() }
+
 // SetTheme updates the theme used by the ListView.
 func (l *ListView[T]) SetTheme(th Theme) { l.theme = th }
 
