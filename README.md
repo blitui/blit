@@ -111,7 +111,7 @@ More examples in [`examples/`](examples/).
 
 ## Compatibility
 
-blit follows [semantic versioning](https://semver.org/). Within a major version, the public API is stable — no breaking changes in minor or patch releases. Pre-v1.0 releases (v0.x) may include breaking changes in minor versions, documented in the [changelog](CHANGELOG.md).
+blit follows [semantic versioning](https://semver.org/). Within a major version, the public API is stable — no breaking changes in minor or patch releases. Pre-v1.0 releases (v0.x) may include breaking changes in minor versions, documented in the [changelog](https://blitui.github.io/blit/changelog/).
 
 ## Contributing
 
