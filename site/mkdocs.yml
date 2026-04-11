@@ -72,7 +72,20 @@ nav:
     - components/statusbar.md
     - components/toasts.md
     - components/progress.md
+    - components/progressbar.md
     - components/help.md
+    - components/accordion.md
+    - components/breadcrumb.md
+    - components/commandbar.md
+    - components/configeditor.md
+    - components/dialog.md
+    - components/kanban.md
+    - components/menu.md
+    - components/spinner.md
+    - components/stepper.md
+    - components/timeline.md
+    - components/tooltip.md
+    - components/viewport.md
   - Themes: themes.md
   - Reference:
     - guides/cli-primitives.md
