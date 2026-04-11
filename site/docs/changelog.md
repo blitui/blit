@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Full release history is also available on
 [GitHub Releases](https://github.com/blitui/blit/releases).
 
+## [0.2.24] - 2026-04-11
+
+### Added
+- Framework re-exports: `Msg`, `Cmd`, `KeyMsg`, `MouseMsg`, `WindowSizeMsg`, `Key`, `KeyType`, key constants (`KeyEnter`, `KeyDown`, etc., function keys as `F1`–`F12`), lipgloss types (`Color`, `Style`, `Border`, `Position`), layout functions (`NewStyle`, `Width`, `JoinVertical`, `Place`, etc.), border presets, and ANSI helpers (`StringWidth`, `TruncateWith`) — consumers no longer need to import bubbletea/lipgloss/ansi directly
+- `ThemeStyles(Theme)` returns 25 pre-built styles derived from theme tokens (Text, Muted, Accent, Positive, Negative, Warn, Info, Title, Subtitle, Label, Detail, Hint, Cursor, Selected, Flash, Border, Header, BadgePositive/Negative/Warn/Accent/Muted)
+- `Theme.SemanticColor(name, fallback)` resolves well-known semantic names ("info", "create", "delete", "review", "comment", "issue", "release", "local") from `Theme.Extra` with sensible defaults
+- `HealthDot(label, ok, theme)` and `HealthDotUnknown(label, theme)` render colored dot indicators for status lines
+- `HTTPResource` — API polling with ETag caching, 304 Not Modified detection, response fallback, rate-limit header parsing, parallel page fetching, `StatsCollector` and DevConsole integration
+- `StatsCollector` — thread-safe structured stats accumulator with per-source health tracking, rate limit info, implements `DebugDataProvider` for DevConsole
+- `CLIApp` subcommand router with `Subcommand` definitions, alias support, `Execute()` dispatch, and `PrintHelp()`
+- `ComponentHeader` renders structured title + subtitle + status line with `StatusPaused()`, `StatusPollAgo()`, `StatusRateLimit()` convenience builders
+- `App.ToastInfo/ToastSuccess/ToastWarn/ToastError` convenience methods
+- `KeyString`, `IsKey`, `IsEnter`, `IsEscape`, `IsTab`, `IsBackspace`, `IsRunes`, `Runes` helper functions
+- `ParseJSONSlice[T]()` and `ParseJSONObject[T]()` convenience Parse functions for HTTPResource
+- `GitHubAPIURL()` helper for building GitHub API URLs
+- `CollapsibleSection` now also implements `Component` (Init/Update/View/KeyBindings/SetSize/Focused/SetFocused/SetTheme) alongside the existing `Render()` helper
+
 ## [0.2.23] - 2026-04-10
 
 ### Added
@@ -262,6 +279,7 @@ Full release history is also available on
 - App framework with functional options
 - blit virtual terminal testing framework
 
+[0.2.24]: https://github.com/blitui/blit/compare/v0.2.23...v0.2.24
 [0.2.23]: https://github.com/blitui/blit/compare/v0.2.22...v0.2.23
 [0.2.22]: https://github.com/blitui/blit/compare/v0.2.21...v0.2.22
 [0.2.21]: https://github.com/blitui/blit/compare/v0.2.20...v0.2.21

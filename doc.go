@@ -5,6 +5,9 @@
 // Split), a keybinding registry with auto-generated help, a dark/light theme
 // system with hot-reload, and built-in binary self-update.
 //
+// All bubbletea and lipgloss types are re-exported so consumers only need to
+// import blit: Msg, Cmd, KeyMsg, Color, Style, NewStyle, JoinVertical, etc.
+//
 // Quick start:
 //
 //	app := blit.NewApp(
