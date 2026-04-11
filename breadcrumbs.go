@@ -7,9 +7,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Breadcrumbs renders a horizontal trail of path segments separated by a
-// configurable separator. When the rendered width exceeds MaxWidth the
-// leading segments are replaced with "…" until it fits.
+// Breadcrumbs is a passive, display-only path trail. It renders a horizontal
+// sequence of path segments separated by a configurable separator. When the
+// rendered width exceeds MaxWidth the leading segments are replaced with "…"
+// until it fits.
+//
+// For an interactive breadcrumb with cursor navigation and selection, see
+// Breadcrumb.
 type Breadcrumbs struct {
 	// Segments are the individual path parts, e.g. []string{"home", "docs", "api"}.
 	Segments []string
