@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Full release history is also available on
 [GitHub Releases](https://github.com/blitui/blit/releases).
 
+## [0.2.19] - 2026-04-10
+
+### Added
+- Changelog, roadmap, and API reference documentation updates for v0.2.15–v0.2.18
+
+## [0.2.18] - 2026-04-10
+
+### Added
+- Charts Component interface tests (Init, Update, KeyBindings, Focused, SetFocused, SetTheme) for all 5 chart types
+- Charts edge case tests (zero max, custom colors, flat data, empty series)
+- Charts package coverage improved from 86.1% to 93.4%
+
+## [0.2.17] - 2026-04-10
+
+### Added
+- FilePicker enhanced test coverage (hidden files, search navigation, preview pane, zero size, unfocused state, init, default root, directory collapse)
+
+## [0.2.16] - 2026-04-10
+
+### Added
+- Theme importer tests using inline data (Gogh, Alacritty, iTerm2) covering partial fields, 0x prefix, cursor section, comments, invalid XML, empty plist
+- `clampF` edge case tests
+
+## [0.2.15] - 2026-04-10
+
+### Added
+- Changelog, roadmap, and API reference documentation updates for v0.2.0–v0.2.14
+
 ## [0.2.14] - 2026-04-10
 
 ### Added
