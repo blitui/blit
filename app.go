@@ -267,7 +267,7 @@ func safeComponentUpdate(c Component, msg tea.Msg, ctx Context) (orig Component,
 	orig = c
 	defer func() {
 		if r := recover(); r != nil {
-			// Return the original component unchanged — the App continues operating.
+			_ = r // Return the original component unchanged — the App continues operating.
 		}
 	}()
 	return c.Update(msg, ctx)
