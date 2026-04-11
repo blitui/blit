@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Full release history is also available on
 [GitHub Releases](https://github.com/blitui/blit/releases).
 
+## [0.2.21] - 2026-04-10
+
+### Added
+- Final docs update for v0.2.20, roadmap and changelog current through stability phase
+
+## [0.2.20] - 2026-04-10
+
+### Added
+- Animation/interpolation edge case tests (nil easing, t clamping, unsupported types, invalid colors, parseHexColor edge cases)
+
 ## [0.2.19] - 2026-04-10
 
 ### Added
