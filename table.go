@@ -339,6 +339,7 @@ func (t *Table) handleMouse(msg tea.MouseMsg) (Component, tea.Cmd) {
 	return t, nil
 }
 
+//nolint:gocyclo // TUI key dispatch inherently branches per key
 func (t *Table) handleKey(msg tea.KeyMsg) (Component, tea.Cmd) {
 	if t.filtering {
 		switch msg.String() {

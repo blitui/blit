@@ -9,6 +9,7 @@ import (
 )
 
 func TestRelativeTime(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 4, 8, 12, 0, 0, 0, time.UTC)
 	tests := []struct {
 		name string
@@ -33,6 +34,7 @@ func TestRelativeTime(t *testing.T) {
 }
 
 func TestOSC8Link(t *testing.T) {
+	t.Parallel()
 	t.Run("with url", func(t *testing.T) {
 		got := OSC8Link("https://example.com", "click me")
 		if !strings.Contains(got, "https://example.com") {
@@ -55,6 +57,7 @@ func TestOSC8Link(t *testing.T) {
 }
 
 func TestSparkline(t *testing.T) {
+	t.Parallel()
 	t.Run("basic", func(t *testing.T) {
 		data := []float64{1, 2, 3, 4, 5, 4, 3, 2, 1}
 		result, n := Sparkline(data, 20, nil)
@@ -112,6 +115,7 @@ func TestSparkline(t *testing.T) {
 }
 
 func TestTruncateUtil(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		input    string
@@ -140,6 +144,7 @@ func TestTruncateUtil(t *testing.T) {
 }
 
 func TestDivider(t *testing.T) {
+	t.Parallel()
 	theme := DefaultTheme()
 	d := Divider(20, theme)
 	if !strings.Contains(d, "─") {
@@ -153,6 +158,7 @@ func TestDivider(t *testing.T) {
 }
 
 func TestBadge(t *testing.T) {
+	t.Parallel()
 	t.Run("basic", func(t *testing.T) {
 		b := Badge("INFO", lipgloss.Color("#00ff00"), false)
 		if !strings.Contains(b, "INFO") {

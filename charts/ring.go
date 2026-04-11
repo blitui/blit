@@ -75,6 +75,8 @@ var quarterBlocks = map[[2]bool]rune{
 }
 
 // View renders the Ring as a string.
+//
+//nolint:gocyclo // chart rendering branches per segment
 func (r *Ring) View() string {
 	if r.width < 3 || r.height < 3 {
 		return ""

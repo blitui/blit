@@ -2,7 +2,8 @@
 .claude/
 .omc/
 .opencode/
-.factory/
+.factory/*
+!.factory/skills/
 .cursorrules
 .aider*
 .copilot/

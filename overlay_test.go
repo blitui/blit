@@ -27,6 +27,7 @@ func (s *stubOverlay) SetActive(v bool)                                     { s.
 func (s *stubOverlay) Close()                                               { s.active = false }
 
 func TestOverlayStackEmpty(t *testing.T) {
+	t.Parallel()
 	stack := newOverlayStack()
 	if stack.active() != nil {
 		t.Error("empty stack should return nil active")
@@ -34,6 +35,7 @@ func TestOverlayStackEmpty(t *testing.T) {
 }
 
 func TestOverlayStackPushPop(t *testing.T) {
+	t.Parallel()
 	stack := newOverlayStack()
 	o1 := &stubOverlay{name: "help", active: true}
 	o2 := &stubOverlay{name: "config", active: true}
@@ -60,6 +62,7 @@ func TestOverlayStackPushPop(t *testing.T) {
 }
 
 func TestOverlayStackPopClosesOverlay(t *testing.T) {
+	t.Parallel()
 	stack := newOverlayStack()
 	o := &stubOverlay{name: "help", active: true}
 	stack.push(o)

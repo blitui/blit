@@ -6,6 +6,7 @@ import (
 )
 
 func TestHelpRender(t *testing.T) {
+	t.Parallel()
 	reg := newRegistry()
 	reg.addBindings("table", []KeyBind{
 		{Key: "up", Label: "Move up", Group: "NAVIGATION"},
@@ -37,6 +38,7 @@ func TestHelpRender(t *testing.T) {
 }
 
 func TestHelpOverlayInterface(t *testing.T) {
+	t.Parallel()
 	h := NewHelp()
 	h.active = true
 	if !h.IsActive() {

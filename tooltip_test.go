@@ -16,6 +16,7 @@ func makeTestTooltip() *blit.Tooltip {
 }
 
 func TestTooltip_NewDefaults(t *testing.T) {
+	t.Parallel()
 	tt := blit.NewTooltip(blit.TooltipOpts{Text: "Hello"})
 	if tt.IsActive() {
 		t.Fatal("tooltip should not be active by default")
@@ -26,6 +27,7 @@ func TestTooltip_NewDefaults(t *testing.T) {
 }
 
 func TestTooltip_SetText(t *testing.T) {
+	t.Parallel()
 	tt := blit.NewTooltip(blit.TooltipOpts{})
 	tt.SetText("Updated")
 	if tt.Text() != "Updated" {
@@ -34,6 +36,7 @@ func TestTooltip_SetText(t *testing.T) {
 }
 
 func TestTooltip_ShowClose(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 	tt.Show()
 	if !tt.IsActive() {
@@ -46,6 +49,7 @@ func TestTooltip_ShowClose(t *testing.T) {
 }
 
 func TestTooltip_ViewInactive(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 	if tt.View() != "" {
 		t.Fatal("inactive tooltip should return empty view")
@@ -53,6 +57,7 @@ func TestTooltip_ViewInactive(t *testing.T) {
 }
 
 func TestTooltip_ViewActive(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 	tt.Show()
 	view := tt.View()
@@ -62,6 +67,7 @@ func TestTooltip_ViewActive(t *testing.T) {
 }
 
 func TestTooltip_ViewEmptyText(t *testing.T) {
+	t.Parallel()
 	tt := blit.NewTooltip(blit.TooltipOpts{Text: ""})
 	tt.SetTheme(blit.DefaultTheme())
 	tt.SetSize(80, 24)
@@ -72,6 +78,7 @@ func TestTooltip_ViewEmptyText(t *testing.T) {
 }
 
 func TestTooltip_EscDismisses(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 	tt.Show()
 
@@ -84,6 +91,7 @@ func TestTooltip_EscDismisses(t *testing.T) {
 }
 
 func TestTooltip_InactiveIgnoresInput(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 
 	updated, _ := tt.Update(tea.KeyMsg{Type: tea.KeyEsc}, blit.Context{})
@@ -96,6 +104,7 @@ func TestTooltip_InactiveIgnoresInput(t *testing.T) {
 }
 
 func TestTooltip_FloatView(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 	tt.Show()
 	tt.SetAnchor(5, 2)
@@ -113,6 +122,7 @@ func TestTooltip_FloatView(t *testing.T) {
 }
 
 func TestTooltip_FloatViewInactive(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 	bg := "Background"
 	result := tt.FloatView(bg)
@@ -122,6 +132,7 @@ func TestTooltip_FloatViewInactive(t *testing.T) {
 }
 
 func TestTooltip_SetAnchor(t *testing.T) {
+	t.Parallel()
 	tt := makeTestTooltip()
 	tt.SetAnchor(10, 5)
 	tt.Show()
@@ -137,6 +148,7 @@ func TestTooltip_SetAnchor(t *testing.T) {
 }
 
 func TestTooltip_ComponentInterface(t *testing.T) {
+	t.Parallel()
 	tt := blit.NewTooltip(blit.TooltipOpts{})
 	if cmd := tt.Init(); cmd != nil {
 		t.Fatal("Init() should return nil")
@@ -151,6 +163,7 @@ func TestTooltip_ComponentInterface(t *testing.T) {
 }
 
 func TestTooltip_KeyBindings(t *testing.T) {
+	t.Parallel()
 	tt := blit.NewTooltip(blit.TooltipOpts{})
 	binds := tt.KeyBindings()
 	if len(binds) == 0 {
@@ -159,6 +172,7 @@ func TestTooltip_KeyBindings(t *testing.T) {
 }
 
 func TestTooltip_CustomMaxWidth(t *testing.T) {
+	t.Parallel()
 	tt := blit.NewTooltip(blit.TooltipOpts{
 		Text:     "Short",
 		MaxWidth: 20,

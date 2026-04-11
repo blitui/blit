@@ -76,6 +76,8 @@ func (l *Line) seriesColor(i int) lipgloss.Color {
 }
 
 // View renders the Line as a string.
+//
+//nolint:gocyclo // chart rendering branches per data series
 func (l *Line) View() string {
 	if l.width < 2 || l.height < 2 || len(l.Series) == 0 {
 		return ""

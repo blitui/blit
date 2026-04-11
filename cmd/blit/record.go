@@ -277,6 +277,8 @@ func drawStatusBar(sess *recordSession, cols int) {
 // parseRawKey converts a raw byte sequence from the terminal into a key name
 // compatible with blit's keyMap. This is a best-effort mapping for the
 // most common keys; unknown sequences are hex-encoded.
+//
+//nolint:gocyclo // exhaustive key mapping requires many branches
 func parseRawKey(raw []byte) string {
 	if len(raw) == 0 {
 		return ""

@@ -730,6 +730,7 @@ func (a *appModel) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
+//nolint:gocyclo // TUI key dispatch inherently branches per key
 func (a *appModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	key := msg.String()
 
