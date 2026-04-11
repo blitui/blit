@@ -38,6 +38,8 @@ Full API documentation is available on [pkg.go.dev](https://pkg.go.dev/github.co
 | [`Kanban`](https://pkg.go.dev/github.com/blitui/blit#Kanban) | Multi-column board with card movement |
 | [`ChartPanel`](https://pkg.go.dev/github.com/blitui/blit#ChartPanel) | Switchable container for chart components |
 | [`Stepper`](https://pkg.go.dev/github.com/blitui/blit#Stepper) | Multi-step progress indicator with navigation |
+| [`CommandBar`](https://pkg.go.dev/github.com/blitui/blit#CommandBar) | Inline command palette with tab completion |
+| [`ConfigEditor`](https://pkg.go.dev/github.com/blitui/blit#ConfigEditor) | Settings overlay with grouped fields and validation |
 | [`ToastMsg`](https://pkg.go.dev/github.com/blitui/blit#ToastMsg) | Toast notification message |
 
 ## Overlays
