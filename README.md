@@ -116,8 +116,8 @@ More examples in [`examples/`](examples/).
 
 ## Used By
 
-- [gitstream-tui](https://github.com/moneycaringcoder/gitstream-tui) — GitHub activity dashboard
-- [cryptstream-tui](https://github.com/moneycaringcoder/cryptstream-tui) — Live cryptocurrency ticker
+- [gitstream-tui](https://github.com/blitui/gitstream-tui) — GitHub activity dashboard
+- [cryptstream-tui](https://github.com/blitui/cryptstream-tui) — Live cryptocurrency ticker
 
 ## Compatibility
 
