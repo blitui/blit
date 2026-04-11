@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Full release history is also available on
 [GitHub Releases](https://github.com/blitui/blit/releases).
 
+## [0.2.23] - 2026-04-10
+
+### Added
+- Docs update for v0.2.22 theme presets, moved theme presets from Planned to Completed in roadmap
+
+## [0.2.22] - 2026-04-10
+
+### Added
+- Solarized Dark, Everforest, and Nightfox theme presets with full semantic color tokens and Extra color maps
+- Tests for all three new presets
+
 ## [0.2.21] - 2026-04-10
 
 ### Added
