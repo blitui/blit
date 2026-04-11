@@ -1399,7 +1399,7 @@
 
 
 <h1 id="themes">Themes<a class="headerlink" href="#themes" title="Permanent link">&para;</a></h1>
-<p>blit ships 8 built-in theme presets plus a <code>DefaultTheme</code> (dark teal) and <code>LightTheme</code>. All components update automatically when the theme changes.</p>
+<p>blit ships 11 built-in theme presets plus a <code>DefaultTheme</code> (dark teal) and <code>LightTheme</code>. All components update automatically when the theme changes.</p>
 <h2 id="built-in-presets">Built-In Presets<a class="headerlink" href="#built-in-presets" title="Permanent link">&para;</a></h2>
 <p>Use <code>blit.ThemePreset(name)</code> or call the constructor directly:</p>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nx">theme</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">DraculaTheme</span><span class="p">()</span>
@@ -1410,6 +1410,9 @@
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">RosePineTheme</span><span class="p">()</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">KanagawaTheme</span><span class="p">()</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">OneDarkTheme</span><span class="p">()</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">SolarizedDarkTheme</span><span class="p">()</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">EverforestTheme</span><span class="p">()</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">NightfoxTheme</span><span class="p">()</span>
 </span></code></pre></div>
 <p>Or by name (registered in <code>init()</code>):</p>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nx">theme</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">ThemePreset</span><span class="p">(</span><span class="s">&quot;dracula&quot;</span><span class="p">)</span>
@@ -1420,6 +1423,9 @@
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">ThemePreset</span><span class="p">(</span><span class="s">&quot;rose-pine&quot;</span><span class="p">)</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">ThemePreset</span><span class="p">(</span><span class="s">&quot;kanagawa&quot;</span><span class="p">)</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">ThemePreset</span><span class="p">(</span><span class="s">&quot;one-dark&quot;</span><span class="p">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">ThemePreset</span><span class="p">(</span><span class="s">&quot;solarized-dark&quot;</span><span class="p">)</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">ThemePreset</span><span class="p">(</span><span class="s">&quot;everforest&quot;</span><span class="p">)</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="nx">theme</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nx">blit</span><span class="p">.</span><span class="nx">ThemePreset</span><span class="p">(</span><span class="s">&quot;nightfox&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="preset-color-tokens">Preset Color Tokens<a class="headerlink" href="#preset-color-tokens" title="Permanent link">&para;</a></h2>
 <table>
@@ -1497,6 +1503,30 @@
 <td><code>#98c379</code></td>
 <td><code>#e06c75</code></td>
 <td><code>#e5c07b</code></td>
+</tr>
+<tr>
+<td><strong>Solarized Dark</strong></td>
+<td><code>#268bd2</code></td>
+<td><code>#6c71c4</code></td>
+<td><code>#859900</code></td>
+<td><code>#dc322f</code></td>
+<td><code>#b58900</code></td>
+</tr>
+<tr>
+<td><strong>Everforest</strong></td>
+<td><code>#7fbbb3</code></td>
+<td><code>#d699b6</code></td>
+<td><code>#a7c080</code></td>
+<td><code>#e67e80</code></td>
+<td><code>#dbbc7f</code></td>
+</tr>
+<tr>
+<td><strong>Nightfox</strong></td>
+<td><code>#719cd6</code></td>
+<td><code>#9d79d6</code></td>
+<td><code>#81b29a</code></td>
+<td><code>#c94f6d</code></td>
+<td><code>#dbc074</code></td>
 </tr>
 </tbody>
 </table>
