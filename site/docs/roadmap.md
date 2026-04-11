@@ -12,6 +12,11 @@
 | v0.12.0 | SSH serve via Wish, cosign signature verification, delta updates, docs site, starter template |
 | v0.11.0 | blit snapshot review UI, VHS tape integration, screen diff viewer |
 | v0.10.0 | Context struct, dev console overlay, theme hot-reload |
+| v0.2.19 | Docs update for v0.2.15–v0.2.18 |
+| v0.2.18 | Charts Component interface tests, coverage to 93.4% |
+| v0.2.17 | FilePicker enhanced test coverage |
+| v0.2.16 | Theme importer tests (Gogh, Alacritty, iTerm2) |
+| v0.2.15 | Changelog, roadmap, API reference docs update |
 | v0.2.14 | Form field test coverage, glyphs/presets tests |
 | v0.2.12 | Stepper multi-step progress indicator |
 | v0.2.11 | Tooltip floating overlay |
