@@ -101,7 +101,7 @@ More examples in [`examples/`](examples/).
 | `site/` | MkDocs Material documentation site |
 | `templates/` | Starter project template |
 | `testdata/` | Test fixtures (theme files) |
-| `blit/` | Virtual terminal testing framework |
+| `btest/` | Virtual terminal testing framework |
 | `updatetest/` | Self-updater test mocks |
 
 ## Used By
