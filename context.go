@@ -33,6 +33,21 @@ type Context struct {
 	Logger *slog.Logger
 }
 
+// LogRedact wraps a value so that slog emits "[REDACTED]" instead of the
+// actual content. Use it when logging sensitive data (tokens, keys, paths)
+// that should not appear in log output.
+func LogRedact(v any) slog.LogValuer {
+	return redacted{v: v}
+}
+
+type redacted struct{ v any }
+
+func (r redacted) LogValue() slog.Value {
+	return slog.StringValue("[REDACTED]")
+}
+
+var _ slog.LogValuer = redacted{}
+
 // Size is the width and height available to a component.
 type Size struct {
 	Width  int

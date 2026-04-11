@@ -1,0 +1,30 @@
+graph TB
+    subgraph App["App (orchestrator)"]
+        Focus[Focus Cycle]
+        Overlay[Overlay Stack]
+        Slots[Slot Layout]
+    end
+
+    subgraph Components["Components (implement Component interface)"]
+        Table
+        Tree
+        Form
+        Tabs
+        ListView
+        LogViewer
+        Charts
+    end
+
+    subgraph Infrastructure["Infrastructure"]
+        Theme[Theme System]
+        Keybind[Keybinding Registry]
+        Updater[Self-Updater]
+        btest[btest Harness]
+    end
+
+    Context[Context] --> |Theme, Size, Focus, Logger| Components
+    App --> |dispatch messages| Components
+    Components --> |View()| App
+    Theme --> |presets, hot-reload, importers| Context
+    Keybind --> |auto help| Context
+    btest --> |golden files, snapshots| Components

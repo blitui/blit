@@ -88,6 +88,8 @@ func GenerateWithOptions(sess *btest.Session, opts Options) string {
 
 // keyToVHS maps a blit key name to the equivalent VHS directive.
 // Returns an empty string for keys that have no VHS representation.
+//
+//nolint:gocyclo // exhaustive key mapping requires many branches
 func keyToVHS(key string) string {
 	switch key {
 	case "enter":

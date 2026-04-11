@@ -6,6 +6,7 @@ import (
 )
 
 func TestCollapsibleSectionDefaultExpanded(t *testing.T) {
+	t.Parallel()
 	s := NewCollapsibleSection("VOL SPIKES")
 	if s.Collapsed {
 		t.Error("section should be expanded by default")
@@ -13,6 +14,7 @@ func TestCollapsibleSectionDefaultExpanded(t *testing.T) {
 }
 
 func TestCollapsibleSectionToggle(t *testing.T) {
+	t.Parallel()
 	s := NewCollapsibleSection("VOL SPIKES")
 	s.Toggle()
 	if !s.Collapsed {
@@ -25,6 +27,7 @@ func TestCollapsibleSectionToggle(t *testing.T) {
 }
 
 func TestCollapsibleSectionRenderExpanded(t *testing.T) {
+	t.Parallel()
 	s := NewCollapsibleSection("VOL SPIKES")
 	theme := DefaultTheme()
 	output := s.Render(theme, func() string {
@@ -42,6 +45,7 @@ func TestCollapsibleSectionRenderExpanded(t *testing.T) {
 }
 
 func TestCollapsibleSectionRenderCollapsed(t *testing.T) {
+	t.Parallel()
 	s := NewCollapsibleSection("VOL SPIKES")
 	s.Toggle()
 	theme := DefaultTheme()

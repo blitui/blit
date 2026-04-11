@@ -6,6 +6,7 @@ import (
 )
 
 func TestStatusBarView(t *testing.T) {
+	t.Parallel()
 	bar := NewStatusBar(StatusBarOpts{
 		Left:  func() string { return "LEFT" },
 		Right: func() string { return "RIGHT" },
@@ -22,6 +23,7 @@ func TestStatusBarView(t *testing.T) {
 }
 
 func TestStatusBarOverflow(t *testing.T) {
+	t.Parallel()
 	bar := NewStatusBar(StatusBarOpts{
 		Left:  func() string { return "? help  / search  p panel  q quit  •  42 pairs" },
 		Right: func() string { return "  1/42  BTC 67,432.10  •  15:04:05 ● connected " },
@@ -36,6 +38,7 @@ func TestStatusBarOverflow(t *testing.T) {
 }
 
 func TestStatusBarNilFuncs(t *testing.T) {
+	t.Parallel()
 	bar := NewStatusBar(StatusBarOpts{})
 	bar.SetSize(40, 1)
 	bar.SetTheme(DefaultTheme())

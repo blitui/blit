@@ -185,6 +185,8 @@ func (dc *devConsole) recentKeys() []string {
 func (dc *devConsole) Init() tea.Cmd { return nil }
 
 // Update implements Component.
+//
+//nolint:gocyclo // debug console dispatches per key and pane
 func (dc *devConsole) Update(msg tea.Msg, ctx Context) (Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:

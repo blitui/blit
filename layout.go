@@ -421,19 +421,15 @@ func toFlexItem(item Component) flexItem {
 	}
 }
 
-// resolveHBoxSlots computes the pixel widths for each HBox child.
-func resolveHBoxSlots(h *HBox) []flexItem {
-	n := len(h.Items)
-	items := make([]flexItem, n)
-	for i, it := range h.Items {
-		items[i] = toFlexItem(it)
-	}
-
+// resolveFlexSlots computes the sizes for each flex child along one axis.
+// size is the available space (width for HBox, height for VBox).
+func resolveFlexSlots(items []flexItem, gap, size int) []flexItem {
+	n := len(items)
 	totalGap := 0
 	if n > 1 {
-		totalGap = h.Gap * (n - 1)
+		totalGap = gap * (n - 1)
 	}
-	available := h.width - totalGap
+	available := size - totalGap
 	if available < 0 {
 		available = 0
 	}
@@ -457,9 +453,9 @@ func resolveHBoxSlots(h *HBox) []flexItem {
 		distributed := 0
 		for i, it := range items {
 			if it.grow > 0 {
-				w := (flexSpace * it.grow) / totalGrow
-				items[i].fixedSz = w
-				distributed += w
+				s := (flexSpace * it.grow) / totalGrow
+				items[i].fixedSz = s
+				distributed += s
 			}
 		}
 		rem := flexSpace - distributed
@@ -476,59 +472,22 @@ func resolveHBoxSlots(h *HBox) []flexItem {
 	return items
 }
 
+// resolveHBoxSlots computes the pixel widths for each HBox child.
+func resolveHBoxSlots(h *HBox) []flexItem {
+	items := make([]flexItem, len(h.Items))
+	for i, it := range h.Items {
+		items[i] = toFlexItem(it)
+	}
+	return resolveFlexSlots(items, h.Gap, h.width)
+}
+
 // resolveVBoxSlots computes the row heights for each VBox child.
 func resolveVBoxSlots(v *VBox) []flexItem {
-	n := len(v.Items)
-	items := make([]flexItem, n)
+	items := make([]flexItem, len(v.Items))
 	for i, it := range v.Items {
 		items[i] = toFlexItem(it)
 	}
-
-	totalGap := 0
-	if n > 1 {
-		totalGap = v.Gap * (n - 1)
-	}
-	available := v.height - totalGap
-	if available < 0 {
-		available = 0
-	}
-
-	totalGrow := 0
-	fixed := 0
-	for _, it := range items {
-		if it.grow > 0 {
-			totalGrow += it.grow
-		} else {
-			fixed += it.fixedSz
-		}
-	}
-
-	flexSpace := available - fixed
-	if flexSpace < 0 {
-		flexSpace = 0
-	}
-
-	if totalGrow > 0 {
-		distributed := 0
-		for i, it := range items {
-			if it.grow > 0 {
-				h := (flexSpace * it.grow) / totalGrow
-				items[i].fixedSz = h
-				distributed += h
-			}
-		}
-		rem := flexSpace - distributed
-		if rem > 0 {
-			for i := len(items) - 1; i >= 0; i-- {
-				if items[i].grow > 0 {
-					items[i].fixedSz += rem
-					break
-				}
-			}
-		}
-	}
-
-	return items
+	return resolveFlexSlots(items, v.Gap, v.height)
 }
 
 // renderHBox renders an HBox's children into a single joined string.

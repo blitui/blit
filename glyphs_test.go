@@ -7,6 +7,7 @@ import (
 )
 
 func TestDefaultGlyphs_NonEmpty(t *testing.T) {
+	t.Parallel()
 	g := blit.DefaultGlyphs()
 	fields := []struct {
 		name  string
@@ -39,6 +40,7 @@ func TestDefaultGlyphs_NonEmpty(t *testing.T) {
 }
 
 func TestDefaultGlyphs_SpinnerFrames(t *testing.T) {
+	t.Parallel()
 	g := blit.DefaultGlyphs()
 	if len(g.SpinnerFrames) == 0 {
 		t.Fatal("DefaultGlyphs().SpinnerFrames should not be empty")
@@ -51,6 +53,7 @@ func TestDefaultGlyphs_SpinnerFrames(t *testing.T) {
 }
 
 func TestAsciiGlyphs_NonEmpty(t *testing.T) {
+	t.Parallel()
 	g := blit.AsciiGlyphs()
 	fields := []struct {
 		name  string
@@ -81,6 +84,7 @@ func TestAsciiGlyphs_NonEmpty(t *testing.T) {
 }
 
 func TestAsciiGlyphs_SpinnerFrames(t *testing.T) {
+	t.Parallel()
 	g := blit.AsciiGlyphs()
 	if len(g.SpinnerFrames) == 0 {
 		t.Fatal("AsciiGlyphs().SpinnerFrames should not be empty")
@@ -88,6 +92,7 @@ func TestAsciiGlyphs_SpinnerFrames(t *testing.T) {
 }
 
 func TestAsciiGlyphs_AsciiOnly(t *testing.T) {
+	t.Parallel()
 	g := blit.AsciiGlyphs()
 	check := func(name, val string) {
 		for _, r := range val {
@@ -112,6 +117,7 @@ func TestAsciiGlyphs_AsciiOnly(t *testing.T) {
 }
 
 func TestGlyphs_DefaultAndAsciiHaveSameFieldCount(t *testing.T) {
+	t.Parallel()
 	d := blit.DefaultGlyphs()
 	a := blit.AsciiGlyphs()
 

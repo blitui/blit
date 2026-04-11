@@ -79,6 +79,8 @@ func (g *Gauge) bandColor(band int) lipgloss.Color {
 }
 
 // View renders the Gauge as a string.
+//
+//nolint:gocyclo // chart rendering branches per data point
 func (g *Gauge) View() string {
 	if g.width < 5 || g.height < 3 {
 		return ""

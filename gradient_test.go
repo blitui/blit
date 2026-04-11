@@ -7,6 +7,7 @@ import (
 )
 
 func TestParseHex(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		input      string
 		r, g, b    uint8
@@ -30,6 +31,7 @@ func TestParseHex(t *testing.T) {
 }
 
 func TestLerpU8(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		a, b uint8
 		t    float64
@@ -51,6 +53,7 @@ func TestLerpU8(t *testing.T) {
 }
 
 func TestGradientRenderAt(t *testing.T) {
+	t.Parallel()
 	g := Gradient{Start: lipgloss.Color("#000000"), End: lipgloss.Color("#ffffff")}
 
 	cases := []struct {
@@ -72,6 +75,7 @@ func TestGradientRenderAt(t *testing.T) {
 }
 
 func TestGradientRenderText(t *testing.T) {
+	t.Parallel()
 	g := Gradient{Start: lipgloss.Color("#ff0000"), End: lipgloss.Color("#0000ff")}
 
 	// Empty string returns empty
@@ -93,6 +97,7 @@ func TestGradientRenderText(t *testing.T) {
 }
 
 func TestRenderGradient(t *testing.T) {
+	t.Parallel()
 	g := Gradient{Start: lipgloss.Color("#ff0000"), End: lipgloss.Color("#0000ff")}
 	got := RenderGradient("test", g)
 	if got == "" {

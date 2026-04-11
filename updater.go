@@ -586,6 +586,8 @@ func extractFromZip(data []byte, binaryName string) ([]byte, error) {
 // BLIT_UPDATE_DISABLE env var, cfg.Disabled, and cfg.Mode == UpdateDryRun
 // (which logs every step without writing anything). Before/After/Error
 // hooks on cfg are called at the corresponding points.
+//
+//nolint:gocyclo // multi-step update process with many branch points
 func SelfUpdate(cfg UpdateConfig) error {
 	if updateDisabled(cfg) {
 		return nil

@@ -85,6 +85,8 @@ func (h *Heatmap) cellColor(t float64) lipgloss.Color {
 }
 
 // View renders the Heatmap as a string.
+//
+//nolint:gocyclo // chart rendering branches per data point
 func (h *Heatmap) View() string {
 	if h.width < 2 || h.height < 1 || len(h.Grid) == 0 {
 		return ""

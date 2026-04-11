@@ -145,11 +145,11 @@ func TestSelfUpdate_OnBeforeUpdateAborts(t *testing.T) {
 	}
 }
 
-var errSentinel = &sentinelErr{"sentinel"}
+var errSentinel = &sentinelError{"sentinel"}
 
-type sentinelErr struct{ s string }
+type sentinelError struct{ s string }
 
-func (e *sentinelErr) Error() string { return e.s }
+func (e *sentinelError) Error() string { return e.s }
 
 func TestSelfUpdate_DryRunNoWrites(t *testing.T) {
 	os.Unsetenv(EnvDisableUpdate)

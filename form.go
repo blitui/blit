@@ -165,6 +165,20 @@ func (f *fieldBase) renderError(theme Theme) string {
 	return lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Negative)).Render("  x " + f.err.Error())
 }
 
+// renderInputField renders a standard input-style field (label, input, hint, error).
+func (f *fieldBase) renderInputField(focused bool, theme Theme, width int, inputView string) string {
+	labelLine := f.renderLabel(focused, theme)
+	if h := f.renderHint(theme); h != "" {
+		labelLine += h
+	}
+	inputStyle := lipgloss.NewStyle().Width(width - 2)
+	lines := []string{labelLine, inputStyle.Render(inputView)}
+	if errLine := f.renderError(theme); errLine != "" {
+		lines = append(lines, errLine)
+	}
+	return strings.Join(lines, "\n")
+}
+
 // TextField is a single-line text input field.
 type TextField struct {
 	fieldBase
@@ -324,19 +338,10 @@ func (f *PasswordField) SetFocused(focused bool) {
 
 // View renders the PasswordField as a string.
 func (f *PasswordField) View(focused bool, theme Theme, width int) string {
-	labelLine := f.renderLabel(focused, theme)
-	if h := f.renderHint(theme); h != "" {
-		labelLine += h
-	}
 	if focused {
 		f.input.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Accent))
 	}
-	inputStyle := lipgloss.NewStyle().Width(width - 2)
-	lines := []string{labelLine, inputStyle.Render(f.input.View())}
-	if errLine := f.renderError(theme); errLine != "" {
-		lines = append(lines, errLine)
-	}
-	return strings.Join(lines, "\n")
+	return f.renderInputField(focused, theme, width, f.input.View())
 }
 
 // SelectField is a single-choice field rendered as a cycling selector.
@@ -734,19 +739,10 @@ func (f *NumberField) SetFocused(focused bool) {
 
 // View renders the NumberField as a string.
 func (f *NumberField) View(focused bool, theme Theme, width int) string {
-	labelLine := f.renderLabel(focused, theme)
-	if h := f.renderHint(theme); h != "" {
-		labelLine += h
-	}
 	if focused {
 		f.input.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.Accent))
 	}
-	inputStyle := lipgloss.NewStyle().Width(width - 2)
-	lines := []string{labelLine, inputStyle.Render(f.input.View())}
-	if errLine := f.renderError(theme); errLine != "" {
-		lines = append(lines, errLine)
-	}
-	return strings.Join(lines, "\n")
+	return f.renderInputField(focused, theme, width, f.input.View())
 }
 
 // FormGroup is a named group of fields with a visual separator.

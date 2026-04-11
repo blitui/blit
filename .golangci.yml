@@ -12,19 +12,34 @@ linters:
     - gocritic
     - ineffassign
     - misspell
+    - gocyclo
+    - dupl
+    - errname
     # TODO: enable incrementally after fixing pre-existing issues
     # - gosec    # 29 issues (test false positives, integer overflow in conversions)
-    # - gocyclo  # 14 issues (complex View/Update methods typical in TUI code)
     # - revive   # 50 issues (unused params in tests, naming conventions)
     # - nilerr   # 16 issues (nil error returns)
-    # - errname  # 1 issue (sentinelErr naming)
   disable:
     - depguard
+  settings:
+    gocyclo:
+      min-complexity: 30
+    dupl:
+      threshold: 120
   exclusions:
     rules:
-      - path: _test\.go
+      - path: '_test\.go'
         linters:
           - errcheck
-      - path: examples/
+          - dupl
+      - path: 'updatetest/'
         linters:
           - errcheck
+          - dupl
+      - path: 'examples/'
+        linters:
+          - errcheck
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 3

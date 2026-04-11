@@ -7,6 +7,17 @@ on:
     branches: [main]
 
 jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
   fmt:
     runs-on: ubuntu-latest
     steps:
@@ -34,6 +45,20 @@ jobs:
         with:
           version: latest
 
+  validate-agents-md:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Validate AGENTS.md commands
+        run: |
+          echo "Validating AGENTS.md commands still work..."
+          go build ./...
+          go vet ./...
+          echo "AGENTS.md commands validated successfully"
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -41,10 +66,24 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+          cache: true
       - run: go build ./...
       - run: go vet ./...
-      - run: go test -race -coverprofile=coverage.out ./...
+      - run: go test -race -json -coverprofile=coverage.out -covermode=atomic ./... 2>&1 | tee test-output.json
+      - run: |
+          total=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: ${total}%"
+          threshold=70
+          if [ "$(echo "$total < $threshold" | bc -l)" -eq 1 ]; then
+            echo "Coverage ${total}% is below threshold ${threshold}%"
+            exit 1
+          fi
+          echo "Coverage ${total}% meets threshold ${threshold}%"
       - uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage.out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: test-output
+          path: test-output.json

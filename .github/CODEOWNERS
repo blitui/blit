@@ -1,0 +1,8 @@
+# Default owners for everything
+*       @blitui/moneycaringcoder
+
+# Security-sensitive files
+.github/workflows/*.yml   @blitui/moneycaringcoder
+go.mod                    @blitui/moneycaringcoder
+go.sum                    @blitui/moneycaringcoder
+SECURITY.md               @blitui/moneycaringcoder

@@ -1,7 +1,8 @@
 name: Droid Auto Review
 
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -23,7 +24,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Run Droid Auto Review
-        uses: Factory-AI/droid-action@v3
+        uses: Factory-AI/droid-action@7f004974a56c44c63b97c39fac9b9d150701026f
         with:
           factory_api_key: ${{ secrets.FACTORY_API_KEY }}
           automatic_review: true
