@@ -187,7 +187,7 @@ const goModTmpl = `module {{.ModulePath}}
 
 go 1.25.0
 
-require github.com/blitui/blit v0.1.13
+require github.com/blitui/blit v0.2.22
 `
 
 const gitignoreTmpl = `# Binaries
