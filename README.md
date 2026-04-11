@@ -28,7 +28,7 @@ The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https:
 go get github.com/blitui/blit
 ```
 
-**blit CLI** (optional test runner):
+**blit CLI** (project scaffolding, test runner, dev tools):
 
 ```bash
 # Homebrew
@@ -43,6 +43,16 @@ go install github.com/blitui/blit/cmd/blit@latest
 ```
 
 ## Quick Start
+
+Scaffold a new project with the CLI:
+
+```bash
+blit init
+```
+
+Choose from three starter templates (minimal, dashboard, form) and get a buildable project with tests out of the box.
+
+Or start from scratch:
 
 ```go
 package main
