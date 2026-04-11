@@ -9,17 +9,18 @@ The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https:
 
 ## Features
 
-- **Table** with sorting, filtering, custom cell rendering, mouse support, and virtualized scrolling (1M+ rows)
-- **ListView, Tabs, Picker, Tree, Form, LogViewer** and more out of the box
-- **Dual-pane layout** with collapsible sidebar, flex layout, split panes
+- **30+ components** — Table (virtualized, 1M+ rows), Tree, Form, Tabs, Picker, FilePicker, LogViewer, ListView, and more
+- **Rich overlays** — Dialog, Menu, Tooltip, Toast notifications, command bar
+- **Interactive widgets** — Accordion, Stepper, Spinner, ProgressBar, Timeline, Kanban, Breadcrumb
+- **Layout system** — dual-pane, HBox/VBox flex, split panes with draggable dividers
+- **Charts** — bar, line, ring, gauge, heatmap
+- **11 theme presets** — Dracula, Catppuccin Mocha, Tokyo Night, Nord, Gruvbox Dark, Rose Pine, Kanagawa, One Dark, Solarized Dark, Everforest, Nightfox
+- **Theme system** — semantic color tokens, hot-reload, terminal theme importers (iTerm2, Alacritty, Gogh)
 - **Keybinding registry** with auto-generated help screen
-- **Dark/light themes** with semantic color tokens, hot-reload, and terminal theme importers
 - **CLI primitives** (confirm, select, input, spinner, progress) for non-TUI workflows
-- **blit** virtual terminal testing framework with golden files, snapshot diffing, and a vitest-style CLI runner
-- **Charts** — bar, line, ring, gauge, heatmap, sparkline
+- **btest** virtual terminal testing framework with golden files, snapshot diffing, and a vitest-style CLI runner
 - **Self-update** — binary replacement with SHA256/cosign verification, delta patches, rollback, channels, and rate-limit backoff
 - **SSH serve** — host any blit app over SSH via Charm Wish
-- **Notifications, overlays, command bar, breadcrumbs** and other compound components
 
 ## Install
 
@@ -27,7 +28,7 @@ The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https:
 go get github.com/blitui/blit
 ```
 
-**blit CLI** (optional test runner):
+**blit CLI** (project scaffolding, test runner, dev tools):
 
 ```bash
 # Homebrew
@@ -42,6 +43,16 @@ go install github.com/blitui/blit/cmd/blit@latest
 ```
 
 ## Quick Start
+
+Scaffold a new project with the CLI:
+
+```bash
+blit init
+```
+
+Choose from three starter templates (minimal, dashboard, form) and get a buildable project with tests out of the box.
+
+Or start from scratch:
 
 ```go
 package main
@@ -100,7 +111,7 @@ More examples in [`examples/`](examples/).
 | `site/` | MkDocs Material documentation site |
 | `templates/` | Starter project template |
 | `testdata/` | Test fixtures (theme files) |
-| `blit/` | Virtual terminal testing framework |
+| `btest/` | Virtual terminal testing framework |
 | `updatetest/` | Self-updater test mocks |
 
 ## Used By
@@ -110,7 +121,7 @@ More examples in [`examples/`](examples/).
 
 ## Compatibility
 
-blit follows [semantic versioning](https://semver.org/). Within a major version, the public API is stable — no breaking changes in minor or patch releases. Pre-v1.0 releases (v0.x) may include breaking changes in minor versions, documented in the [changelog](CHANGELOG.md).
+blit follows [semantic versioning](https://semver.org/). Within a major version, the public API is stable — no breaking changes in minor or patch releases. Pre-v1.0 releases (v0.x) may include breaking changes in minor versions, documented in the [changelog](https://blitui.github.io/blit/changelog/).
 
 ## Contributing
 
