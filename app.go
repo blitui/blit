@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -149,6 +150,28 @@ func WithClock(c Clock) Option {
 	return func(a *appModel) { a.clock = c }
 }
 
+// WithFeatureFlags registers a FeatureFlag registry with the App.
+// Components can check flags via Context.Flags to conditionally enable
+// or disable behavior at runtime.
+func WithFeatureFlags(ff *FeatureFlag) Option {
+	return func(a *appModel) { a.flags = ff }
+}
+
+// WithMetrics attaches a MetricsCollector that receives timing and event
+// data from the App's internal lifecycle. Use it to integrate with
+// Prometheus, Datadog, OpenTelemetry, or the built-in LoggingMetrics.
+func WithMetrics(collector MetricsCollector) Option {
+	return func(a *appModel) { a.metrics = collector }
+}
+
+// WithOnError registers a callback invoked when a component panics during
+// Update or View and is recovered by the App's error boundary. The hook
+// receives the component name and the recovered panic value. Use it to
+// integrate with Sentry, Bugsnag, Rollbar, or any error tracking backend.
+func WithOnError(fn func(component string, recovered any)) Option {
+	return func(a *appModel) { a.onError = fn }
+}
+
 // WithAnimations enables or disables the internal animation tick bus (~60fps).
 // Setting BLIT_NO_ANIM=1 in the environment overrides this to false.
 func WithAnimations(enabled bool) Option {
@@ -210,6 +233,10 @@ type appModel struct {
 	modules           []Module
 	clock             Clock
 	logger            *slog.Logger
+	flags             *FeatureFlag
+	metrics           MetricsCollector
+	onError           func(component string, recovered any)
+	traceCounter      uint64
 }
 
 // trackSignal registers a signal with the app's bus so its Set calls fire
@@ -249,28 +276,52 @@ func newAppModel(opts ...Option) *appModel {
 // safeView calls View() on a Component with a panic recovery boundary.
 // If the component panics, it returns a fallback error indicator instead of
 // crashing the entire application.
-func safeView(c Component, theme Theme) (view string) {
+func safeView(c Component, theme Theme, onError func(string, any)) (view string) {
 	defer func() {
 		if r := recover(); r != nil {
 			view = lipgloss.NewStyle().
 				Foreground(lipgloss.Color(theme.Negative)).
 				Render(fmt.Sprintf("[panic: %v]", r))
+			if onError != nil {
+				onError(componentName(c), r)
+			}
 		}
 	}()
 	return c.View()
 }
 
+// componentName returns a human-readable name for a Component, or
+// "unknown" if the component does not implement Stringer or namedComponent.
+func componentName(c Component) string {
+	if s, ok := c.(interface{ String() string }); ok {
+		return s.String()
+	}
+	return "unknown"
+}
+
 // safeComponentUpdate calls Update() on a Component with a panic recovery
 // boundary. If the component panics, it returns the original component and
-// a nil command.
-func safeComponentUpdate(c Component, msg tea.Msg, ctx Context) (orig Component, _ tea.Cmd) {
+// a nil command. When a metrics collector is set, it also records dispatch
+// timing and any recovered panics.
+func safeComponentUpdate(c Component, msg tea.Msg, ctx Context, metrics MetricsCollector, componentName string, onError func(string, any)) (orig Component, _ tea.Cmd) {
 	orig = c
+	start := time.Now()
 	defer func() {
 		if r := recover(); r != nil {
 			_ = r // Return the original component unchanged — the App continues operating.
+			if metrics != nil {
+				metrics.OnPanic(componentName, r)
+			}
+			if onError != nil {
+				onError(componentName, r)
+			}
 		}
 	}()
-	return c.Update(msg, ctx)
+	result, cmd := c.Update(msg, ctx)
+	if metrics != nil {
+		metrics.OnDispatch(componentName, time.Since(start))
+	}
+	return result, cmd
 }
 
 // applyTheme sets the theme on any value that implements the Themed interface.
@@ -624,6 +675,8 @@ func (a *appModel) ctx() Context {
 		Hotkeys: a.registry,
 		Clock:   a.clock,
 		Logger:  a.logger,
+		Flags:   a.flags,
+		TraceID: atomic.AddUint64(&a.traceCounter, 1),
 	}
 }
 
@@ -632,16 +685,24 @@ func (a *appModel) broadcastMsg(msg tea.Msg) tea.Cmd {
 	ctx := a.ctx()
 	var cmds []tea.Cmd
 	for _, nc := range a.components {
-		if _, cmd := safeComponentUpdate(nc.component, msg, ctx); cmd != nil {
+		if _, cmd := safeComponentUpdate(nc.component, msg, ctx, a.metrics, nc.name, a.onError); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 	}
 	if a.dualPane != nil {
-		if _, cmd := safeComponentUpdate(a.dualPane.Main, msg, ctx); cmd != nil {
+		mainName := a.dualPane.MainName
+		if mainName == "" {
+			mainName = "Main"
+		}
+		if _, cmd := safeComponentUpdate(a.dualPane.Main, msg, ctx, a.metrics, mainName, a.onError); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 		if a.dualPane.Side != nil {
-			if _, cmd := safeComponentUpdate(a.dualPane.Side, msg, ctx); cmd != nil {
+			sideName := a.dualPane.SideName
+			if sideName == "" {
+				sideName = "Side"
+			}
+			if _, cmd := safeComponentUpdate(a.dualPane.Side, msg, ctx, a.metrics, sideName, a.onError); cmd != nil {
 				cmds = append(cmds, cmd)
 			}
 		}
@@ -1025,6 +1086,8 @@ func (a *appModel) renderBadge(name string, focused bool) string {
 }
 
 func (a *appModel) View() string {
+	renderStart := time.Now()
+
 	// Record frame time and update snapshot for dev console (zero cost when nil)
 	if a.devConsole != nil {
 		a.devConsole.recordFrame(time.Now())
@@ -1035,7 +1098,7 @@ func (a *appModel) View() string {
 	if overlay := a.overlays.active(); overlay != nil {
 		if _, ok := overlay.(InlineOverlay); !ok {
 			if _, ok := overlay.(FloatingOverlay); !ok {
-				return safeView(overlay, a.theme)
+				return safeView(overlay, a.theme, a.onError)
 			}
 		}
 	}
@@ -1066,7 +1129,7 @@ func (a *appModel) View() string {
 		if mainName == "" {
 			mainName = "Main"
 		}
-		mainView := safeView(a.dualPane.Main, a.theme)
+		mainView := safeView(a.dualPane.Main, a.theme, a.onError)
 		if badges {
 			badge := a.renderBadge(mainName, a.focusIdx == 0)
 			mainView = lipgloss.JoinVertical(lipgloss.Left, badge, mainView)
@@ -1077,7 +1140,7 @@ func (a *appModel) View() string {
 			if sideName == "" {
 				sideName = "Side"
 			}
-			sideView := safeView(a.dualPane.Side, a.theme)
+			sideView := safeView(a.dualPane.Side, a.theme, a.onError)
 			if badges {
 				badge := a.renderBadge(sideName, a.focusIdx == 1)
 				sideView = lipgloss.JoinVertical(lipgloss.Left, badge, sideView)
@@ -1089,7 +1152,7 @@ func (a *appModel) View() string {
 	} else {
 		var views []string
 		for i, nc := range a.components {
-			v := safeView(nc.component, a.theme)
+			v := safeView(nc.component, a.theme, a.onError)
 			if badges {
 				badge := a.renderBadge(nc.name, i == a.focusIdx)
 				v = lipgloss.JoinVertical(lipgloss.Left, badge, v)
@@ -1102,7 +1165,7 @@ func (a *appModel) View() string {
 	var bottom []string
 	if overlay := a.overlays.active(); overlay != nil {
 		if _, ok := overlay.(InlineOverlay); ok {
-			bottom = append(bottom, safeView(overlay, a.theme))
+			bottom = append(bottom, safeView(overlay, a.theme, a.onError))
 		}
 	}
 	if a.notifyMsg != "" {
@@ -1131,7 +1194,16 @@ func (a *appModel) View() string {
 		}
 	}
 
+	a.emitRenderMetrics(renderStart)
 	return result
+}
+
+// emitRenderMetrics sends a render timing event to the metrics collector
+// if one is configured. Called at the end of View().
+func (a *appModel) emitRenderMetrics(start time.Time) {
+	if a.metrics != nil {
+		a.metrics.OnRender(time.Since(start))
+	}
 }
 
 // joinPanes renders main + separator + side with a full-height border.

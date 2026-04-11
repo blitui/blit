@@ -1,6 +1,8 @@
 package blit
 
-import "log/slog"
+import (
+	"log/slog"
+)
 
 // Context carries ambient state that every Component.Update call receives.
 // It is constructed by the App on each dispatch and passed down through the
@@ -31,6 +33,19 @@ type Context struct {
 	// Logger is an optional structured logger. Components should treat a
 	// nil Logger as "logging disabled" rather than panicking.
 	Logger *slog.Logger
+
+	// Flags exposes the app-wide feature flag registry. Components can
+	// check flags to conditionally enable or disable behavior at runtime.
+	// Nil means no flags are configured — callers should treat this as
+	// "all features at their defaults".
+	Flags *FeatureFlag
+
+	// TraceID identifies the current message dispatch cycle. Every call
+	// to App.Update generates a unique trace ID so that components can
+	// correlate log entries and metrics across the dispatch chain.
+	// Components can log it or pass it to downstream systems for
+	// end-to-end message tracing.
+	TraceID uint64
 }
 
 // LogRedact wraps a value so that slog emits "[REDACTED]" instead of the
