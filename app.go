@@ -249,10 +249,12 @@ func newAppModel(opts ...Option) *appModel {
 // safeView calls View() on a Component with a panic recovery boundary.
 // If the component panics, it returns a fallback error indicator instead of
 // crashing the entire application.
-func safeView(c Component, theme Theme) string {
+func safeView(c Component, theme Theme) (view string) {
 	defer func() {
 		if r := recover(); r != nil {
-			// Log but don't crash — the App continues rendering.
+			view = lipgloss.NewStyle().
+				Foreground(lipgloss.Color(theme.Negative)).
+				Render(fmt.Sprintf("[panic: %v]", r))
 		}
 	}()
 	return c.View()
@@ -261,10 +263,11 @@ func safeView(c Component, theme Theme) string {
 // safeComponentUpdate calls Update() on a Component with a panic recovery
 // boundary. If the component panics, it returns the original component and
 // a nil command.
-func safeComponentUpdate(c Component, msg tea.Msg, ctx Context) (Component, tea.Cmd) {
+func safeComponentUpdate(c Component, msg tea.Msg, ctx Context) (orig Component, _ tea.Cmd) {
+	orig = c
 	defer func() {
 		if r := recover(); r != nil {
-			// Swallow the panic — the App continues operating.
+			// Return the original component unchanged — the App continues operating.
 		}
 	}()
 	return c.Update(msg, ctx)
