@@ -166,11 +166,11 @@ func TestSeverityIcon(t *testing.T) {
 	}
 }
 
-func TestTruncate(t *testing.T) {
-	if truncate("hello", 10) != "hello" {
+func TestTruncateRunes(t *testing.T) {
+	if truncateRunes("hello", 10) != "hello" {
 		t.Error()
 	}
-	got := truncate("hello world", 5)
+	got := truncateRunes("hello world", 5)
 	if []rune(got)[len([]rune(got))-1] != '…' {
 		t.Errorf("last rune should be ellipsis, got %q", got)
 	}

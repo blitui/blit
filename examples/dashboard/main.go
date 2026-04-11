@@ -221,7 +221,7 @@ func main() {
 		blit.WithTickInterval(100*time.Millisecond),
 	)
 
-	if err := app.Run(); err != nil {
+	if _, err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

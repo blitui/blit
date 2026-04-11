@@ -177,6 +177,14 @@ type Poller struct {
 	needsRefresh bool
 	clock        Clock
 
+	// stopCh is closed by Stop() to interrupt in-flight fetches and backoff
+	// sleeps. Nil when no context-aware fetch is configured.
+	stopCh chan struct{}
+
+	// cancel is called when the poller is stopped, causing in-flight
+	// context-aware fetches to abort.
+	cancel context.CancelFunc
+
 	// Enhanced fields (only used when created via NewPollerWithOpts).
 	name              string
 	fetch             func() (tea.Msg, error)
@@ -278,6 +286,23 @@ func (p *Poller) TogglePause() { p.paused = !p.paused }
 // ForceRefresh triggers a poll on the next Check call, even if paused.
 func (p *Poller) ForceRefresh() { p.needsRefresh = true }
 
+// Stop cancels any in-flight context-aware fetch and prevents further
+// retries. It is safe to call Stop multiple times.
+func (p *Poller) Stop() {
+	if p.cancel != nil {
+		p.cancel()
+		p.cancel = nil
+	}
+	if p.stopCh != nil {
+		select {
+		case <-p.stopCh:
+			// Already closed
+		default:
+			close(p.stopCh)
+		}
+	}
+}
+
 // IsPaused returns whether polling is paused.
 func (p *Poller) IsPaused() bool { return p.paused }
 
@@ -314,6 +339,14 @@ func NewPollerWithOpts(opts PollerOpts) *Poller {
 		maxRetries:  opts.MaxRetries,
 		autoToast:   opts.AutoToast,
 		enhanced:    true,
+	}
+	if opts.FetchCtx != nil {
+		ctx, cancel := context.WithCancel(context.Background())
+		p.cancel = cancel
+		p.stopCh = make(chan struct{})
+		p.fetchCtx = func(_ context.Context) (tea.Msg, error) {
+			return opts.FetchCtx(ctx)
+		}
 	}
 
 	// Wire up the legacy cmd field to use the enhanced fetch pipeline.
@@ -357,7 +390,18 @@ func (p *Poller) enhancedFetch() tea.Cmd {
 			if delay < 0 {
 				break
 			}
-			time.Sleep(delay)
+			// Use a select on a timer so Stop() can interrupt the sleep.
+			if p.stopCh != nil {
+				timer := time.NewTimer(delay)
+				select {
+				case <-timer.C:
+				case <-p.stopCh:
+					timer.Stop()
+					return PollerErrorMsg{Name: p.name, Err: fmt.Errorf("poller stopped during backoff")}
+				}
+			} else {
+				time.Sleep(delay)
+			}
 		}
 
 		if p.onError != nil {

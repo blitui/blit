@@ -2,6 +2,7 @@ package blit
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -134,6 +135,20 @@ func WithFocusCycleKey(key string) Option {
 	return func(a *appModel) { a.focusCycleKey = key }
 }
 
+// WithLogger sets a structured logger that is available to all components
+// via Context.Logger. If not set, Context.Logger is nil (components should
+// treat nil as "logging disabled").
+func WithLogger(l *slog.Logger) Option {
+	return func(a *appModel) { a.logger = l }
+}
+
+// WithClock sets the Clock implementation available to all components via
+// Context.Clock. Useful for testing with a FakeClock. If not set, components
+// should fall back to time.Now directly.
+func WithClock(c Clock) Option {
+	return func(a *appModel) { a.clock = c }
+}
+
 // WithAnimations enables or disables the internal animation tick bus (~60fps).
 // Setting BLIT_NO_ANIM=1 in the environment overrides this to false.
 func WithAnimations(enabled bool) Option {
@@ -193,6 +208,8 @@ type appModel struct {
 	slots             *slotRegistry
 	devConsole        *devConsole
 	modules           []Module
+	clock             Clock
+	logger            *slog.Logger
 }
 
 // trackSignal registers a signal with the app's bus so its Set calls fire
@@ -227,6 +244,30 @@ func newAppModel(opts ...Option) *appModel {
 	a.materialiseSlots()
 	a.setup()
 	return a
+}
+
+// safeView calls View() on a Component with a panic recovery boundary.
+// If the component panics, it returns a fallback error indicator instead of
+// crashing the entire application.
+func safeView(c Component, theme Theme) string {
+	defer func() {
+		if r := recover(); r != nil {
+			// Log but don't crash — the App continues rendering.
+		}
+	}()
+	return c.View()
+}
+
+// safeComponentUpdate calls Update() on a Component with a panic recovery
+// boundary. If the component panics, it returns the original component and
+// a nil command.
+func safeComponentUpdate(c Component, msg tea.Msg, ctx Context) (Component, tea.Cmd) {
+	defer func() {
+		if r := recover(); r != nil {
+			// Swallow the panic — the App continues operating.
+		}
+	}()
+	return c.Update(msg, ctx)
 }
 
 // applyTheme sets the theme on any value that implements the Themed interface.
@@ -578,6 +619,8 @@ func (a *appModel) ctx() Context {
 		Size:    Size{Width: a.width, Height: a.height},
 		Focus:   Focus{Index: a.focusIdx, Name: focusName},
 		Hotkeys: a.registry,
+		Clock:   a.clock,
+		Logger:  a.logger,
 	}
 }
 
@@ -586,16 +629,16 @@ func (a *appModel) broadcastMsg(msg tea.Msg) tea.Cmd {
 	ctx := a.ctx()
 	var cmds []tea.Cmd
 	for _, nc := range a.components {
-		if _, cmd := nc.component.Update(msg, ctx); cmd != nil {
+		if _, cmd := safeComponentUpdate(nc.component, msg, ctx); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 	}
 	if a.dualPane != nil {
-		if _, cmd := a.dualPane.Main.Update(msg, ctx); cmd != nil {
+		if _, cmd := safeComponentUpdate(a.dualPane.Main, msg, ctx); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
 		if a.dualPane.Side != nil {
-			if _, cmd := a.dualPane.Side.Update(msg, ctx); cmd != nil {
+			if _, cmd := safeComponentUpdate(a.dualPane.Side, msg, ctx); cmd != nil {
 				cmds = append(cmds, cmd)
 			}
 		}
@@ -988,7 +1031,7 @@ func (a *appModel) View() string {
 	if overlay := a.overlays.active(); overlay != nil {
 		if _, ok := overlay.(InlineOverlay); !ok {
 			if _, ok := overlay.(FloatingOverlay); !ok {
-				return overlay.View()
+				return safeView(overlay, a.theme)
 			}
 		}
 	}
@@ -1019,7 +1062,7 @@ func (a *appModel) View() string {
 		if mainName == "" {
 			mainName = "Main"
 		}
-		mainView := a.dualPane.Main.View()
+		mainView := safeView(a.dualPane.Main, a.theme)
 		if badges {
 			badge := a.renderBadge(mainName, a.focusIdx == 0)
 			mainView = lipgloss.JoinVertical(lipgloss.Left, badge, mainView)
@@ -1030,7 +1073,7 @@ func (a *appModel) View() string {
 			if sideName == "" {
 				sideName = "Side"
 			}
-			sideView := a.dualPane.Side.View()
+			sideView := safeView(a.dualPane.Side, a.theme)
 			if badges {
 				badge := a.renderBadge(sideName, a.focusIdx == 1)
 				sideView = lipgloss.JoinVertical(lipgloss.Left, badge, sideView)
@@ -1042,7 +1085,7 @@ func (a *appModel) View() string {
 	} else {
 		var views []string
 		for i, nc := range a.components {
-			v := nc.component.View()
+			v := safeView(nc.component, a.theme)
 			if badges {
 				badge := a.renderBadge(nc.name, i == a.focusIdx)
 				v = lipgloss.JoinVertical(lipgloss.Left, badge, v)
@@ -1055,7 +1098,7 @@ func (a *appModel) View() string {
 	var bottom []string
 	if overlay := a.overlays.active(); overlay != nil {
 		if _, ok := overlay.(InlineOverlay); ok {
-			bottom = append(bottom, overlay.View())
+			bottom = append(bottom, safeView(overlay, a.theme))
 		}
 	}
 	if a.notifyMsg != "" {
@@ -1102,11 +1145,28 @@ func (a *appModel) joinPanes(mainView, sideView string, height int) string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, sideView, sep, mainView)
 }
 
+// UpdateAction represents an action the update system requests the caller
+// to perform. Because a library must never call os.Exit, the update system
+// returns these actions and Run() carries them out in the main function context.
+type UpdateAction int
+
+const (
+	// UpdateActionNone means no action is required; the app starts normally.
+	UpdateActionNone UpdateAction = iota
+	// UpdateActionRestart means the binary was replaced and the process
+	// should exit so the user can relaunch.
+	UpdateActionRestart
+	// UpdateActionAbort means the update gate or blocking prompt chose not
+	// to update and the app should exit without starting the TUI.
+	UpdateActionAbort
+)
+
 // App is the main entry point for a blit application.
 type App struct {
 	model   *appModel
 	opts    []tea.ProgramOption
 	program *tea.Program
+	done    chan struct{}
 }
 
 // NewApp creates a new App with the given options.
@@ -1120,11 +1180,26 @@ func NewApp(opts ...Option) *App {
 }
 
 // Run starts the TUI application. It blocks until the user quits.
-func (a *App) Run() error {
+//
+// If WithAutoUpdate is configured, Run may return with an UpdateAction
+// requesting the caller to restart or exit instead of running the TUI.
+// Check the returned UpdateAction:
+//
+//	action, err := app.Run()
+//	if action == blit.UpdateActionRestart {
+//	    // Binary was replaced; advise user to relaunch.
+//	}
+func (a *App) Run() (UpdateAction, error) {
 	// Auto-update check (before TUI starts)
 	if a.model.updateConfig != nil {
-		a.runUpdateCheck()
+		action := a.runUpdateCheck()
+		if action != UpdateActionNone {
+			return action, nil
+		}
 	}
+
+	a.done = make(chan struct{})
+	defer close(a.done)
 
 	a.program = tea.NewProgram(a.model, a.opts...)
 	if a.model.signalBus != nil {
@@ -1144,21 +1219,34 @@ func (a *App) Run() error {
 		}
 	}
 	_, err := a.program.Run()
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "user canceled") {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 	}
-	return err
+	return UpdateActionNone, err
+}
+
+// Done returns a channel that is closed when the App finishes running.
+// Use this to orchestrate clean shutdown of background goroutines:
+//
+//	go func() {
+//	    <-app.Done()
+//	    close(dbConn)
+//	}()
+func (a *App) Done() <-chan struct{} {
+	return a.done
 }
 
 // runUpdateCheck performs the update check based on configured mode.
-func (a *App) runUpdateCheck() {
+// It returns an UpdateAction instead of calling os.Exit so the caller
+// (Run) can decide how to handle the result.
+func (a *App) runUpdateCheck() UpdateAction {
 	// Clean up leftover .old binary from a previous self-update
 	CleanupOldBinary()
 
 	cfg := a.model.updateConfig
 	result, err := CheckForUpdate(*cfg)
 	if err != nil || !result.Available {
-		return
+		return UpdateActionNone
 	}
 
 	// Detect install method
@@ -1182,7 +1270,7 @@ func (a *App) runUpdateCheck() {
 		if result.InstallMethod != InstallManual {
 			// Package manager users get the upgrade command, no self-replace
 			fmt.Println(upgradeHint)
-			return
+			return UpdateActionNone
 		}
 		fmt.Print("Update now? [y/n]: ")
 		var answer string
@@ -1190,10 +1278,10 @@ func (a *App) runUpdateCheck() {
 		if strings.ToLower(strings.TrimSpace(answer)) == "y" {
 			if err := SelfUpdate(*cfg); err != nil {
 				fmt.Fprintf(os.Stderr, "Update failed: %v\n", err)
-				return
+				return UpdateActionNone
 			}
 			fmt.Printf("Updated to %s. Please restart.\n", result.LatestVersion)
-			os.Exit(0)
+			return UpdateActionRestart
 		}
 
 	case UpdateNotify:
@@ -1212,28 +1300,28 @@ func (a *App) runUpdateCheck() {
 
 	case UpdateForced:
 		// Full-screen blocking gate. If the user accepts, we run
-		// SelfUpdate inline and exit; otherwise the app exits without
+		// SelfUpdate inline; otherwise the app exits without
 		// launching its main UI.
 		gate := NewForcedUpdateScreen(result, *cfg)
 		p := tea.NewProgram(gate, tea.WithAltScreen())
 		if _, err := p.Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Update gate failed: %v\n", err)
-			os.Exit(1)
+			return UpdateActionAbort
 		}
 		switch gate.Choice {
 		case ForcedChoiceUpdate:
 			if result.InstallMethod != InstallManual {
 				fmt.Println(upgradeHint)
-				os.Exit(0)
+				return UpdateActionRestart
 			}
 			if err := SelfUpdate(*cfg); err != nil {
 				fmt.Fprintf(os.Stderr, "Update failed: %v\n", err)
-				os.Exit(1)
+				return UpdateActionAbort
 			}
 			fmt.Printf("Updated to %s. Please restart.\n", result.LatestVersion)
-			os.Exit(0)
+			return UpdateActionRestart
 		default:
-			os.Exit(0)
+			return UpdateActionAbort
 		}
 
 	case UpdateDryRun:
@@ -1241,6 +1329,7 @@ func (a *App) runUpdateCheck() {
 			fmt.Fprintf(os.Stderr, "Dry-run update error: %v\n", err)
 		}
 	}
+	return UpdateActionNone
 }
 
 func (a *App) upgradeHint(result *UpdateResult) string {

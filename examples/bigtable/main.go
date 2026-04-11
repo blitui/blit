@@ -160,7 +160,7 @@ func main() {
 		blit.WithHelp(),
 	)
 
-	if err := app.Run(); err != nil {
+	if _, err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

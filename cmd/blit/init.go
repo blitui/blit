@@ -249,7 +249,7 @@ import (
 
 func main() {
 	a := app.New()
-	if err := a.Run(); err != nil {
+	if _, err := a.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

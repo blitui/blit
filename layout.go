@@ -18,13 +18,6 @@ type Layout interface {
 	compute(totalWidth, totalHeight int) (paneSize, paneSize, bool)
 }
 
-// SinglePane is a layout with one component filling all available space.
-type SinglePane struct{}
-
-func (s SinglePane) compute(totalWidth, totalHeight int) (paneSize, paneSize, bool) {
-	return paneSize{totalWidth, totalHeight}, paneSize{}, false
-}
-
 // DualPane is a layout with a main component and a collapsible sidebar.
 type DualPane struct {
 	Main         Component // Main pane component
@@ -44,7 +37,7 @@ func (d *DualPane) Toggle() {
 	d.sideHidden = !d.sideHidden
 }
 
-func (d DualPane) compute(totalWidth, totalHeight int) (paneSize, paneSize, bool) {
+func (d *DualPane) compute(totalWidth, totalHeight int) (paneSize, paneSize, bool) {
 	if d.sideHidden {
 		return paneSize{totalWidth, totalHeight}, paneSize{}, false
 	}
@@ -116,6 +109,15 @@ func (s Sized) SetSize(w, h int)       { s.C.SetSize(w, h) }
 func (s Sized) Focused() bool          { return s.C.Focused() }
 // SetFocused sets the focus state of the Sized.
 func (s Sized) SetFocused(f bool)      { s.C.SetFocused(f) }
+
+// SetTheme delegates theme propagation to the inner component if it
+// implements Themed. This ensures runtime theme switching reaches
+// children inside HBox/VBox layouts.
+func (s Sized) SetTheme(t Theme) {
+	if themed, ok := s.C.(Themed); ok {
+		themed.SetTheme(t)
+	}
+}
 
 // Flex wraps a Component that grows proportionally to fill remaining space.
 // Grow is the relative weight — a child with Grow=2 gets twice as much space
@@ -235,7 +237,7 @@ func (h *HBox) SetSize(width, height int) {
 		if c == nil || i >= len(slots) {
 			continue
 		}
-		childH := childHeight(h.Align, height, slots[i].fixedSz)
+		childH := h.height
 		c.SetSize(slots[i].fixedSz, childH)
 	}
 }
@@ -314,7 +316,7 @@ func (v *VBox) SetSize(width, height int) {
 		if c == nil || i >= len(slots) {
 			continue
 		}
-		childW := childWidth(v.Align, width, slots[i].fixedSz)
+		childW := v.width
 		c.SetSize(childW, slots[i].fixedSz)
 	}
 }
@@ -515,20 +517,6 @@ func resolveVBoxSlots(v *VBox) []flexItem {
 	}
 
 	return items
-}
-
-// childHeight returns the height to pass to an HBox child for SetSize.
-// All alignments receive the full cross-axis dimension; visual alignment
-// (start/center/end) is applied later in alignCrossHBox at render time.
-func childHeight(_ FlexAlign, totalH, _ int) int {
-	return totalH
-}
-
-// childWidth returns the width to pass to a VBox child for SetSize.
-// All alignments receive the full cross-axis dimension; visual alignment
-// (start/center/end) is applied later in alignCrossVBox at render time.
-func childWidth(_ FlexAlign, totalW, _ int) int {
-	return totalW
 }
 
 // renderHBox renders an HBox's children into a single joined string.
