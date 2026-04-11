@@ -5,8 +5,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Wait 3 days after a new release before proposing the update, reducing
+    # the risk of pulling in a yanked or reverted version.
+    stability-days: 3
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    stability-days: 3
