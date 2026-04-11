@@ -19,6 +19,9 @@ func TestPresets_AllRegistered(t *testing.T) {
 		"rose-pine",
 		"kanagawa",
 		"one-dark",
+		"solarized-dark",
+		"everforest",
+		"nightfox",
 	}
 	for _, name := range expected {
 		if _, ok := presets[name]; !ok {
@@ -135,5 +138,26 @@ func TestOneDarkTheme(t *testing.T) {
 	th := blit.OneDarkTheme()
 	if th.Accent != lipgloss.Color("#61afef") {
 		t.Fatalf("OneDark Accent = %v, want #61afef", th.Accent)
+	}
+}
+
+func TestSolarizedDarkTheme(t *testing.T) {
+	th := blit.SolarizedDarkTheme()
+	if th.Accent != lipgloss.Color("#268bd2") {
+		t.Fatalf("SolarizedDark Accent = %v, want #268bd2", th.Accent)
+	}
+}
+
+func TestEverforestTheme(t *testing.T) {
+	th := blit.EverforestTheme()
+	if th.Accent != lipgloss.Color("#7fbbb3") {
+		t.Fatalf("Everforest Accent = %v, want #7fbbb3", th.Accent)
+	}
+}
+
+func TestNightfoxTheme(t *testing.T) {
+	th := blit.NightfoxTheme()
+	if th.Accent != lipgloss.Color("#719cd6") {
+		t.Fatalf("Nightfox Accent = %v, want #719cd6", th.Accent)
 	}
 }

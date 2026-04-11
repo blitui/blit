@@ -11,6 +11,9 @@ func init() {
 	Register("rose-pine", RosePineTheme())
 	Register("kanagawa", KanagawaTheme())
 	Register("one-dark", OneDarkTheme())
+	Register("solarized-dark", SolarizedDarkTheme())
+	Register("everforest", EverforestTheme())
+	Register("nightfox", NightfoxTheme())
 }
 
 // DraculaTheme returns the Dracula colour theme.
@@ -217,6 +220,84 @@ func OneDarkTheme() Theme {
 			"issue":   "#d19a66",
 			"release": "#61afef",
 			"local":   "#56b6c2",
+		},
+	}
+}
+
+// SolarizedDarkTheme returns the Solarized Dark colour theme.
+func SolarizedDarkTheme() Theme {
+	return Theme{
+		Positive:    lipgloss.Color("#859900"),
+		Negative:    lipgloss.Color("#dc322f"),
+		Accent:      lipgloss.Color("#268bd2"),
+		Muted:       lipgloss.Color("#586e75"),
+		Text:        lipgloss.Color("#839496"),
+		TextInverse: lipgloss.Color("#002b36"),
+		Cursor:      lipgloss.Color("#6c71c4"),
+		Border:      lipgloss.Color("#073642"),
+		Flash:       lipgloss.Color("#b58900"),
+		Warn:        lipgloss.Color("#cb4b16"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#2aa198",
+			"create":  "#859900",
+			"delete":  "#dc322f",
+			"review":  "#6c71c4",
+			"comment": "#586e75",
+			"issue":   "#cb4b16",
+			"release": "#d33682",
+			"local":   "#2aa198",
+		},
+	}
+}
+
+// EverforestTheme returns the Everforest Dark colour theme.
+func EverforestTheme() Theme {
+	return Theme{
+		Positive:    lipgloss.Color("#a7c080"),
+		Negative:    lipgloss.Color("#e67e80"),
+		Accent:      lipgloss.Color("#7fbbb3"),
+		Muted:       lipgloss.Color("#859289"),
+		Text:        lipgloss.Color("#d3c6aa"),
+		TextInverse: lipgloss.Color("#2d353b"),
+		Cursor:      lipgloss.Color("#d699b6"),
+		Border:      lipgloss.Color("#475258"),
+		Flash:       lipgloss.Color("#dbbc7f"),
+		Warn:        lipgloss.Color("#e69875"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#7fbbb3",
+			"create":  "#a7c080",
+			"delete":  "#e67e80",
+			"review":  "#d699b6",
+			"comment": "#859289",
+			"issue":   "#e69875",
+			"release": "#7fbbb3",
+			"local":   "#83c092",
+		},
+	}
+}
+
+// NightfoxTheme returns the Nightfox colour theme.
+func NightfoxTheme() Theme {
+	return Theme{
+		Positive:    lipgloss.Color("#81b29a"),
+		Negative:    lipgloss.Color("#c94f6d"),
+		Accent:      lipgloss.Color("#719cd6"),
+		Muted:       lipgloss.Color("#738091"),
+		Text:        lipgloss.Color("#cdcecf"),
+		TextInverse: lipgloss.Color("#192330"),
+		Cursor:      lipgloss.Color("#9d79d6"),
+		Border:      lipgloss.Color("#2b3b51"),
+		Flash:       lipgloss.Color("#dbc074"),
+		Warn:        lipgloss.Color("#f4a261"),
+		Extra: map[string]lipgloss.Color{
+			"info":    "#63cdcf",
+			"create":  "#81b29a",
+			"delete":  "#c94f6d",
+			"review":  "#9d79d6",
+			"comment": "#738091",
+			"issue":   "#f4a261",
+			"release": "#719cd6",
+			"local":   "#63cdcf",
 		},
 	}
 }
