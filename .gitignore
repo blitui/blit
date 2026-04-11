@@ -19,6 +19,10 @@ AGENTS.md
 *.test
 *.out
 
+# Go coverage & releases
+coverage.html
+dist/
+
 # Go workspace
 go.work
 go.work.sum
