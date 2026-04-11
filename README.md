@@ -9,17 +9,18 @@ The pragmatic TUI toolkit for shipping CLI tools fast. Wraps [Bubble Tea](https:
 
 ## Features
 
-- **Table** with sorting, filtering, custom cell rendering, mouse support, and virtualized scrolling (1M+ rows)
-- **ListView, Tabs, Picker, Tree, Form, LogViewer** and more out of the box
-- **Dual-pane layout** with collapsible sidebar, flex layout, split panes
+- **30+ components** — Table (virtualized, 1M+ rows), Tree, Form, Tabs, Picker, FilePicker, LogViewer, ListView, and more
+- **Rich overlays** — Dialog, Menu, Tooltip, Toast notifications, command bar
+- **Interactive widgets** — Accordion, Stepper, Spinner, ProgressBar, Timeline, Kanban, Breadcrumb
+- **Layout system** — dual-pane, HBox/VBox flex, split panes with draggable dividers
+- **Charts** — bar, line, ring, gauge, heatmap
+- **11 theme presets** — Dracula, Catppuccin Mocha, Tokyo Night, Nord, Gruvbox Dark, Rose Pine, Kanagawa, One Dark, Solarized Dark, Everforest, Nightfox
+- **Theme system** — semantic color tokens, hot-reload, terminal theme importers (iTerm2, Alacritty, Gogh)
 - **Keybinding registry** with auto-generated help screen
-- **Dark/light themes** with semantic color tokens, hot-reload, and terminal theme importers
 - **CLI primitives** (confirm, select, input, spinner, progress) for non-TUI workflows
-- **blit** virtual terminal testing framework with golden files, snapshot diffing, and a vitest-style CLI runner
-- **Charts** — bar, line, ring, gauge, heatmap, sparkline
+- **btest** virtual terminal testing framework with golden files, snapshot diffing, and a vitest-style CLI runner
 - **Self-update** — binary replacement with SHA256/cosign verification, delta patches, rollback, channels, and rate-limit backoff
 - **SSH serve** — host any blit app over SSH via Charm Wish
-- **Notifications, overlays, command bar, breadcrumbs** and other compound components
 
 ## Install
 
