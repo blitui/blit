@@ -1,4 +1,4 @@
-.PHONY: test lint build cover tidy clean fmt vet snapshot
+.PHONY: test lint build cover tidy clean fmt fix vet snapshot check
 
 test:
 	go test -race ./...
@@ -10,6 +10,9 @@ build:
 	go build ./...
 
 fmt:
+	@gofmt -l . | grep -q . && echo "files need gofmt" && exit 1 || echo "fmt ok"
+
+fix:
 	gofmt -w .
 
 vet:
@@ -26,6 +29,8 @@ tidy:
 snapshot:
 	goreleaser build --snapshot --clean
 
+check:
+	@$(MAKE) fmt vet lint test
+
 clean:
-	rm -f coverage.out coverage.html
-	rm -f *.exe
+	rm -f coverage.out coverage.html cover.out cover2.out coverage_new.out charts_cover.out core.out *.exe
