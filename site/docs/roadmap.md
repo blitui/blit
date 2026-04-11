@@ -3,7 +3,6 @@
 ## Planned
 
 - **WASM target** — compile TUI apps for browser via `wasip1`
-- **More theme presets** — Solarized, Everforest, Nightfox
 
 ## Completed
 
@@ -12,6 +11,8 @@
 | v0.12.0 | SSH serve via Wish, cosign signature verification, delta updates, docs site, starter template |
 | v0.11.0 | blit snapshot review UI, VHS tape integration, screen diff viewer |
 | v0.10.0 | Context struct, dev console overlay, theme hot-reload |
+| v0.2.23 | Docs update for v0.2.22, theme presets complete |
+| v0.2.22 | Solarized Dark, Everforest, Nightfox theme presets |
 | v0.2.21 | Final docs update, stability phase complete |
 | v0.2.20 | Animation/interpolation edge case tests |
 | v0.2.19 | Docs update for v0.2.15–v0.2.18 |
