@@ -28,6 +28,7 @@
 | v0.2.16 | Theme importer tests (Gogh, Alacritty, iTerm2) |
 | v0.2.15 | Changelog, roadmap, API reference docs update |
 | v0.2.14 | Form field test coverage, glyphs/presets tests |
+| v0.2.13 | Glyphs test coverage, theme presets validation tests |
 | v0.2.12 | Stepper multi-step progress indicator |
 | v0.2.11 | Tooltip floating overlay |
 | v0.2.10 | Spinner animated loading indicator |
