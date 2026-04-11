@@ -41,7 +41,32 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://blitui.github.io/blit/components/accordion/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/breadcrumb/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://blitui.github.io/blit/components/charts/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/commandbar/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/configeditor/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/dialog/</loc>
          <lastmod>2026-04-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -61,12 +86,22 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://blitui.github.io/blit/components/kanban/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://blitui.github.io/blit/components/listview/</loc>
          <lastmod>2026-04-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://blitui.github.io/blit/components/logviewer/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/menu/</loc>
          <lastmod>2026-04-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -81,12 +116,27 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://blitui.github.io/blit/components/progressbar/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/spinner/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://blitui.github.io/blit/components/split/</loc>
          <lastmod>2026-04-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://blitui.github.io/blit/components/statusbar/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/stepper/</loc>
          <lastmod>2026-04-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -101,12 +151,27 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://blitui.github.io/blit/components/timeline/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://blitui.github.io/blit/components/toasts/</loc>
          <lastmod>2026-04-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://blitui.github.io/blit/components/tooltip/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://blitui.github.io/blit/components/tree/</loc>
+         <lastmod>2026-04-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://blitui.github.io/blit/components/viewport/</loc>
          <lastmod>2026-04-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
