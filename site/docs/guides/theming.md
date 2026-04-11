@@ -53,12 +53,20 @@ color  = theme.Color("missing", theme.Muted) // returns Muted fallback
 
 ## Theme Presets
 
-blit ships several built-in presets accessible via `ThemePreset`:
+blit ships 11 built-in presets accessible via `ThemePreset`:
 
 ```go
 theme := blit.ThemePreset("dracula")
+theme  = blit.ThemePreset("catppuccin-mocha")
+theme  = blit.ThemePreset("tokyo-night")
 theme  = blit.ThemePreset("nord")
-theme  = blit.ThemePreset("gruvbox")
+theme  = blit.ThemePreset("gruvbox-dark")
+theme  = blit.ThemePreset("rose-pine")
+theme  = blit.ThemePreset("kanagawa")
+theme  = blit.ThemePreset("one-dark")
+theme  = blit.ThemePreset("solarized-dark")
+theme  = blit.ThemePreset("everforest")
+theme  = blit.ThemePreset("nightfox")
 ```
 
 ## Hot Reload

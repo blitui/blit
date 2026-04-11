@@ -1,6 +1,6 @@
 # Themes
 
-blit ships 8 built-in theme presets plus a `DefaultTheme` (dark teal) and `LightTheme`. All components update automatically when the theme changes.
+blit ships 11 built-in theme presets plus a `DefaultTheme` (dark teal) and `LightTheme`. All components update automatically when the theme changes.
 
 ## Built-In Presets
 
@@ -15,6 +15,9 @@ theme  = blit.GruvboxDarkTheme()
 theme  = blit.RosePineTheme()
 theme  = blit.KanagawaTheme()
 theme  = blit.OneDarkTheme()
+theme  = blit.SolarizedDarkTheme()
+theme  = blit.EverforestTheme()
+theme  = blit.NightfoxTheme()
 ```
 
 Or by name (registered in `init()`):
@@ -28,6 +31,9 @@ theme  = blit.ThemePreset("gruvbox-dark")
 theme  = blit.ThemePreset("rose-pine")
 theme  = blit.ThemePreset("kanagawa")
 theme  = blit.ThemePreset("one-dark")
+theme  = blit.ThemePreset("solarized-dark")
+theme  = blit.ThemePreset("everforest")
+theme  = blit.ThemePreset("nightfox")
 ```
 
 ## Preset Color Tokens
@@ -42,6 +48,9 @@ theme  = blit.ThemePreset("one-dark")
 | **Rose Pine** | `#c4a7e7` | `#9ccfd8` | `#31748f` | `#eb6f92` | `#f6c177` |
 | **Kanagawa** | `#7e9cd8` | `#957fb8` | `#98bb6c` | `#e46876` | `#e98a00` |
 | **One Dark** | `#61afef` | `#c678dd` | `#98c379` | `#e06c75` | `#e5c07b` |
+| **Solarized Dark** | `#268bd2` | `#6c71c4` | `#859900` | `#dc322f` | `#b58900` |
+| **Everforest** | `#7fbbb3` | `#d699b6` | `#a7c080` | `#e67e80` | `#dbbc7f` |
+| **Nightfox** | `#719cd6` | `#9d79d6` | `#81b29a` | `#c94f6d` | `#dbc074` |
 
 ## Default and Light Themes
 
