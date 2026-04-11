@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 func main() {
@@ -55,7 +55,7 @@ func main() {
 		),
 	)
 
-	if err := app.Run(); err != nil {
+	if _, err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
@@ -160,9 +160,9 @@ func (s *helpStatus) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.
 	return s, nil
 }
 func (s *helpStatus) KeyBindings() []blit.KeyBind { return nil }
-func (s *helpStatus) SetSize(w, h int)              { s.width = w; s.height = h }
-func (s *helpStatus) Focused() bool                 { return s.focused }
-func (s *helpStatus) SetFocused(f bool)             { s.focused = f }
+func (s *helpStatus) SetSize(w, h int)            { s.width = w; s.height = h }
+func (s *helpStatus) Focused() bool               { return s.focused }
+func (s *helpStatus) SetFocused(f bool)           { s.focused = f }
 func (s *helpStatus) SetTheme(t blit.Theme)       { s.theme = t }
 
 func (s *helpStatus) View() string {

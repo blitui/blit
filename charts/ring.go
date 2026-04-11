@@ -5,9 +5,9 @@ import (
 	"math"
 	"strings"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 // Ring renders a circular progress ring using unicode quarter-block characters.
@@ -44,20 +44,26 @@ func NewRing(value, max float64, label string) *Ring {
 
 // Init initializes the Ring component.
 func (r *Ring) Init() tea.Cmd { return nil }
+
 // Update handles incoming messages and updates Ring state.
 func (r *Ring) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return r, nil
 }
+
 // KeyBindings returns the key bindings for the Ring.
 func (r *Ring) KeyBindings() []blit.KeyBind { return nil }
+
 // SetSize sets the width and height of the Ring.
-func (r *Ring) SetSize(w, h int)              { r.width = w; r.height = h }
+func (r *Ring) SetSize(w, h int) { r.width = w; r.height = h }
+
 // Focused reports whether the Ring is focused.
-func (r *Ring) Focused() bool                 { return r.focused }
+func (r *Ring) Focused() bool { return r.focused }
+
 // SetFocused sets the focus state of the Ring.
-func (r *Ring) SetFocused(f bool)             { r.focused = f }
+func (r *Ring) SetFocused(f bool) { r.focused = f }
+
 // SetTheme updates the theme used by the Ring.
-func (r *Ring) SetTheme(t blit.Theme)       { r.theme = t }
+func (r *Ring) SetTheme(t blit.Theme) { r.theme = t }
 
 // quarterBlocks maps (topFill, bottomFill) → unicode block character.
 // Each cell covers 2 vertical sub-pixels (top and bottom half).

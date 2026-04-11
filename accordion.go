@@ -31,8 +31,8 @@ type AccordionOpts struct {
 type Accordion struct {
 	opts     AccordionOpts
 	sections []AccordionSection
-	cursor int
-	theme  Theme
+	cursor   int
+	theme    Theme
 	focused  bool
 	width    int
 	height   int

@@ -128,9 +128,9 @@ Useful commands:
 // scaffoldProject creates the project directory and writes all template files.
 func scaffoldProject(dir string, opts initOpts) error {
 	files := map[string]string{
-		"go.mod":    goModTmpl,
+		"go.mod":     goModTmpl,
 		".gitignore": gitignoreTmpl,
-		"Makefile":  makefileTmpl,
+		"Makefile":   makefileTmpl,
 	}
 
 	// Add template-specific files.
@@ -249,7 +249,7 @@ import (
 
 func main() {
 	a := app.New()
-	if err := a.Run(); err != nil {
+	if _, err := a.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

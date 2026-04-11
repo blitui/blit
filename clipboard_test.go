@@ -41,4 +41,3 @@ func TestCopyToClipboardWithNotify(t *testing.T) {
 		t.Fatal("CopyToClipboardWithNotify returned nil")
 	}
 }
-

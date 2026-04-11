@@ -119,11 +119,15 @@ func (h *Help) KeyBindings() []KeyBind {
 
 // SetSize sets the width and height of the Help.
 func (h *Help) SetSize(w, ht int) { h.width = w; h.height = ht }
+
 // Focused reports whether the Help is focused.
-func (h *Help) Focused() bool     { return h.focused }
+func (h *Help) Focused() bool { return h.focused }
+
 // SetFocused sets the focus state of the Help.
 func (h *Help) SetFocused(f bool) { h.focused = f }
+
 // IsActive reports whether the Help overlay is currently visible.
-func (h *Help) IsActive() bool    { return h.active }
+func (h *Help) IsActive() bool { return h.active }
+
 // Close deactivates the Help and resets its state.
-func (h *Help) Close()            { h.active = false }
+func (h *Help) Close() { h.active = false }

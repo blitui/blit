@@ -161,15 +161,20 @@ func (c *CommandBar) KeyBindings() []KeyBind {
 }
 
 // SetSize sets the width and height of the CommandBar.
-func (c *CommandBar) SetSize(w, h int)  { c.width = w; c.height = h }
+func (c *CommandBar) SetSize(w, h int) { c.width = w; c.height = h }
+
 // Focused reports whether the CommandBar is focused.
-func (c *CommandBar) Focused() bool     { return c.focused }
+func (c *CommandBar) Focused() bool { return c.focused }
+
 // SetFocused sets the focus state of the CommandBar.
 func (c *CommandBar) SetFocused(f bool) { c.focused = f }
+
 // IsActive reports whether the CommandBar overlay is currently visible.
-func (c *CommandBar) IsActive() bool    { return c.active }
+func (c *CommandBar) IsActive() bool { return c.active }
+
 // SetActive shows or hides the CommandBar overlay.
-func (c *CommandBar) SetActive(v bool)  { c.active = v }
+func (c *CommandBar) SetActive(v bool) { c.active = v }
+
 // Close deactivates the CommandBar and resets its state.
 func (c *CommandBar) Close() {
 	c.active = false

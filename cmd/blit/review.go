@@ -17,9 +17,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/blitui/blit/btest"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/blitui/blit/btest"
 )
 
 // ----------------------------------------------------------------------------

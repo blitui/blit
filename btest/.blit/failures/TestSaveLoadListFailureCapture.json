@@ -1,0 +1,6 @@
+{
+  "test_name": "TestSaveLoadListFailureCapture",
+  "kind": "screen_equal",
+  "expected_screen": "e",
+  "actual_screen": "a"
+}

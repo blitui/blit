@@ -154,9 +154,9 @@ func TestSelfUpdateCosignVerification(t *testing.T) {
 	checksumFile := makeChecksumFile(archive, assetName)
 
 	tests := []struct {
-		name        string
-		sig         []byte
-		pubKey      string
+		name          string
+		sig           []byte
+		pubKey        string
 		wantCosignErr bool
 	}{
 		{

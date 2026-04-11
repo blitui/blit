@@ -18,9 +18,9 @@ import (
 	"os"
 	"strings"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 // ---- tree placeholder -------------------------------------------------------
@@ -56,11 +56,11 @@ func newTreePlaceholder() *TreePlaceholder {
 	}
 }
 
-func (t *TreePlaceholder) Init() tea.Cmd                 { return nil }
+func (t *TreePlaceholder) Init() tea.Cmd               { return nil }
 func (t *TreePlaceholder) KeyBindings() []blit.KeyBind { return nil }
-func (t *TreePlaceholder) SetSize(w, h int)              { t.width = w; t.height = h }
-func (t *TreePlaceholder) Focused() bool                 { return t.focused }
-func (t *TreePlaceholder) SetFocused(f bool)             { t.focused = f }
+func (t *TreePlaceholder) SetSize(w, h int)            { t.width = w; t.height = h }
+func (t *TreePlaceholder) Focused() bool               { return t.focused }
+func (t *TreePlaceholder) SetFocused(f bool)           { t.focused = f }
 func (t *TreePlaceholder) SetTheme(th blit.Theme)      { t.theme = th }
 
 func (t *TreePlaceholder) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {

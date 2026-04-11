@@ -16,8 +16,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/blitui/blit/internal/tape"
 	"github.com/blitui/blit/btest"
+	"github.com/blitui/blit/internal/tape"
 )
 
 // runVHS is the entry point for `blit vhs`.

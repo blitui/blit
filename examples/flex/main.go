@@ -19,9 +19,9 @@ import (
 	"os"
 	"strings"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 // --- Simple stub components ---
@@ -36,9 +36,9 @@ func (h *headerPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.
 	return h, nil
 }
 func (h *headerPane) KeyBindings() []blit.KeyBind { return nil }
-func (h *headerPane) SetSize(w, ht int)             { h.width = w; h.height = ht }
-func (h *headerPane) Focused() bool                 { return false }
-func (h *headerPane) SetFocused(bool)               {}
+func (h *headerPane) SetSize(w, ht int)           { h.width = w; h.height = ht }
+func (h *headerPane) Focused() bool               { return false }
+func (h *headerPane) SetFocused(bool)             {}
 func (h *headerPane) SetTheme(t blit.Theme)       { h.theme = t }
 func (h *headerPane) View() string {
 	style := lipgloss.NewStyle().
@@ -71,9 +71,9 @@ func (s *sidebarPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea
 	return s, nil
 }
 func (s *sidebarPane) KeyBindings() []blit.KeyBind { return nil }
-func (s *sidebarPane) SetSize(w, h int)              { s.width = w; s.height = h }
-func (s *sidebarPane) Focused() bool                 { return s.focused }
-func (s *sidebarPane) SetFocused(f bool)             { s.focused = f }
+func (s *sidebarPane) SetSize(w, h int)            { s.width = w; s.height = h }
+func (s *sidebarPane) Focused() bool               { return s.focused }
+func (s *sidebarPane) SetFocused(f bool)           { s.focused = f }
 func (s *sidebarPane) SetTheme(t blit.Theme)       { s.theme = t }
 func (s *sidebarPane) View() string {
 	borderColor := s.theme.Border
@@ -103,9 +103,9 @@ func (c *contentPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea
 	return c, nil
 }
 func (c *contentPane) KeyBindings() []blit.KeyBind { return nil }
-func (c *contentPane) SetSize(w, h int)              { c.width = w; c.height = h }
-func (c *contentPane) Focused() bool                 { return c.focused }
-func (c *contentPane) SetFocused(f bool)             { c.focused = f }
+func (c *contentPane) SetSize(w, h int)            { c.width = w; c.height = h }
+func (c *contentPane) Focused() bool               { return c.focused }
+func (c *contentPane) SetFocused(f bool)           { c.focused = f }
 func (c *contentPane) SetTheme(t blit.Theme)       { c.theme = t }
 func (c *contentPane) View() string {
 	borderColor := c.theme.Border
@@ -150,9 +150,9 @@ func (f *footerPane) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.
 	return f, nil
 }
 func (f *footerPane) KeyBindings() []blit.KeyBind { return nil }
-func (f *footerPane) SetSize(w, h int)              { f.width = w; f.height = h }
-func (f *footerPane) Focused() bool                 { return false }
-func (f *footerPane) SetFocused(bool)               {}
+func (f *footerPane) SetSize(w, h int)            { f.width = w; f.height = h }
+func (f *footerPane) Focused() bool               { return false }
+func (f *footerPane) SetFocused(bool)             {}
 func (f *footerPane) SetTheme(t blit.Theme)       { f.theme = t }
 func (f *footerPane) View() string {
 	left := lipgloss.NewStyle().
@@ -185,10 +185,10 @@ func (l *labelComp) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.C
 	return l, nil
 }
 func (l *labelComp) KeyBindings() []blit.KeyBind { return nil }
-func (l *labelComp) SetSize(w, h int)              { l.width = w; l.height = h }
-func (l *labelComp) Focused() bool                 { return false }
-func (l *labelComp) SetFocused(bool)               {}
-func (l *labelComp) View() string                  { return l.text }
+func (l *labelComp) SetSize(w, h int)            { l.width = w; l.height = h }
+func (l *labelComp) Focused() bool               { return false }
+func (l *labelComp) SetFocused(bool)             {}
+func (l *labelComp) View() string                { return l.text }
 
 // --- Root layout component ---
 
@@ -276,7 +276,7 @@ func main() {
 		),
 	)
 
-	if err := app.Run(); err != nil {
+	if _, err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}

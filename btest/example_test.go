@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/blitui/blit/btest"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // listModel is a minimal model used in examples.
 type listModel struct {
-	items   []string
-	cursor  int
-	chosen  string
+	items  []string
+	cursor int
+	chosen string
 }
 
 func newListModel() *listModel {

@@ -12,6 +12,12 @@ linters:
     - gocritic
     - ineffassign
     - misspell
+    # TODO: enable incrementally after fixing pre-existing issues
+    # - gosec    # 29 issues (test false positives, integer overflow in conversions)
+    # - gocyclo  # 14 issues (complex View/Update methods typical in TUI code)
+    # - revive   # 50 issues (unused params in tests, naming conventions)
+    # - nilerr   # 16 issues (nil error returns)
+    # - errname  # 1 issue (sentinelErr naming)
   disable:
     - depguard
   exclusions:

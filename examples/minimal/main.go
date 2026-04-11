@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
 	blit "github.com/blitui/blit"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func main() {
@@ -44,7 +44,7 @@ func main() {
 		blit.WithHelp(),
 	)
 
-	if err := app.Run(); err != nil {
+	if _, err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

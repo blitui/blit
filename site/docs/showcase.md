@@ -8,7 +8,7 @@ Projects built with blit.
 
 Live cryptocurrency ticker with real-time price updates, sparklines, and portfolio tracking.
 
-- [github.com/moneycaringcoder/cryptstream-tui](https://github.com/moneycaringcoder/cryptstream-tui)
+- [github.com/blitui/cryptstream-tui](https://github.com/blitui/cryptstream-tui)
 - Components: Table (virtual mode), StatusBar, LogViewer, DualPane
 - Theme: Tokyo Night
 
@@ -16,7 +16,7 @@ Live cryptocurrency ticker with real-time price updates, sparklines, and portfol
 
 GitHub activity dashboard — pull requests, issues, CI status, and review queue in one TUI.
 
-- [github.com/moneycaringcoder/gitstream-tui](https://github.com/moneycaringcoder/gitstream-tui)
+- [github.com/blitui/gitstream-tui](https://github.com/blitui/gitstream-tui)
 - Components: Tabs, Table, Picker, Help, StatusBar
 - Theme: Catppuccin Mocha
 

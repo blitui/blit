@@ -24,8 +24,12 @@ type BreadcrumbOpts struct {
 	OnSelect func(item BreadcrumbItem, index int)
 }
 
-// Breadcrumb displays a navigable path of items. It implements Component
-// and Themed.
+// Breadcrumb is an interactive, cursor-driven breadcrumb navigation component
+// with selection support. It displays a navigable path of items and allows the
+// user to move between them with keyboard input and invoke an OnSelect callback.
+// It implements Component and Themed.
+//
+// For a simple display-only path trail, see Breadcrumbs.
 type Breadcrumb struct {
 	opts    BreadcrumbOpts
 	items   []BreadcrumbItem

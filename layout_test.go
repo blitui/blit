@@ -2,20 +2,6 @@ package blit
 
 import "testing"
 
-func TestSinglePaneSize(t *testing.T) {
-	sp := SinglePane{}
-	main, side, sideVisible := sp.compute(120, 40)
-	if main.width != 120 || main.height != 40 {
-		t.Errorf("expected 120x40, got %dx%d", main.width, main.height)
-	}
-	if sideVisible {
-		t.Error("SinglePane should not have a side")
-	}
-	if side.width != 0 || side.height != 0 {
-		t.Errorf("side should be 0x0, got %dx%d", side.width, side.height)
-	}
-}
-
 func TestDualPaneSizeNormal(t *testing.T) {
 	dp := DualPane{SideWidth: 30, MinMainWidth: 60, SideRight: true}
 	main, side, sideVisible := dp.compute(120, 40)

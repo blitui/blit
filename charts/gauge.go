@@ -5,9 +5,9 @@ import (
 	"math"
 	"strings"
 
+	blit "github.com/blitui/blit"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	blit "github.com/blitui/blit"
 )
 
 // Gauge renders a half-circle (semicircle) gauge with colored threshold bands.
@@ -44,20 +44,26 @@ func NewGauge(value, max float64, thresholds []float64, label string) *Gauge {
 
 // Init initializes the Gauge component.
 func (g *Gauge) Init() tea.Cmd { return nil }
+
 // Update handles incoming messages and updates Gauge state.
 func (g *Gauge) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) {
 	return g, nil
 }
+
 // KeyBindings returns the key bindings for the Gauge.
 func (g *Gauge) KeyBindings() []blit.KeyBind { return nil }
+
 // SetSize sets the width and height of the Gauge.
-func (g *Gauge) SetSize(w, h int)              { g.width = w; g.height = h }
+func (g *Gauge) SetSize(w, h int) { g.width = w; g.height = h }
+
 // Focused reports whether the Gauge is focused.
-func (g *Gauge) Focused() bool                 { return g.focused }
+func (g *Gauge) Focused() bool { return g.focused }
+
 // SetFocused sets the focus state of the Gauge.
-func (g *Gauge) SetFocused(f bool)             { g.focused = f }
+func (g *Gauge) SetFocused(f bool) { g.focused = f }
+
 // SetTheme updates the theme used by the Gauge.
-func (g *Gauge) SetTheme(t blit.Theme)       { g.theme = t }
+func (g *Gauge) SetTheme(t blit.Theme) { g.theme = t }
 
 // bandColor returns the theme color for the band index.
 func (g *Gauge) bandColor(band int) lipgloss.Color {

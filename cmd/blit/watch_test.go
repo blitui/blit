@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	blit "github.com/blitui/blit"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // newTestModel returns a watchModel sized for tests.

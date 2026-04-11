@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/blitui/blit/internal/tape"
 	"github.com/blitui/blit/btest"
+	"github.com/blitui/blit/internal/tape"
 )
 
 // fixtureSession returns a small hand-crafted session that matches

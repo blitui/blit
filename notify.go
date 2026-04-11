@@ -214,7 +214,7 @@ func (tm *toastManager) renderEntry(e *toastEntry, screenWidth int) string {
 	bodyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(tm.theme.Muted))
 	iconStyle := lipgloss.NewStyle().Foreground(color).Bold(true)
 	innerWidth := toastPanelWidth - 6
-	header := iconStyle.Render(severityIcon(e.Severity)) + " " + titleStyle.Render(truncate(e.Title, innerWidth))
+	header := iconStyle.Render(severityIcon(e.Severity)) + " " + titleStyle.Render(truncateRunes(e.Title, innerWidth))
 	var lines []string
 	lines = append(lines, accentBar+header)
 	if e.Body != "" {
@@ -250,7 +250,10 @@ func (tm *toastManager) renderEntry(e *toastEntry, screenWidth int) string {
 	return panel
 }
 
-func truncate(s string, maxLen int) string {
+// truncateRunes truncates s to at most maxLen runes, appending "…" if
+// truncated. This is a rune-count truncation (not visual width); for
+// ANSI-aware truncation use Truncate from utils.go.
+func truncateRunes(s string, maxLen int) string {
 	runes := []rune(s)
 	if len(runes) <= maxLen {
 		return s

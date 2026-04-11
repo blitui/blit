@@ -47,8 +47,8 @@ type mockDebugProvider struct {
 	name string
 }
 
-func (p *mockDebugProvider) Name() string                         { return p.name }
-func (p *mockDebugProvider) View(w, h int, theme Theme) string    { return p.name }
+func (p *mockDebugProvider) Name() string                      { return p.name }
+func (p *mockDebugProvider) View(w, h int, theme Theme) string { return p.name }
 
 // mockDebugDataProvider implements DebugDataProvider.
 type mockDebugDataProvider struct {
@@ -254,7 +254,7 @@ type counterModule struct {
 	count int
 }
 
-func (m *counterModule) Name() string { return m.name }
+func (m *counterModule) Name() string  { return m.name }
 func (m *counterModule) Init() tea.Cmd { return nil }
 func (m *counterModule) Update(msg tea.Msg, ctx Context) (Module, tea.Cmd) {
 	m.count++

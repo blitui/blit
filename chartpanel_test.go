@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	blit "github.com/blitui/blit"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // stubChart is a minimal Component for testing ChartPanel.
@@ -16,14 +16,14 @@ type stubChart struct {
 	focused bool
 }
 
-func (s *stubChart) Init() tea.Cmd                                          { return nil }
+func (s *stubChart) Init() tea.Cmd                                                  { return nil }
 func (s *stubChart) Update(msg tea.Msg, ctx blit.Context) (blit.Component, tea.Cmd) { return s, nil }
-func (s *stubChart) View() string                                           { return s.label }
-func (s *stubChart) KeyBindings() []blit.KeyBind                            { return nil }
-func (s *stubChart) SetSize(w, h int)                                       { s.width = w; s.height = h }
-func (s *stubChart) Focused() bool                                          { return s.focused }
-func (s *stubChart) SetFocused(f bool)                                      { s.focused = f }
-func (s *stubChart) SetTheme(theme blit.Theme)                              {}
+func (s *stubChart) View() string                                                   { return s.label }
+func (s *stubChart) KeyBindings() []blit.KeyBind                                    { return nil }
+func (s *stubChart) SetSize(w, h int)                                               { s.width = w; s.height = h }
+func (s *stubChart) Focused() bool                                                  { return s.focused }
+func (s *stubChart) SetFocused(f bool)                                              { s.focused = f }
+func (s *stubChart) SetTheme(theme blit.Theme)                                      {}
 
 func TestChartPanel_NewDefaults(t *testing.T) {
 	cp := blit.NewChartPanel(blit.ChartPanelOpts{
