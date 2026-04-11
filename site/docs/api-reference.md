@@ -27,7 +27,6 @@ Full API documentation is available on [pkg.go.dev](https://pkg.go.dev/github.co
 | [`FilePicker`](https://pkg.go.dev/github.com/blitui/blit#FilePicker) | File system browser with tree navigation and preview |
 | [`LogViewer`](https://pkg.go.dev/github.com/blitui/blit#LogViewer) | Streaming log viewer with level filtering |
 | [`Viewport`](https://pkg.go.dev/github.com/blitui/blit#Viewport) | Scrollable content pane |
-| [`Markdown`](https://pkg.go.dev/github.com/blitui/blit#Markdown) | Glamour-powered markdown renderer |
 | [`StatusBar`](https://pkg.go.dev/github.com/blitui/blit#StatusBar) | Left/right footer driven by closures or signals |
 | [`Help`](https://pkg.go.dev/github.com/blitui/blit#Help) | Auto-generated keybinding overlay |
 | [`Breadcrumbs`](https://pkg.go.dev/github.com/blitui/blit#Breadcrumbs) | Navigation breadcrumb trail |
@@ -64,4 +63,4 @@ Full API documentation is available on [pkg.go.dev](https://pkg.go.dev/github.co
 |---------|-------------|
 | [`cli`](https://pkg.go.dev/github.com/blitui/blit/cli) | Interactive CLI prompts (Confirm, Select, Input, Spinner, Progress) |
 | [`charts`](https://pkg.go.dev/github.com/blitui/blit/charts) | Chart components (Bar, Line, Ring, Gauge, Heatmap) |
-| [`blit`](https://pkg.go.dev/github.com/blitui/blit/blit) | Virtual terminal testing framework |
+| [`btest`](https://pkg.go.dev/github.com/blitui/blit/btest) | Virtual terminal testing framework |

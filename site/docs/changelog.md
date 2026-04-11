@@ -262,15 +262,10 @@ Full release history is also available on
 - App framework with functional options
 - blit virtual terminal testing framework
 
-[0.12.0]: https://github.com/blitui/blit/compare/v0.11.0...v0.12.0
-[0.11.0]: https://github.com/blitui/blit/compare/v0.10.0...v0.11.0
-[0.10.0]: https://github.com/blitui/blit/compare/v0.9.0...v0.10.0
-[0.9.0]: https://github.com/blitui/blit/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/blitui/blit/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/blitui/blit/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/blitui/blit/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/blitui/blit/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/blitui/blit/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/blitui/blit/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/blitui/blit/compare/v0.1.0...v0.2.0
+[0.2.22]: https://github.com/blitui/blit/compare/v0.2.12...v0.2.22
+[0.2.12]: https://github.com/blitui/blit/compare/v0.1.23...v0.2.12
+[0.12.5]: https://github.com/blitui/blit/compare/v0.1.13...v0.1.23
+[0.1.23]: https://github.com/blitui/blit/compare/v0.1.13...v0.1.23
+[0.1.13]: https://github.com/blitui/blit/compare/v0.1.3...v0.1.13
+[0.1.3]: https://github.com/blitui/blit/compare/v0.1.0...v0.1.3
 [0.1.0]: https://github.com/blitui/blit/releases/tag/v0.1.0
