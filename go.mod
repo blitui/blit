@@ -10,7 +10,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gabstv/go-bsdiff v1.0.5
 	github.com/rcarmo/go-te v0.1.0
-	golang.org/x/crypto v0.50.0
+	golang.org/x/crypto v0.51.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -36,8 +36,8 @@ require (
 	github.com/yuin/goldmark v1.7.13 // indirect
 	github.com/yuin/goldmark-emoji v1.0.6 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/net v0.52.0 // indirect
-	golang.org/x/term v0.42.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
 )
 
 require (
@@ -46,7 +46,7 @@ require (
 	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/colorprofile v0.4.1 // indirect
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
-	github.com/charmbracelet/x/ansi v0.11.6 // indirect
+	github.com/charmbracelet/x/ansi v0.11.6
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/clipperhouse/displaywidth v0.9.0 // indirect
@@ -62,6 +62,6 @@ require (
 	github.com/muesli/termenv v0.16.0
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/sys v0.43.0
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/sys v0.44.0
+	golang.org/x/text v0.37.0 // indirect
 )
